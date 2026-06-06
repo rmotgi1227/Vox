@@ -1,0 +1,5 @@
+moss
+requests
+python-dotenv
+fastapi
+uvicorn[standard]

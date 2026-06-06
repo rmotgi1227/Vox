@@ -1,0 +1,13 @@
+# Secrets
+.env
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Scratch TTS test output (not the avatar)
+answer.mp3
+out.mp3
+
+# NOTE: PNGs and avatar clips (clips/, clips_old_3x4/ *.mp4) are intentionally tracked
