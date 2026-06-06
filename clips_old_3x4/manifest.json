@@ -1,0 +1,49 @@
+{
+  "clips": [
+    {
+      "name": "idle_loop",
+      "category": "tier0_idle",
+      "file": "clips/idle_loop.mp4"
+    },
+    {
+      "name": "speaking_a",
+      "category": "tier1_speaking",
+      "file": "clips/speaking_a.mp4"
+    },
+    {
+      "name": "speaking_b",
+      "category": "tier1_speaking",
+      "file": "clips/speaking_b.mp4"
+    },
+    {
+      "name": "gesture_nod",
+      "category": "tier1_reactive",
+      "file": "clips/gesture_nod.mp4"
+    },
+    {
+      "name": "gesture_point",
+      "category": "tier1_reactive",
+      "file": "clips/gesture_point.mp4"
+    },
+    {
+      "name": "gesture_holdup",
+      "category": "tier1_reactive",
+      "file": "clips/gesture_holdup.mp4"
+    },
+    {
+      "name": "gesture_laugh",
+      "category": "tier1_reactive",
+      "file": "clips/gesture_laugh.mp4"
+    },
+    {
+      "name": "bridge_thinking",
+      "category": "bridge",
+      "file": "clips/bridge_thinking.mp4"
+    },
+    {
+      "name": "buy_beat",
+      "category": "buy",
+      "file": "clips/buy_beat.mp4"
+    }
+  ]
+}
