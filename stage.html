@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vox — live host</title>
+<style>
+  :root { --bg:#0a0a0f; --panel:#15151f; --line:#26263a; --accent:#ff3b6b; --text:#f4f4fa; --dim:#8a8aa0; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+         background:var(--bg); color:var(--text); height:100vh; display:flex;
+         align-items:center; justify-content:center; gap:20px; padding:20px; }
+
+  /* The phone-frame vertical stage */
+  .stage { position:relative; width:405px; height:720px; border-radius:28px; overflow:hidden;
+           background:#000; box-shadow:0 20px 80px rgba(0,0,0,.6); flex:none; }
+  .stage video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+                 transition:opacity .5s ease; }
+  #vidIdle { opacity:1; } #vidClip { opacity:0; }
+  .stage.answering #vidClip { opacity:1; }
+  /* Blur-pulse (Zo's trick): a quick blur+scale peak at the switch masks the pose
+     mismatch between two clips, so the crossfade reads as a soft focus pull, not a
+     ghosty dissolve. Runs on both video layers for the duration of one transition. */
+  @keyframes blurpulse {
+    0%   { filter: blur(0)   saturate(1);   transform: scale(1);    }
+    50%  { filter: blur(9px) saturate(1.1); transform: scale(1.03); }
+    100% { filter: blur(0)   saturate(1);   transform: scale(1);    }
+  }
+  .stage.pulse video { animation: blurpulse .55s ease both; }
+
+  /* Go Live overlay — one click starts the autonomous stream (and unlocks audio) */
+  .golive { position:absolute; inset:0; z-index:9; display:flex; flex-direction:column;
+            align-items:center; justify-content:center; gap:12px;
+            background:radial-gradient(ellipse at center, rgba(10,10,15,.55), rgba(10,10,15,.85)); }
+  .golive button { background:var(--accent); color:#fff; border:none; border-radius:30px;
+                   padding:16px 36px; font-size:18px; font-weight:800; cursor:pointer;
+                   box-shadow:0 10px 40px rgba(255,59,107,.5); }
+  .golive button:disabled { background:#3a3a4a; cursor:default; box-shadow:none; font-size:14px; }
+  .golive-sub { color:var(--text); font-size:13px; opacity:.85; max-width:240px; text-align:center; }
+
+  /* Top chrome */
+  .top { position:absolute; top:0; left:0; right:0; padding:14px 16px; display:flex;
+         align-items:center; gap:10px; z-index:5;
+         background:linear-gradient(180deg,rgba(0,0,0,.55),transparent); }
+  .live { background:var(--accent); color:#fff; font-weight:700; font-size:11px;
+          padding:3px 8px; border-radius:6px; letter-spacing:.5px; }
+  .host { font-weight:600; font-size:14px; } .viewers { margin-left:auto; font-size:13px; color:#fff; opacity:.9; }
+
+  /* Karaoke captions */
+  .captions { position:absolute; left:16px; right:16px; bottom:210px; z-index:6;
+              text-align:center; font-size:22px; font-weight:700; line-height:1.35;
+              text-shadow:0 2px 12px rgba(0,0,0,.9); min-height:30px; }
+  .captions .w { opacity:.45; transition:opacity .1s; }
+  .captions .w.on { opacity:1; color:#fff; }
+
+  /* Product card — TV-shopping "Now Showing" hero, with the Moss match on screen */
+  .card { position:absolute; left:12px; right:12px; bottom:96px; z-index:6;
+          background:rgba(20,20,30,.85); backdrop-filter:blur(14px); border:1px solid var(--line);
+          border-radius:16px; padding:12px; display:none; flex-direction:column; gap:9px;
+          box-shadow:0 12px 40px rgba(0,0,0,.5); animation:cardin .35s ease both; }
+  .card.show { display:flex; }
+  @keyframes cardin { from{opacity:0; transform:translateY(12px) scale(.98);} to{opacity:1; transform:none;} }
+  .card .nowshowing { display:flex; align-items:center; gap:6px; font-size:10px; font-weight:800;
+                      letter-spacing:1.5px; color:var(--accent); text-transform:uppercase; }
+  .card .nowshowing::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--accent);
+                              box-shadow:0 0 0 0 var(--accent); animation:livedot 1.4s infinite; }
+  @keyframes livedot { 0%{box-shadow:0 0 0 0 rgba(255,59,107,.6);} 70%{box-shadow:0 0 0 7px rgba(255,59,107,0);} 100%{box-shadow:0 0 0 0 rgba(255,59,107,0);} }
+  .card .row { display:flex; gap:10px; align-items:center; }
+  .card img { width:64px; height:64px; border-radius:10px; object-fit:cover; background:#222; flex:none; }
+  .card .info { flex:1; min-width:0; }
+  .card .t { font-size:14px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .card .p { font-size:16px; font-weight:800; margin-top:2px; }
+  /* The Moss match badge — the semantic intelligence, visible */
+  .card .match { display:inline-flex; align-items:center; gap:5px; margin-top:4px;
+                 font-size:11px; font-weight:600; color:#7ef0c8;
+                 background:rgba(126,240,200,.1); border:1px solid rgba(126,240,200,.25);
+                 border-radius:20px; padding:2px 8px; }
+  .card .buy { background:var(--accent); color:#fff; border:none; border-radius:10px;
+               padding:10px 16px; font-weight:800; font-size:13px; cursor:pointer; flex:none; }
+  .card .sold { background:transparent; color:var(--dim); border:1px solid var(--line);
+                border-radius:10px; padding:7px 10px; font-size:11px; cursor:pointer; }
+
+  /* Comment dock */
+  .dock { position:absolute; left:0; right:0; bottom:0; z-index:6; padding:12px;
+          background:linear-gradient(0deg,rgba(0,0,0,.7),transparent); display:flex; gap:8px; }
+  .dock input { flex:1; background:rgba(255,255,255,.12); border:1px solid var(--line);
+                color:#fff; border-radius:20px; padding:11px 16px; font-size:14px; outline:none; }
+  .dock input::placeholder { color:rgba(255,255,255,.6); }
+  .dock button { background:#fff; color:#111; border:none; border-radius:20px; padding:0 16px;
+                 font-weight:700; cursor:pointer; }
+
+  /* Side panel: chat + telemetry */
+  .side { width:300px; height:720px; background:var(--panel); border:1px solid var(--line);
+          border-radius:20px; padding:16px; display:flex; flex-direction:column; gap:10px; }
+  .side h2 { margin:0; font-size:13px; color:var(--dim); text-transform:uppercase; letter-spacing:1px; }
+  .chat { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; }
+  .msg { font-size:13px; line-height:1.4; }
+  .msg .who { font-weight:700; } .msg.viewer .who { color:#6ab8ff; } .msg.vox .who { color:var(--accent); }
+  .msg.sys { color:var(--dim); font-style:italic; font-size:12px; }
+  .stat { display:flex; justify-content:space-between; font-size:12px; color:var(--dim);
+          border-top:1px solid var(--line); padding-top:8px; }
+  .stat b { color:var(--text); }
+  .quick { display:flex; flex-wrap:wrap; gap:6px; }
+  .quick button { background:rgba(255,255,255,.06); border:1px solid var(--line); color:var(--text);
+                  border-radius:14px; padding:5px 9px; font-size:11px; cursor:pointer; }
+</style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <video id="vidIdle" autoplay muted playsinline></video>
+    <video id="vidClip" loop muted playsinline></video>
+    <div class="top">
+      <span class="live">● LIVE</span>
+      <span class="host">Vox · Bay Area Auto</span>
+      <span class="viewers" id="viewers">live showroom 🚗</span>
+    </div>
+    <div class="captions" id="captions"></div>
+    <div class="card" id="card">
+      <div class="nowshowing">Now showing</div>
+      <div class="row">
+        <img id="cardImg" alt="" />
+        <div class="info">
+          <div class="t" id="cardTitle"></div>
+          <div class="match" id="cardMatch"></div>
+          <div class="p" id="cardPrice"></div>
+        </div>
+        <button class="buy">TEST DRIVE</button>
+      </div>
+      <button class="sold" id="cardSold">mark as SOLD ⚡</button>
+    </div>
+    <div class="dock">
+      <input id="input" placeholder="Ask about a car…" autocomplete="off" />
+      <button id="send">Send</button>
+    </div>
+    <div class="golive" id="goliveWrap">
+      <button id="golive" disabled>opening the showroom…</button>
+      <div class="golive-sub">a 24/7 AI showroom host, grounded in live inventory</div>
+    </div>
+    <audio id="audio"></audio>
+  </div>
+
+  <div class="side">
+    <h2>Live chat</h2>
+    <div class="chat" id="chat"></div>
+    <div class="quick" id="quick"></div>
+    <div class="stat"><span>Intent</span><b id="sIntent">—</b></div>
+    <div class="stat"><span>Answered</span><b id="sWhere">—</b></div>
+    <div class="stat"><span>Session cost</span><b id="sCost">$0.0000</b></div>
+  </div>
+
+<script>
+const $ = id => document.getElementById(id);
+const stage = $('stage'), vidIdle = $('vidIdle'), vidClip = $('vidClip'), audio = $('audio');
+let cost = 0, currentCard = null;
+
+// Resolve a clip NAME to its real file URL via the manifest.
+let CLIPS = {};
+const clipUrl = name => (CLIPS[name] && CLIPS[name].url) || ('/clips/' + name + '.mp4');
+
+// The idle is a RANDOM ROTATION of ambient "live-seller" behaviors (showing merch,
+// gesturing at stock, listening) — never the same motion on loop. Each ambient clip
+// starts/ends at the neutral anchor pose, so cuts land on matched frames.
+let IDLE_ROTATION = ['idle_loop'];
+let lastIdle = null;
+function nextIdle(){
+  let pick = IDLE_ROTATION[Math.floor(Math.random()*IDLE_ROTATION.length)];
+  if(IDLE_ROTATION.length > 1){ while(pick === lastIdle) pick = IDLE_ROTATION[Math.floor(Math.random()*IDLE_ROTATION.length)]; }
+  lastIdle = pick;
+  vidIdle.src = clipUrl(pick);
+  vidIdle.play().catch(()=>{});
+}
+// Keep cycling even while hidden under an answer, but only blur-pulse when the idle
+// layer is actually visible (pulsing during an answer would blur the speaking clip).
+vidIdle.addEventListener('ended', () => {
+  if(!stage.classList.contains('answering')) pulse();
+  nextIdle();
+});
+
+fetch('/manifest').then(r=>r.json()).then(m => {
+  CLIPS = m;
+  const ambient = Object.keys(m).filter(n => m[n].category === 'ambient');
+  IDLE_ROTATION = ['idle_loop', ...ambient];
+  nextIdle();
+});
+
+const QUICKIES = [
+  "AWD SUV under 30k for my family?", "most fuel-efficient car you have?",
+  "cheap reliable first car?", "anything good for towing?",
+  "is it still available?", "what's the monthly payment?",
+];
+QUICKIES.forEach(q => {
+  const b = document.createElement('button'); b.textContent = q;
+  b.onclick = () => { $('input').value = q; send(); };
+  $('quick').appendChild(b);
+});
+
+// Fire a blur-pulse over the stage to mask a clip switch (Zo's polish).
+let pulseTimer = null;
+function pulse(){
+  stage.classList.remove('pulse'); void stage.offsetWidth;  // restart the animation
+  stage.classList.add('pulse');
+  clearTimeout(pulseTimer);
+  pulseTimer = setTimeout(() => stage.classList.remove('pulse'), 600);
+}
+
+function chat(who, text, cls){
+  const d = document.createElement('div'); d.className = 'msg ' + cls;
+  d.innerHTML = cls==='sys' ? text : `<span class="who">${who}</span> ${text}`;
+  $('chat').appendChild(d); $('chat').scrollTop = 1e9;
+}
+
+function renderCaptions(timings){
+  const c = $('captions'); c.innerHTML = '';
+  return timings.map(t => {
+    const s = document.createElement('span'); s.className='w'; s.textContent = t.text + ' ';
+    c.appendChild(s); return {el:s, ...t};
+  });
+}
+
+function showCard(card){
+  if(!card){ $('card').classList.remove('show'); return; }
+  currentCard = card;
+  $('cardImg').src = card.image || '';
+  $('cardTitle').textContent = card.title + (card.variant ? ' · ' + card.variant : '');
+  $('cardPrice').textContent = '$' + Number(card.price || 0).toLocaleString();
+  // The Moss match, on screen: relevance % proves the semantic intelligence picked this.
+  const pct = Math.round(Math.max(0, Math.min(1, card.score || 0)) * 100);
+  $('cardMatch').textContent = `✦ Moss match ${pct}%`;
+  $('card').classList.remove('show'); void $('card').offsetWidth;  // replay the entrance
+  $('card').classList.add('show');
+}
+
+$('cardSold').onclick = async () => {
+  if(!currentCard) return;
+  const r = await fetch('/sold_out', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({variant_id: currentCard.variant_id})}).then(r=>r.json());
+  if(r.ok){ chat('', `⚡ ${currentCard.title} marked SOLD — it vanishes from the lot instantly.`, 'sys');
+            $('card').classList.remove('show'); }
+  else chat('', '(' + r.error + ')', 'sys');
+};
+
+// ── Continuous-stream engine ───────────────────────────────────────────────
+// The host is an always-talking anchor: it streams auto-pitches (Moss-grounded)
+// back-to-back, and a shopper comment PREEMPTS the stream — answer, then resume.
+let streaming = false;
+let gen = 0;                 // bumps on every new segment; stale audio handlers bail
+let pitchTimer = null;
+let firstPitch = null;       // prefetched so the first play happens in the click gesture
+
+// Play one spoken segment (pitch OR answer): the OPENER gesture (matched to the line)
+// plays once, then we settle into the talking loop for the rest of the audio (动作绑定
+// + duration alignment), with captions + the "Now Showing" card.
+function playSpoken(pkt, {onDone}={}){
+  const myGen = ++gen;
+  clearTimeout(pitchTimer);
+  const plan = pkt.clip || {opener:'speaking_a', sustain:'speaking_a'};
+  const words = renderCaptions(pkt.timings || []);
+  showCard(pkt.card || (pkt.cards||[])[0]);
+
+  vidClip.loop = (plan.opener === plan.sustain);   // same clip? just loop it
+  vidClip.src = clipUrl(plan.opener);
+  vidClip.play().catch(()=>{});
+  pulse();
+  stage.classList.add('answering');
+  vidClip.onended = () => {                          // opener finished its beat -> settle to talking
+    if(myGen !== gen) return;
+    if(plan.sustain && plan.sustain !== plan.opener){
+      vidClip.loop = true;
+      vidClip.src = clipUrl(plan.sustain);
+      vidClip.play().catch(()=>{});
+      pulse();
+    }
+  };
+
+  audio.src = 'data:audio/mp3;base64,' + pkt.audio_b64;
+  audio.ontimeupdate = () => {
+    if(myGen !== gen) return;
+    const ms = audio.currentTime * 1000;
+    words.forEach(w => w.el.classList.toggle('on', ms >= w.start_ms && ms < w.end_ms));
+  };
+  audio.onended = () => {
+    if(myGen !== gen) return;
+    vidClip.onended = null;
+    $('captions').innerHTML = '';
+    if(onDone) onDone();
+  };
+  audio.play().catch(()=>{});
+}
+
+function stopAudio(){ try{ audio.pause(); }catch(e){} }
+
+function settleIdle(){
+  pulse();
+  stage.classList.remove('answering');
+  $('captions').innerHTML = '';
+  nextIdle();
+}
+
+// After an answer/reaction: resume the auto-pitch stream, or settle to idle if off.
+function resumeOrIdle(){ if(streaming) streamPitch(); else settleIdle(); }
+
+// Pull the next buffered pitch and play it; loop forever while streaming.
+async function streamPitch(){
+  if(!streaming) return;
+  let pkt;
+  try { pkt = await fetch('/next_pitch').then(r=>r.json()); } catch(e){ pkt = {ready:false}; }
+  if(!streaming) return;
+  if(!pkt.ready){                       // buffer momentarily dry — hold, retry shortly
+    pitchTimer = setTimeout(streamPitch, 1200);
+    return;
+  }
+  chat('Vox', pkt.reply, 'vox');
+  $('sIntent').textContent = 'pitch'; $('sWhere').textContent = 'auto-pitch · Moss';
+  cost += 0.0009; $('sCost').textContent = '$' + cost.toFixed(4);
+  playSpoken(pkt, {onDone: resumeOrIdle});
+}
+
+function goLive(){
+  if(streaming) return;
+  streaming = true;
+  $('goliveWrap').style.display = 'none';
+  chat('', '🔴 Showroom is open — Vox is walking the lot. Ask about any car anytime.', 'sys');
+  if(firstPitch){                       // play the prefetched pitch IN the click gesture (unlocks audio)
+    const p = firstPitch; firstPitch = null;
+    chat('Vox', p.reply, 'vox');
+    $('sIntent').textContent = 'pitch'; $('sWhere').textContent = 'auto-pitch · Moss';
+    cost += 0.0009; $('sCost').textContent = '$' + cost.toFixed(4);
+    playSpoken(p, {onDone: resumeOrIdle});
+  } else {
+    streamPitch();
+  }
+}
+
+// The instant a comment is sent, the host visibly "thinks" (bridge) — covers latency.
+function thinking(){
+  vidClip.onended = null;
+  vidClip.loop = true;                  // bridge holds (leans in to read) until the answer lands
+  vidClip.src = clipUrl('bridge_thinking');
+  vidClip.play().catch(()=>{});
+  pulse();
+  stage.classList.add('answering');
+  $('sIntent').textContent = '…'; $('sWhere').textContent = 'thinking…';
+}
+
+async function send(){
+  const text = $('input').value.trim(); if(!text) return;
+  $('input').value=''; chat('you', text, 'viewer');
+  gen++;                                 // invalidate any in-flight pitch
+  clearTimeout(pitchTimer);
+  stopAudio();                           // cut the current pitch — a comment preempts
+  thinking();
+  const t0 = performance.now();
+  const data = await fetch('/comment', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({comment:text, lang:'en'})}).then(r=>r.json());
+  const ms = Math.round(performance.now() - t0);
+
+  $('sIntent').textContent = data.intent;
+  if(data.action === 'block'){
+    $('sWhere').textContent = 'blocked (spam)';
+    chat('', '🚫 blocked as spam — $0, never hit the cloud.', 'sys');
+    resumeOrIdle();                      // straight back to selling
+    return;
+  }
+  if(data.reply){
+    chat('Vox', data.reply, 'vox');
+    $('sWhere').textContent = `answer · ${ms}ms`;
+    cost += 0.0009; $('sCost').textContent = '$' + cost.toFixed(4);
+    playSpoken({...data, card:(data.cards||[])[0]}, {onDone: resumeOrIdle});
+  } else {
+    $('sWhere').textContent = `local · ${ms}ms · $0`;
+    cost += 0.00035; $('sCost').textContent = '$' + cost.toFixed(4);
+    const step = (data.plan||[]).find(s=>s.clip);
+    const myGen = ++gen;
+    if(step){ vidClip.onended = null; vidClip.loop = true; vidClip.src = clipUrl(step.clip);
+              vidClip.play().catch(()=>{}); pulse(); stage.classList.add('answering'); }
+    setTimeout(()=>{ if(myGen===gen) resumeOrIdle(); }, 2600);
+  }
+}
+
+// Prefetch the first pitch so Go Live can play instantly inside the click gesture.
+async function prefetchFirst(){
+  for(let i=0; i<25 && !firstPitch && !streaming; i++){
+    const p = await fetch('/next_pitch').then(r=>r.json()).catch(()=>({ready:false}));
+    if(p.ready){ firstPitch = p; $('golive').disabled = false; $('golive').textContent = '▶ Go Live'; return; }
+    await new Promise(r => setTimeout(r, 700));
+  }
+}
+
+$('golive').onclick = goLive;
+$('send').onclick = send;
+$('input').addEventListener('keydown', e => { if(e.key==='Enter') send(); });
+chat('', 'Tap “Go Live” — Vox opens the showroom and starts walking the lot.', 'sys');
+prefetchFirst();
+</script>
+</body>
+</html>
