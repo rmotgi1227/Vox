@@ -21,7 +21,8 @@ import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { NoiseBackground } from "@/components/ui/noise-background";
 import { AgentVisualizer, type AgentVizMode } from "@/components/ui/agent-visualizer";
-import { getLiveKitToken, getSpecialistState, sendSpecialistMessage } from "@/lib/api";
+import { getAvatarToken, getLiveKitToken, getSpecialistState, sendSpecialistMessage, markCarSold } from "@/lib/api";
+import { loadBrowserMoss, type BrowserMoss, type CarHit } from "@/lib/moss-browser";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -167,6 +168,20 @@ export default function SpecialistPage() {
       new URLSearchParams(window.location.search).get("canvas") === "demo"
   );
 
+  // Simli talking-head avatar (browser-side, lip-syncs the agent audio)
+  const [avatarLive, setAvatarLive] = useState(false);
+  const avatarVideoRef = useRef<HTMLVideoElement>(null);
+  const avatarAudioRef = useRef<HTMLAudioElement>(null);
+  const simliRef = useRef<{ sendAudioData: (d: Uint8Array) => void; stop: () => void; listenToMediastreamTrack: (t: MediaStreamTrack) => void } | null>(null);
+  const simliStartingRef = useRef<Promise<void> | null>(null);
+
+  // Mark-sold + in-browser Moss replacement.
+  const [sold, setSold] = useState(false);
+  const [soldBusy, setSoldBusy] = useState(false);
+  const [replacement, setReplacement] = useState<CarHit | null>(null);
+  const [replacementMs, setReplacementMs] = useState<number | null>(null);
+  const mossRef = useRef<BrowserMoss | null>(null);
+
   const audioRef = useRef<HTMLAudioElement>(null);
   const remoteAudioRef = useRef<HTMLDivElement>(null);
   const roomRef = useRef<LiveKitRoomLike | null>(null);
@@ -228,8 +243,116 @@ export default function SpecialistPage() {
         }
       })
       .catch((err: unknown) => setError(err instanceof Error ? err.message : "Load failed"));
-    return () => roomRef.current?.disconnect();
+    return () => {
+      roomRef.current?.disconnect();
+      simliRef.current?.stop();
+    };
   }, []);
+
+  // Warm the in-browser Moss indexes (one-time model + index download) so the
+  // mark-sold replacement query is instant.
+  useEffect(() => {
+    let alive = true;
+    loadBrowserMoss().then((moss) => {
+      if (alive) mossRef.current = moss;
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  // ---- Simli talking-head avatar (browser-side WebRTC; lip-syncs reply audio) ----
+  async function mp3Base64ToPcm16(base64: string): Promise<Uint8Array> {
+    const bin = atob(base64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const AC: typeof AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const tmp = new AC();
+    const decoded = await tmp.decodeAudioData(bytes.buffer.slice(0));
+    await tmp.close();
+    const offline = new OfflineAudioContext(1, Math.ceil(decoded.duration * 16000), 16000);
+    const src = offline.createBufferSource();
+    src.buffer = decoded;
+    src.connect(offline.destination);
+    src.start();
+    const rendered = await offline.startRendering();
+    const f = rendered.getChannelData(0);
+    const pcm = new Int16Array(f.length);
+    for (let i = 0; i < f.length; i++) {
+      const s = Math.max(-1, Math.min(1, f[i] ?? 0));
+      pcm[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+    }
+    return new Uint8Array(pcm.buffer);
+  }
+
+  async function ensureSimli(): Promise<void> {
+    if (simliRef.current) return;
+    if (simliStartingRef.current) return simliStartingRef.current;
+    simliStartingRef.current = (async () => {
+      const { sessionToken, iceServers } = await getAvatarToken();
+      if (!sessionToken) throw new Error("no Simli session token");
+      const { SimliClient } = await import("simli-client");
+      const video = avatarVideoRef.current!;
+      const audio = avatarAudioRef.current!;
+      const ice = iceServers && iceServers.length ? iceServers : [{ urls: ["stun:stun.l.google.com:19302"] }];
+      const client = new SimliClient(sessionToken, video, audio, ice as RTCIceServer[]);
+      client.on("error", (d: string) => setError(`Avatar: ${d}`));
+      await client.start();
+      simliRef.current = client as unknown as { sendAudioData: (d: Uint8Array) => void; stop: () => void; listenToMediastreamTrack: (t: MediaStreamTrack) => void };
+      setAvatarLive(true);
+    })();
+    try {
+      await simliStartingRef.current;
+    } catch (err) {
+      simliStartingRef.current = null;
+      throw err;
+    }
+  }
+
+  async function speakViaAvatar(base64Mp3: string): Promise<boolean> {
+    try {
+      await ensureSimli();
+    } catch (err) {
+      console.warn("avatar unavailable:", err);
+      return false;
+    }
+    const client = simliRef.current;
+    if (!client) return false;
+    const pcm = await mp3Base64ToPcm16(base64Mp3);
+    const CHUNK = 6000;
+    for (let i = 0; i < pcm.length; i += CHUNK) {
+      client.sendAudioData(pcm.subarray(i, i + CHUNK));
+    }
+    return true;
+  }
+
+  // Mark the current car sold. Persists server-side (the voice agent stops
+  // pitching it on its next turn), then runs an IN-BROWSER Moss catalog query to
+  // surface the best replacement car in sub-10ms — the latency shown on the HUD.
+  async function handleMarkSold() {
+    if (sold || soldBusy || !state) return;
+    setSoldBusy(true);
+    setError("");
+    try {
+      const { car } = state;
+      const result = await markCarSold(DEFAULT_VIN);
+      setSold(true);
+      const moss = mossRef.current;
+      const probe = `${car.year} ${car.make} ${car.model} ${car.body} ${car.drivetrain} ${car.fuel}`;
+      if (moss) {
+        const { cars, ms } = await moss.queryCatalog(probe, [DEFAULT_VIN], 1);
+        setReplacementMs(ms);
+        if (cars[0]) setReplacement(cars[0]);
+        else if (result.alternative) setReplacement({ ...result.alternative, score: 0 });
+      } else if (result.alternative) {
+        setReplacement({ ...result.alternative, score: 0 });
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Mark sold failed");
+    } finally {
+      setSoldBusy(false);
+    }
+  }
 
   const selectedImage = useMemo(
     () => state?.images.find((image) => image.id === selectedImageId) ?? state?.images[0],
@@ -433,7 +556,21 @@ export default function SpecialistPage() {
     element.style.display = "none";
     remoteAudioRef.current?.appendChild(element);
     // Feed the on-button visualizer from the agent's live audio.
-    if (maybeAudioTrack.mediaStreamTrack) setAgentTrack(maybeAudioTrack.mediaStreamTrack);
+    if (maybeAudioTrack.mediaStreamTrack) {
+      const mst = maybeAudioTrack.mediaStreamTrack;
+      setAgentTrack(mst);
+      // Voice mode: pipe the agent's live audio into Simli so the face lip-syncs it.
+      // On success, mute the raw track — Simli plays the synced audio instead.
+      void (async () => {
+        try {
+          await ensureSimli();
+          simliRef.current?.listenToMediastreamTrack(mst);
+          element.muted = true;
+        } catch {
+          // avatar unavailable — keep the raw agent audio playing
+        }
+      })();
+    }
     void element.play().catch(() => {
       // Audio autoplay blocked; user must tap — handled gracefully
     });
@@ -793,23 +930,133 @@ export default function SpecialistPage() {
                 <span>{state.car.drivetrain}</span>
                 <span className="stage-meta-dot" aria-hidden="true" />
                 <span>{state.car.fuel}</span>
-                {state.car.availability === "available" ? (
+                {sold || state.car.availability === "sold" ? (
+                  <span
+                    className="status-pill"
+                    style={{ background: "#dc2626", color: "#fff", borderColor: "#dc2626" }}
+                  >
+                    Sold
+                  </span>
+                ) : state.car.availability === "available" ? (
                   <span className="status-pill">Available</span>
+                ) : null}
+                {!sold && state.car.availability !== "sold" ? (
+                  <button
+                    type="button"
+                    onClick={handleMarkSold}
+                    disabled={soldBusy}
+                    style={{
+                      marginLeft: 8,
+                      padding: "4px 12px",
+                      borderRadius: 999,
+                      border: "1px solid #dc2626",
+                      background: soldBusy ? "#fca5a5" : "#dc2626",
+                      color: "#fff",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: soldBusy ? "default" : "pointer",
+                    }}
+                  >
+                    {soldBusy ? "Marking…" : "Mark as Sold"}
+                  </button>
                 ) : null}
               </div>
             </div>
             <div className="specialist-avatar" aria-hidden="true">
-              <User size={56} strokeWidth={1.4} />
+              <video
+                ref={avatarVideoRef}
+                autoPlay
+                playsInline
+                muted
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  borderRadius: "inherit",
+                  display: avatarLive ? "block" : "none",
+                }}
+              />
+              {!avatarLive ? <User size={56} strokeWidth={1.4} /> : null}
             </div>
           </div>
 
           {/* Canvas — pure renderer driven by viewState */}
-          <div className="canvas-outer">
+          <div className="canvas-outer" style={{ position: "relative" }}>
             <Canvas
               viewState={viewState}
               images={state.images}
               imageBusy={imageBusy}
             />
+
+            {sold ? (
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  display: "grid",
+                  placeItems: "center",
+                  background: "rgba(10,10,10,0.45)",
+                  borderRadius: "inherit",
+                  pointerEvents: "none",
+                  zIndex: 5,
+                }}
+                aria-hidden="true"
+              >
+                <span
+                  style={{
+                    transform: "rotate(-12deg)",
+                    border: "5px solid #dc2626",
+                    color: "#dc2626",
+                    background: "rgba(255,255,255,0.92)",
+                    padding: "6px 28px",
+                    borderRadius: 10,
+                    fontSize: 44,
+                    fontWeight: 900,
+                    letterSpacing: 4,
+                  }}
+                >
+                  SOLD
+                </span>
+              </div>
+            ) : null}
+
+            {sold && replacement ? (
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: 12,
+                  left: 12,
+                  right: 12,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  padding: "10px 14px",
+                  borderRadius: 12,
+                  background: "rgba(10,10,10,0.82)",
+                  color: "#fff",
+                  backdropFilter: "blur(6px)",
+                  zIndex: 6,
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: "ui-monospace, monospace",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "#4ade80",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  ⚡ Moss found your next car
+                  {replacementMs != null ? ` · ${replacementMs.toFixed(1)}ms` : ""}
+                </span>
+                <span style={{ fontSize: 14, fontWeight: 600 }}>{replacement.title}</span>
+                <span style={{ fontSize: 13, opacity: 0.7 }}>
+                  {[replacement.body, replacement.drivetrain, replacement.fuel].filter(Boolean).join(" · ")}
+                  {replacement.price ? ` · $${Number(replacement.price).toLocaleString()}` : ""}
+                </span>
+              </div>
+            ) : null}
             {/* Phase-1 dev harness — only visible when ?canvas=demo */}
             {isCanvasDemo && demoViewStates.length > 0 && (
               <div className="canvas-demo-controls">
@@ -978,6 +1225,7 @@ export default function SpecialistPage() {
             </div>
           </div>
           <audio ref={audioRef} />
+          <audio ref={avatarAudioRef} aria-hidden="true" />
           <div ref={remoteAudioRef} aria-hidden="true" />
         </aside>
       </Card>
