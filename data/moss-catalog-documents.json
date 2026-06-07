@@ -1,0 +1,21 @@
+[
+  {
+    "id": "BMW-M4",
+    "text": "2026 BMW M4 Demo Coupe, Coupe, RWD, Gas. Demo. Features: performance coupe, sport interior, driver-focused cockpit, M performance styling, fixed carbon-fiber roof, no glass sunroof, carbon-fiber exterior accents, black leather interior. BMW M4 demo vehicle for the Vox visual specialist MVP. The curated image set shows a fixed carbon-fiber hardtop roof, not a glass sunroof or moonroof, plus black leather interior, M performance styling, carbon-fiber trim, wheels, trunk, engine bay, and exterior detail views.",
+    "metadata": {
+      "doc_type": "car",
+      "car_id": "BMW-M4",
+      "product_id": "bmw-m4",
+      "variant_id": "BMW-M4",
+      "title": "2026 BMW M4",
+      "variant": "Demo Coupe · RWD · Demo",
+      "price": "",
+      "available": "true",
+      "opt_body": "Coupe",
+      "opt_drivetrain": "RWD",
+      "opt_fuel": "Gas",
+      "opt_mileage": "0",
+      "opt_color": "Demo"
+    }
+  }
+]

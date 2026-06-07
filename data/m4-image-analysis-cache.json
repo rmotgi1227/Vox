@@ -1,0 +1,1866 @@
+{
+  "2018_bmw_m4-pic-1319146320583892681-1024x768.webp": {
+    "role": "dashboard",
+    "caption": "A high-resolution infotainment display with navigation, situated above premium carbon fiber trim and stitched leather on the BMW M4's dashboard.",
+    "visibleFeatures": [
+      "infotainment screen",
+      "GPS navigation system",
+      "carbon fiber trim",
+      "air conditioning vents",
+      "hazard light switch",
+      "central door lock button",
+      "leather dashboard with contrast stitching",
+      "radio preset buttons"
+    ],
+    "likelyQuestions": [
+      "Does this car have a built-in navigation system?",
+      "What kind of dashboard trim does this M4 have?",
+      "Is the dashboard leather-wrapped?",
+      "What size is the central infotainment screen?"
+    ],
+    "confidence": 0.95,
+    "raw": {
+      "role": "dashboard",
+      "caption": "A high-resolution infotainment display with navigation, situated above premium carbon fiber trim and stitched leather on the BMW M4's dashboard.",
+      "visibleFeatures": [
+        "infotainment screen",
+        "GPS navigation system",
+        "carbon fiber trim",
+        "air conditioning vents",
+        "hazard light switch",
+        "central door lock button",
+        "leather dashboard with contrast stitching",
+        "radio preset buttons"
+      ],
+      "likelyQuestions": [
+        "Does this car have a built-in navigation system?",
+        "What kind of dashboard trim does this M4 have?",
+        "Is the dashboard leather-wrapped?",
+        "What size is the central infotainment screen?"
+      ],
+      "confidence": 0.95
+    }
+  },
+  "2018_bmw_m4-pic-1461017558474954336-1024x768.webp": {
+    "role": "detail",
+    "caption": "Documentation and keys for a 2018 BMW M4, featuring a clean CARFAX report and two factory key fobs.",
+    "visibleFeatures": [
+      "CARFAX Vehicle History Report for 2018 BMW M4",
+      "Two BMW key fobs",
+      "Mid Atlantic Motorwerkes keychain tag",
+      "No accidents or damage reported checkbox",
+      "7 Service History Records summary",
+      "2 Previous Owners summary",
+      "17,493 miles listed on CARFAX"
+    ],
+    "likelyQuestions": [
+      "Does this BMW M4 have a clean CARFAX report?",
+      "How many keys are included with the vehicle?",
+      "What is the current mileage according to the documentation?",
+      "How many previous owners has the car had?",
+      "Is there any service history available for this car?"
+    ],
+    "confidence": 0.95,
+    "raw": {
+      "role": "detail",
+      "caption": "Documentation and keys for a 2018 BMW M4, featuring a clean CARFAX report and two factory key fobs.",
+      "visibleFeatures": [
+        "CARFAX Vehicle History Report for 2018 BMW M4",
+        "Two BMW key fobs",
+        "Mid Atlantic Motorwerkes keychain tag",
+        "No accidents or damage reported checkbox",
+        "7 Service History Records summary",
+        "2 Previous Owners summary",
+        "17,493 miles listed on CARFAX"
+      ],
+      "likelyQuestions": [
+        "Does this BMW M4 have a clean CARFAX report?",
+        "How many keys are included with the vehicle?",
+        "What is the current mileage according to the documentation?",
+        "How many previous owners has the car had?",
+        "Is there any service history available for this car?"
+      ],
+      "confidence": 0.95
+    }
+  },
+  "2018_bmw_m4-pic-1574830017944435581-1024x768.webp": {
+    "role": "interior_front",
+    "caption": "Pristine black leather interior featuring M sport seats with illuminated M4 badging and carbon fiber console trim.",
+    "visibleFeatures": [
+      "black leather seats",
+      "M4 headrest badge",
+      "carbon fiber center console trim",
+      "iDrive controller",
+      "gear selector",
+      "center armrest",
+      "side bolsters",
+      "power seat controls",
+      "door sill plate",
+      "floor mats"
+    ],
+    "likelyQuestions": [
+      "What color is the leather interior?",
+      "Does this car have the M sport seats?",
+      "What condition is the driver's seat bolster in?",
+      "Is there carbon fiber trim on the interior?",
+      "Does it have an automatic transmission?"
+    ],
+    "confidence": 1,
+    "raw": {
+      "role": "interior_front",
+      "caption": "Pristine black leather interior featuring M sport seats with illuminated M4 badging and carbon fiber console trim.",
+      "visibleFeatures": [
+        "black leather seats",
+        "M4 headrest badge",
+        "carbon fiber center console trim",
+        "iDrive controller",
+        "gear selector",
+        "center armrest",
+        "side bolsters",
+        "power seat controls",
+        "door sill plate",
+        "floor mats"
+      ],
+      "likelyQuestions": [
+        "What color is the leather interior?",
+        "Does this car have the M sport seats?",
+        "What condition is the driver's seat bolster in?",
+        "Is there carbon fiber trim on the interior?",
+        "Does it have an automatic transmission?"
+      ],
+      "confidence": 1
+    }
+  },
+  "2018_bmw_m4-pic-1601741309887650709-1024x768.webp": {
+    "role": "wheel",
+    "caption": "A close-up view of the front driver-side wheel on a white BMW M4, featuring a 19-inch five-spoke alloy rim and blue M-Performance brake calipers.",
+    "visibleFeatures": [
+      "BMW logo center cap",
+      "five-spoke alloy wheel",
+      "blue brake caliper",
+      "cross-drilled brake rotor",
+      "Continental ExtremeContact tire",
+      "front fender vent",
+      "amber side marker light",
+      "front parking sensor"
+    ],
+    "likelyQuestions": [
+      "What brand of tires are on this car?",
+      "Are the wheels in good condition with no curb rash?",
+      "Does this car have performance brakes?",
+      "Are the brake rotors cross-drilled?",
+      "What size are the wheels?"
+    ],
+    "confidence": 0.98,
+    "raw": {
+      "role": "wheel",
+      "caption": "A close-up view of the front driver-side wheel on a white BMW M4, featuring a 19-inch five-spoke alloy rim and blue M-Performance brake calipers.",
+      "visibleFeatures": [
+        "BMW logo center cap",
+        "five-spoke alloy wheel",
+        "blue brake caliper",
+        "cross-drilled brake rotor",
+        "Continental ExtremeContact tire",
+        "front fender vent",
+        "amber side marker light",
+        "front parking sensor"
+      ],
+      "likelyQuestions": [
+        "What brand of tires are on this car?",
+        "Are the wheels in good condition with no curb rash?",
+        "Does this car have performance brakes?",
+        "Are the brake rotors cross-drilled?",
+        "What size are the wheels?"
+      ],
+      "confidence": 0.98
+    }
+  },
+  "2018_bmw_m4-pic-1766761240484396677-1024x768.webp": {
+    "role": "exterior_front",
+    "caption": "Front driver-side corner view of a white BMW M4 featuring black kidney grilles and a carbon fiber front lip.",
+    "visibleFeatures": [
+      "BMW M4 grille badge",
+      "Black kidney grille",
+      "LED adaptive headlights",
+      "Carbon fiber front lip",
+      "Front parking sensors",
+      "Orange side marker reflector",
+      "Honeycomb lower air intake",
+      "Front license plate bracket"
+    ],
+    "likelyQuestions": [
+      "Does this BMW M4 have carbon fiber exterior trim?",
+      "What kind of headlights are installed?",
+      "Does it come with front parking sensors?",
+      "Is the front grille blacked out?",
+      "What is the condition of the front splitter?"
+    ],
+    "confidence": 0.95,
+    "raw": {
+      "role": "exterior_front",
+      "caption": "Front driver-side corner view of a white BMW M4 featuring black kidney grilles and a carbon fiber front lip.",
+      "visibleFeatures": [
+        "BMW M4 grille badge",
+        "Black kidney grille",
+        "LED adaptive headlights",
+        "Carbon fiber front lip",
+        "Front parking sensors",
+        "Orange side marker reflector",
+        "Honeycomb lower air intake",
+        "Front license plate bracket"
+      ],
+      "likelyQuestions": [
+        "Does this BMW M4 have carbon fiber exterior trim?",
+        "What kind of headlights are installed?",
+        "Does it come with front parking sensors?",
+        "Is the front grille blacked out?",
+        "What is the condition of the front splitter?"
+      ],
+      "confidence": 0.95
+    }
+  },
+  "2018_bmw_m4-pic-1837515697934941645-1024x768.webp": {
+    "role": "detail",
+    "caption": "Close-up of the premium Harman Kardon sound system speaker on the interior door panel.",
+    "visibleFeatures": [
+      "Harman Kardon branding",
+      "Speaker grille",
+      "Leather door trim",
+      "Contrast stitching"
+    ],
+    "likelyQuestions": [
+      "Does this car come with the upgraded Harman Kardon sound system?",
+      "What is the condition of the interior door trim?",
+      "Are the speakers in good cosmetic condition?"
+    ],
+    "confidence": 1,
+    "raw": {
+      "role": "detail",
+      "caption": "Close-up of the premium Harman Kardon sound system speaker on the interior door panel.",
+      "visibleFeatures": [
+        "Harman Kardon branding",
+        "Speaker grille",
+        "Leather door trim",
+        "Contrast stitching"
+      ],
+      "likelyQuestions": [
+        "Does this car come with the upgraded Harman Kardon sound system?",
+        "What is the condition of the interior door trim?",
+        "Are the speakers in good cosmetic condition?"
+      ],
+      "confidence": 1
+    }
+  },
+  "2018_bmw_m4-pic-1898438960393315124-1024x768.webp": {
+    "role": "detail",
+    "caption": "Interior detail showing the steering column with its adjustment lever and the heated steering wheel button.",
+    "visibleFeatures": [
+      "heated steering wheel button",
+      "steering column adjustment lever",
+      "automatic gear selector",
+      "brake pedal",
+      "dashboard stitching",
+      "center console"
+    ],
+    "likelyQuestions": [
+      "Does this BMW M4 have a heated steering wheel?",
+      "Where is the button for the heated steering wheel located?",
+      "Is the steering wheel manually adjustable?"
+    ],
+    "confidence": 0.95,
+    "raw": {
+      "role": "detail",
+      "caption": "Interior detail showing the steering column with its adjustment lever and the heated steering wheel button.",
+      "visibleFeatures": [
+        "heated steering wheel button",
+        "steering column adjustment lever",
+        "automatic gear selector",
+        "brake pedal",
+        "dashboard stitching",
+        "center console"
+      ],
+      "likelyQuestions": [
+        "Does this BMW M4 have a heated steering wheel?",
+        "Where is the button for the heated steering wheel located?",
+        "Is the steering wheel manually adjustable?"
+      ],
+      "confidence": 0.95
+    }
+  },
+  "2018_bmw_m4-pic-2086691802845276950-1024x768.webp": {
+    "role": "detail",
+    "caption": "Detailed view of the premium grey leather front seat with an illuminated M4 badge.",
+    "visibleFeatures": [
+      "grey leather upholstery",
+      "perforated leather center section",
+      "M4 seat emblem",
+      "contrast stitching",
+      "M-stripe detailing on the badge",
+      "side bolster"
+    ],
+    "likelyQuestions": [
+      "What color is the interior leather?",
+      "Are the seats perforated?",
+      "Does the car have the M sport seats?",
+      "Is the M4 badge on the seat illuminated?"
+    ],
+    "confidence": 1,
+    "raw": {
+      "role": "detail",
+      "caption": "Detailed view of the premium grey leather front seat with an illuminated M4 badge.",
+      "visibleFeatures": [
+        "grey leather upholstery",
+        "perforated leather center section",
+        "M4 seat emblem",
+        "contrast stitching",
+        "M-stripe detailing on the badge",
+        "side bolster"
+      ],
+      "likelyQuestions": [
+        "What color is the interior leather?",
+        "Are the seats perforated?",
+        "Does the car have the M sport seats?",
+        "Is the M4 badge on the seat illuminated?"
+      ],
+      "confidence": 1
+    }
+  },
+  "2018_bmw_m4-pic-2276727283337289750-1024x768.webp": {
+    "role": "interior_front",
+    "caption": "View of the front sport seats and center console in a black leather finish.",
+    "visibleFeatures": [
+      "front passenger seat",
+      "M4 seat badge",
+      "leather upholstery",
+      "center console",
+      "gear selector",
+      "steering wheel",
+      "door panel",
+      "seat adjustment controls",
+      "floor mats"
+    ],
+    "likelyQuestions": [
+      "What is the condition of the leather seats?",
+      "Does the car have the M sport seats?",
+      "Is the interior black?",
+      "What kind of gear shifter does it have?",
+      "Are the seats power-adjustable?"
+    ],
+    "confidence": 0.95,
+    "raw": {
+      "role": "interior_front",
+      "caption": "View of the front sport seats and center console in a black leather finish.",
+      "visibleFeatures": [
+        "front passenger seat",
+        "M4 seat badge",
+        "leather upholstery",
+        "center console",
+        "gear selector",
+        "steering wheel",
+        "door panel",
+        "seat adjustment controls",
+        "floor mats"
+      ],
+      "likelyQuestions": [
+        "What is the condition of the leather seats?",
+        "Does the car have the M sport seats?",
+        "Is the interior black?",
+        "What kind of gear shifter does it have?",
+        "Are the seats power-adjustable?"
+      ],
+      "confidence": 0.95
+    }
+  },
+  "2018_bmw_m4-pic-2621075048170827325-1024x768.webp": {
+    "role": "exterior_front",
+    "caption": "Front three-quarter view of a white BMW M4 coupe parked at Mid Atlantic Motorwerkes.",
+    "visibleFeatures": [
+      "White exterior paint",
+      "Carbon fiber roof",
+      "Black kidney grilles",
+      "LED headlights with signature corona rings",
+      "M-specific front bumper with large air intakes",
+      "Carbon fiber side mirror caps",
+      "Black alloy wheels",
+      "Blue M-Sport brake calipers",
+      "Front lip spoiler",
+      "Side fender vents with M4 badging"
+    ],
+    "likelyQuestions": [
+      "Does this BMW M4 have a carbon fiber roof?",
+      "What color are the brake calipers?",
+      "Are the side mirrors carbon fiber?",
+      "Does it come with the blacked-out kidney grilles?",
+      "Is a front lip spoiler installed on this car?"
+    ],
+    "confidence": 1,
+    "raw": {
+      "role": "exterior_front",
+      "caption": "Front three-quarter view of a white BMW M4 coupe parked at Mid Atlantic Motorwerkes.",
+      "visibleFeatures": [
+        "White exterior paint",
+        "Carbon fiber roof",
+        "Black kidney grilles",
+        "LED headlights with signature corona rings",
+        "M-specific front bumper with large air intakes",
+        "Carbon fiber side mirror caps",
+        "Black alloy wheels",
+        "Blue M-Sport brake calipers",
+        "Front lip spoiler",
+        "Side fender vents with M4 badging"
+      ],
+      "likelyQuestions": [
+        "Does this BMW M4 have a carbon fiber roof?",
+        "What color are the brake calipers?",
+        "Are the side mirrors carbon fiber?",
+        "Does it come with the blacked-out kidney grilles?",
+        "Is a front lip spoiler installed on this car?"
+      ],
+      "confidence": 1
+    }
+  },
+  "2018_bmw_m4-pic-2653171459232803209-1024x768.webp": {
+    "role": "detail",
+    "caption": "A close-up of the BMW's push-button ignition and automatic start-stop override button.",
+    "visibleFeatures": [
+      "engine start-stop button",
+      "auto start-stop off button",
+      "silver trim ring",
+      "amber illumination",
+      "textured dashboard trim"
+    ],
+    "likelyQuestions": [
+      "Does this car have push-button start?",
+      "Can the auto start-stop feature be turned off?",
+      "What color is the interior button lighting?"
+    ],
+    "confidence": 1,
+    "raw": {
+      "role": "detail",
+      "caption": "A close-up of the BMW's push-button ignition and automatic start-stop override button.",
+      "visibleFeatures": [
+        "engine start-stop button",
+        "auto start-stop off button",
+        "silver trim ring",
+        "amber illumination",
+        "textured dashboard trim"
+      ],
+      "likelyQuestions": [
+        "Does this car have push-button start?",
+        "Can the auto start-stop feature be turned off?",
+        "What color is the interior button lighting?"
+      ],
+      "confidence": 1
+    }
+  },
+  "2018_bmw_m4-pic-2726043006252105822-1024x768.webp": {
+    "role": "exterior_front",
+    "caption": "Front exterior view of a white BMW M4 featuring a black kidney grille and carbon fiber accents.",
+    "visibleFeatures": [
+      "BMW emblem",
+      "Black kidney grille",
+      "LED headlights with yellow daytime running lights",
+      "Carbon fiber front splitters",
+      "Front parking sensors",
+      "Mid Atlantic Motorwerkes license plate frame",
+      "Sculpted hood",
+      "Side mirrors with carbon fiber caps"
+    ],
+    "likelyQuestions": [
+      "What color is the car?",
+      "Does it have any carbon fiber exterior trim?",
+      "What do the headlights look like when on?",
+      "Are there parking sensors on the front bumper?",
+      "Does it have the black grille option?"
+    ],
+    "confidence": 1,
+    "raw": {
+      "role": "exterior_front",
+      "caption": "Front exterior view of a white BMW M4 featuring a black kidney grille and carbon fiber accents.",
+      "visibleFeatures": [
+        "BMW emblem",
+        "Black kidney grille",
+        "LED headlights with yellow daytime running lights",
+        "Carbon fiber front splitters",
+        "Front parking sensors",
+        "Mid Atlantic Motorwerkes license plate frame",
+        "Sculpted hood",
+        "Side mirrors with carbon fiber caps"
+      ],
+      "likelyQuestions": [
+        "What color is the car?",
+        "Does it have any carbon fiber exterior trim?",
+        "What do the headlights look like when on?",
+        "Are there parking sensors on the front bumper?",
+        "Does it have the black grille option?"
+      ],
+      "confidence": 1
+    }
+  },
+  "2018_bmw_m4-pic-27355374517953209-1024x768.webp": {
+    "role": "interior_front",
+    "caption": "Close-up of the center console featuring carbon fiber trim, M-series gear shifter, and leather sports seats in a BMW M4.",
+    "visibleFeatures": [
+      "M-series gear shifter",
+      "iDrive controller knob",
+      "carbon fiber center console trim",
+      "dual-zone climate control display",
+      "leather sport seats with white stitching",
+      "manual parking brake handle",
+      "BMW key fob",
+      "all-weather floor mats"
+    ],
+    "likelyQuestions": [
+      "Does this car have carbon fiber interior trim?",
+      "What type of transmission is in this BMW M4?",
+      "Does it have dual-zone climate control?",
+      "What is the condition of the leather seats?"
+    ],
+    "confidence": 0.95,
+    "raw": {
+      "role": "interior_front",
+      "caption": "Close-up of the center console featuring carbon fiber trim, M-series gear shifter, and leather sports seats in a BMW M4.",
+      "visibleFeatures": [
+        "M-series gear shifter",
+        "iDrive controller knob",
+        "carbon fiber center console trim",
+        "dual-zone climate control display",
+        "leather sport seats with white stitching",
+        "manual parking brake handle",
+        "BMW key fob",
+        "all-weather floor mats"
+      ],
+      "likelyQuestions": [
+        "Does this car have carbon fiber interior trim?",
+        "What type of transmission is in this BMW M4?",
+        "Does it have dual-zone climate control?",
+        "What is the condition of the leather seats?"
+      ],
+      "confidence": 0.95
+    }
+  },
+  "2018_bmw_m4-pic-2789690467330177541-1024x768.webp": {
+    "role": "detail",
+    "caption": "A detailed view of the BMW M4's center console buttons, showing controls for performance settings, camera views, and parking sensors.",
+    "visibleFeatures": [
+      "traction control off button",
+      "engine performance settings button",
+      "adaptive suspension adjustment button",
+      "steering feel adjustment button",
+      "surround-view camera button",
+      "parking distance control button with active green light",
+      "gear selector",
+      "center console trim"
+    ],
+    "likelyQuestions": [
+      "Does this BMW M4 have adjustable suspension?",
+      "Can I customize the steering and engine response?",
+      "Does it include parking sensors and a camera system?",
+      "Where is the button to disable traction control?"
+    ],
+    "confidence": 0.95,
+    "raw": {
+      "role": "detail",
+      "caption": "A detailed view of the BMW M4's center console buttons, showing controls for performance settings, camera views, and parking sensors.",
+      "visibleFeatures": [
+        "traction control off button",
+        "engine performance settings button",
+        "adaptive suspension adjustment button",
+        "steering feel adjustment button",
+        "surround-view camera button",
+        "parking distance control button with active green light",
+        "gear selector",
+        "center console trim"
+      ],
+      "likelyQuestions": [
+        "Does this BMW M4 have adjustable suspension?",
+        "Can I customize the steering and engine response?",
+        "Does it include parking sensors and a camera system?",
+        "Where is the button to disable traction control?"
+      ],
+      "confidence": 0.95
+    }
+  },
+  "2018_bmw_m4-pic-2844409574140034023-1024x768.webp": {
+    "role": "interior_front",
+    "caption": "Interior front door panel featuring black leather upholstery, contrast stitching, and premium dark trim.",
+    "visibleFeatures": [
+      "Black leather door panel",
+      "Contrast stitching",
+      "High-gloss dark wood or carbon fiber trim",
+      "Chrome interior door handle",
+      "Window and mirror control switches",
+      "Door-mounted speaker grille",
+      "Lower door storage pocket",
+      "Leather-wrapped door pull handle"
+    ],
+    "likelyQuestions": [
+      "Does this car have leather door panels?",
+      "What condition is the interior trim in?",
+      "Are there premium speakers in the doors?",
+      "How much storage space is in the door pocket?"
+    ],
+    "confidence": 0.95,
+    "raw": {
+      "role": "interior_front",
+      "caption": "Interior front door panel featuring black leather upholstery, contrast stitching, and premium dark trim.",
+      "visibleFeatures": [
+        "Black leather door panel",
+        "Contrast stitching",
+        "High-gloss dark wood or carbon fiber trim",
+        "Chrome interior door handle",
+        "Window and mirror control switches",
+        "Door-mounted speaker grille",
+        "Lower door storage pocket",
+        "Leather-wrapped door pull handle"
+      ],
+      "likelyQuestions": [
+        "Does this car have leather door panels?",
+        "What condition is the interior trim in?",
+        "Are there premium speakers in the doors?",
+        "How much storage space is in the door pocket?"
+      ],
+      "confidence": 0.95
+    }
+  },
+  "2018_bmw_m4-pic-3808784972398941726-1024x768.webp": {
+    "role": "exterior_front",
+    "caption": "Side profile of a white BMW M4 featuring a carbon fiber mirror cap and signature M fender vent.",
+    "visibleFeatures": [
+      "White exterior paint",
+      "Carbon fiber mirror covers",
+      "Side fender gills with chrome accent",
+      "Blue brake calipers",
+      "Dark alloy wheels",
+      "Shadowline window trim",
+      "Tinted windows",
+      "Sunroof"
+    ],
+    "likelyQuestions": [
+      "Does this car have carbon fiber mirrors?",
+      "What color are the brake calipers?",
+      "Are the windows tinted?",
+      "Is the trim blacked out?",
+      "What kind of wheels does it have?"
+    ],
+    "confidence": 0.95,
+    "raw": {
+      "role": "exterior_front",
+      "caption": "Side profile of a white BMW M4 featuring a carbon fiber mirror cap and signature M fender vent.",
+      "visibleFeatures": [
+        "White exterior paint",
+        "Carbon fiber mirror covers",
+        "Side fender gills with chrome accent",
+        "Blue brake calipers",
+        "Dark alloy wheels",
+        "Shadowline window trim",
+        "Tinted windows",
+        "Sunroof"
+      ],
+      "likelyQuestions": [
+        "Does this car have carbon fiber mirrors?",
+        "What color are the brake calipers?",
+        "Are the windows tinted?",
+        "Is the trim blacked out?",
+        "What kind of wheels does it have?"
+      ],
+      "confidence": 0.95
+    }
+  },
+  "2018_bmw_m4-pic-3945500231103837349-1024x768.webp": {
+    "role": "detail",
+    "caption": "Front bumper detail showcasing the carbon fiber air intake accents and signature LED headlights.",
+    "visibleFeatures": [
+      "LED headlights",
+      "carbon fiber front air intake trim",
+      "front parking sensors",
+      "tow hook cover",
+      "lower front lip spoiler",
+      "honeycomb mesh grille"
+    ],
+    "likelyQuestions": [
+      "Does this car have carbon fiber exterior trim?",
+      "What type of headlights are installed?",
+      "Are there front parking sensors?",
+      "Is the front lip spoiler or bumper in good condition?"
+    ],
+    "confidence": 0.95,
+    "raw": {
+      "role": "detail",
+      "caption": "Front bumper detail showcasing the carbon fiber air intake accents and signature LED headlights.",
+      "visibleFeatures": [
+        "LED headlights",
+        "carbon fiber front air intake trim",
+        "front parking sensors",
+        "tow hook cover",
+        "lower front lip spoiler",
+        "honeycomb mesh grille"
+      ],
+      "likelyQuestions": [
+        "Does this car have carbon fiber exterior trim?",
+        "What type of headlights are installed?",
+        "Are there front parking sensors?",
+        "Is the front lip spoiler or bumper in good condition?"
+      ],
+      "confidence": 0.95
+    }
+  },
+  "2018_bmw_m4-pic-3986400956717864468-1024x768.webp": {
+    "role": "detail",
+    "caption": "Close-up of a high-performance carbon fiber side mirror cap featuring an aerodynamic M-style design.",
+    "visibleFeatures": [
+      "carbon fiber mirror cap",
+      "aerodynamic winglet design",
+      "gloss black mirror base",
+      "side window trim"
+    ],
+    "likelyQuestions": [
+      "Are the side mirrors made of real carbon fiber?",
+      "Is there any pitting or clear coat peeling on the carbon fiber?",
+      "Does this car have the M-style aerodynamic mirrors?"
+    ],
+    "confidence": 0.95,
+    "raw": {
+      "role": "detail",
+      "caption": "Close-up of a high-performance carbon fiber side mirror cap featuring an aerodynamic M-style design.",
+      "visibleFeatures": [
+        "carbon fiber mirror cap",
+        "aerodynamic winglet design",
+        "gloss black mirror base",
+        "side window trim"
+      ],
+      "likelyQuestions": [
+        "Are the side mirrors made of real carbon fiber?",
+        "Is there any pitting or clear coat peeling on the carbon fiber?",
+        "Does this car have the M-style aerodynamic mirrors?"
+      ],
+      "confidence": 0.95
+    }
+  },
+  "2018_bmw_m4-pic-4040769667739339279-1024x768.webp": {
+    "role": "interior_rear",
+    "caption": "Pristine rear passenger cabin featuring bolstered leather seating for two and integrated rear climate vents.",
+    "visibleFeatures": [
+      "leather rear seats",
+      "integrated headrests",
+      "three-point seat belts",
+      "ISOFIX child seat anchor points",
+      "center storage compartment",
+      "rear climate control vents",
+      "premium door speakers",
+      "all-weather floor mats"
+    ],
+    "likelyQuestions": [
+      "How many people can sit in the back?",
+      "Does the rear have its own AC vents?",
+      "Are there anchors for child seats?",
+      "What is the condition of the leather in the back?",
+      "Is there any storage space for rear passengers?"
+    ],
+    "confidence": 1,
+    "raw": {
+      "role": "interior_rear",
+      "caption": "Pristine rear passenger cabin featuring bolstered leather seating for two and integrated rear climate vents.",
+      "visibleFeatures": [
+        "leather rear seats",
+        "integrated headrests",
+        "three-point seat belts",
+        "ISOFIX child seat anchor points",
+        "center storage compartment",
+        "rear climate control vents",
+        "premium door speakers",
+        "all-weather floor mats"
+      ],
+      "likelyQuestions": [
+        "How many people can sit in the back?",
+        "Does the rear have its own AC vents?",
+        "Are there anchors for child seats?",
+        "What is the condition of the leather in the back?",
+        "Is there any storage space for rear passengers?"
+      ],
+      "confidence": 1
+    }
+  },
+  "2018_bmw_m4-pic-4110894274945754678-1024x768.webp": {
+    "role": "exterior_front",
+    "caption": "Front three-quarter view of a white BMW M4 showing its aggressive styling and carbon fiber accents.",
+    "visibleFeatures": [
+      "white exterior paint",
+      "black double-slat kidney grille",
+      "LED adaptive headlights",
+      "carbon fiber front splitter",
+      "black multi-spoke alloy wheels",
+      "blue M-Sport brake calipers",
+      "carbon fiber side mirror caps",
+      "carbon fiber roof",
+      "M4 badging",
+      "front parking sensors"
+    ],
+    "likelyQuestions": [
+      "Does this M4 have the carbon fiber package?",
+      "What color are the brake calipers?",
+      "Are the headlights LED?",
+      "What do the wheels look like?",
+      "Is the roof carbon fiber or a sunroof?"
+    ],
+    "confidence": 0.95,
+    "raw": {
+      "role": "exterior_front",
+      "caption": "Front three-quarter view of a white BMW M4 showing its aggressive styling and carbon fiber accents.",
+      "visibleFeatures": [
+        "white exterior paint",
+        "black double-slat kidney grille",
+        "LED adaptive headlights",
+        "carbon fiber front splitter",
+        "black multi-spoke alloy wheels",
+        "blue M-Sport brake calipers",
+        "carbon fiber side mirror caps",
+        "carbon fiber roof",
+        "M4 badging",
+        "front parking sensors"
+      ],
+      "likelyQuestions": [
+        "Does this M4 have the carbon fiber package?",
+        "What color are the brake calipers?",
+        "Are the headlights LED?",
+        "What do the wheels look like?",
+        "Is the roof carbon fiber or a sunroof?"
+      ],
+      "confidence": 0.95
+    }
+  },
+  "2018_bmw_m4-pic-4214590209273371403-1024x768.webp": {
+    "role": "exterior_front",
+    "caption": "Front three-quarter view of a white BMW M4 featuring aggressive styling and carbon fiber accents.",
+    "visibleFeatures": [
+      "BMW kidney grille",
+      "M4 badging",
+      "LED headlights",
+      "carbon fiber front lip spoiler",
+      "carbon fiber mirror caps",
+      "carbon fiber roof",
+      "black multi-spoke alloy wheels",
+      "side fender vent",
+      "tinted windows",
+      "parking sensors"
+    ],
+    "likelyQuestions": [
+      "What color is the car?",
+      "Does it have any carbon fiber upgrades?",
+      "What kind of wheels are on it?",
+      "Does it have a sunroof?",
+      "Are the headlights LED?"
+    ],
+    "confidence": 0.95,
+    "raw": {
+      "role": "exterior_front",
+      "caption": "Front three-quarter view of a white BMW M4 featuring aggressive styling and carbon fiber accents.",
+      "visibleFeatures": [
+        "BMW kidney grille",
+        "M4 badging",
+        "LED headlights",
+        "carbon fiber front lip spoiler",
+        "carbon fiber mirror caps",
+        "carbon fiber roof",
+        "black multi-spoke alloy wheels",
+        "side fender vent",
+        "tinted windows",
+        "parking sensors"
+      ],
+      "likelyQuestions": [
+        "What color is the car?",
+        "Does it have any carbon fiber upgrades?",
+        "What kind of wheels are on it?",
+        "Does it have a sunroof?",
+        "Are the headlights LED?"
+      ],
+      "confidence": 0.95
+    }
+  },
+  "2018_bmw_m4-pic-4238769745495923074-1024x768.webp": {
+    "role": "interior_front",
+    "caption": "Explore the driver-focused cockpit of this BMW M4, featuring a leather-wrapped M steering wheel, extensive carbon fiber trim, and a high-tech center console.",
+    "visibleFeatures": [
+      "M-sport steering wheel with tri-color stitching",
+      "paddle shifters",
+      "carbon fiber interior trim",
+      "analog instrument cluster",
+      "infotainment screen",
+      "gear shift selector",
+      "iDrive controller",
+      "black leather seats",
+      "all-weather floor mats"
+    ],
+    "likelyQuestions": [
+      "Does this M4 have carbon fiber interior trim?",
+      "Are there paddle shifters on the steering wheel?",
+      "What color is the leather interior?",
+      "Does it come with all-weather floor mats?",
+      "Is the transmission automatic or manual?"
+    ],
+    "confidence": 0.95,
+    "raw": {
+      "role": "interior_front",
+      "caption": "Explore the driver-focused cockpit of this BMW M4, featuring a leather-wrapped M steering wheel, extensive carbon fiber trim, and a high-tech center console.",
+      "visibleFeatures": [
+        "M-sport steering wheel with tri-color stitching",
+        "paddle shifters",
+        "carbon fiber interior trim",
+        "analog instrument cluster",
+        "infotainment screen",
+        "gear shift selector",
+        "iDrive controller",
+        "black leather seats",
+        "all-weather floor mats"
+      ],
+      "likelyQuestions": [
+        "Does this M4 have carbon fiber interior trim?",
+        "Are there paddle shifters on the steering wheel?",
+        "What color is the leather interior?",
+        "Does it come with all-weather floor mats?",
+        "Is the transmission automatic or manual?"
+      ],
+      "confidence": 0.95
+    }
+  },
+  "2018_bmw_m4-pic-4486786565089773980-1024x768.webp": {
+    "role": "detail",
+    "caption": "High-detail view of the lightweight carbon fiber roof and shark fin antenna on this BMW M4.",
+    "visibleFeatures": [
+      "Carbon fiber roof",
+      "Shark fin antenna",
+      "Black window trim",
+      "Windshield",
+      "Side mirror",
+      "Dashboard"
+    ],
+    "likelyQuestions": [
+      "Does this M4 have the carbon fiber roof option?",
+      "What is the condition of the roof panel?",
+      "Does it have a sunroof?",
+      "Are there any rock chips on the front edge of the roof?"
+    ],
+    "confidence": 1,
+    "raw": {
+      "role": "detail",
+      "caption": "High-detail view of the lightweight carbon fiber roof and shark fin antenna on this BMW M4.",
+      "visibleFeatures": [
+        "Carbon fiber roof",
+        "Shark fin antenna",
+        "Black window trim",
+        "Windshield",
+        "Side mirror",
+        "Dashboard"
+      ],
+      "likelyQuestions": [
+        "Does this M4 have the carbon fiber roof option?",
+        "What is the condition of the roof panel?",
+        "Does it have a sunroof?",
+        "Are there any rock chips on the front edge of the roof?"
+      ],
+      "confidence": 1
+    }
+  },
+  "2018_bmw_m4-pic-4488936319955355889-1024x768.webp": {
+    "role": "wheel",
+    "caption": "Performance wheel and braking system on a BMW M4 featuring M-sport calipers and cross-drilled rotors.",
+    "visibleFeatures": [
+      "BMW double-spoke alloy wheel",
+      "Continental performance tire",
+      "Blue M-sport brake caliper",
+      "Cross-drilled brake rotor",
+      "BMW logo center cap",
+      "M logo on brake caliper",
+      "Tire valve stem"
+    ],
+    "likelyQuestions": [
+      "What brand and model of tires are installed?",
+      "Does this car have the M performance brakes?",
+      "What is the condition of the wheels and rotors?",
+      "Are the brake rotors drilled or slotted?"
+    ],
+    "confidence": 1,
+    "raw": {
+      "role": "wheel",
+      "caption": "Performance wheel and braking system on a BMW M4 featuring M-sport calipers and cross-drilled rotors.",
+      "visibleFeatures": [
+        "BMW double-spoke alloy wheel",
+        "Continental performance tire",
+        "Blue M-sport brake caliper",
+        "Cross-drilled brake rotor",
+        "BMW logo center cap",
+        "M logo on brake caliper",
+        "Tire valve stem"
+      ],
+      "likelyQuestions": [
+        "What brand and model of tires are installed?",
+        "Does this car have the M performance brakes?",
+        "What is the condition of the wheels and rotors?",
+        "Are the brake rotors drilled or slotted?"
+      ],
+      "confidence": 1
+    }
+  },
+  "2018_bmw_m4-pic-451414797559271998-1024x768.webp": {
+    "role": "exterior_front",
+    "caption": "Front three-quarter view of a white BMW M4 coupe with black wheels and a carbon fiber roof.",
+    "visibleFeatures": [
+      "White exterior paint",
+      "Black kidney grille with M4 badging",
+      "LED headlights",
+      "Front lip spoiler",
+      "Carbon fiber roof",
+      "Carbon fiber side mirror caps",
+      "Fender vents with M4 badging",
+      "Black multi-spoke alloy wheels",
+      "Blue brake calipers",
+      "Tinted windows",
+      "Two-door coupe body style"
+    ],
+    "likelyQuestions": [
+      "Does this BMW M4 have a carbon fiber roof?",
+      "What color are the wheels and brake calipers?",
+      "Is there a front lip spoiler installed?",
+      "Are the windows tinted?",
+      "What is the condition of the front bumper and paint?"
+    ],
+    "confidence": 1,
+    "raw": {
+      "role": "exterior_front",
+      "caption": "Front three-quarter view of a white BMW M4 coupe with black wheels and a carbon fiber roof.",
+      "visibleFeatures": [
+        "White exterior paint",
+        "Black kidney grille with M4 badging",
+        "LED headlights",
+        "Front lip spoiler",
+        "Carbon fiber roof",
+        "Carbon fiber side mirror caps",
+        "Fender vents with M4 badging",
+        "Black multi-spoke alloy wheels",
+        "Blue brake calipers",
+        "Tinted windows",
+        "Two-door coupe body style"
+      ],
+      "likelyQuestions": [
+        "Does this BMW M4 have a carbon fiber roof?",
+        "What color are the wheels and brake calipers?",
+        "Is there a front lip spoiler installed?",
+        "Are the windows tinted?",
+        "What is the condition of the front bumper and paint?"
+      ],
+      "confidence": 1
+    }
+  },
+  "2018_bmw_m4-pic-4721686708242508219-1024x768.webp": {
+    "role": "interior_front",
+    "caption": "A wide view of the front interior featuring premium black leather sport seats and carbon fiber trim accents.",
+    "visibleFeatures": [
+      "black leather sport seats",
+      "carbon fiber dashboard trim",
+      "M sport steering wheel",
+      "iDrive infotainment display",
+      "BMW branded all-weather floor mats",
+      "center console with gear shifter",
+      "door panels",
+      "climate control panel"
+    ],
+    "likelyQuestions": [
+      "What color is the interior?",
+      "Does this model have carbon fiber trim?",
+      "What type of seats are in this car?",
+      "Is there a large screen for navigation and media?",
+      "Are all-weather floor mats included?"
+    ],
+    "confidence": 1,
+    "raw": {
+      "role": "interior_front",
+      "caption": "A wide view of the front interior featuring premium black leather sport seats and carbon fiber trim accents.",
+      "visibleFeatures": [
+        "black leather sport seats",
+        "carbon fiber dashboard trim",
+        "M sport steering wheel",
+        "iDrive infotainment display",
+        "BMW branded all-weather floor mats",
+        "center console with gear shifter",
+        "door panels",
+        "climate control panel"
+      ],
+      "likelyQuestions": [
+        "What color is the interior?",
+        "Does this model have carbon fiber trim?",
+        "What type of seats are in this car?",
+        "Is there a large screen for navigation and media?",
+        "Are all-weather floor mats included?"
+      ],
+      "confidence": 1
+    }
+  },
+  "2018_bmw_m4-pic-4794197077752663538-1024x768.webp": {
+    "role": "interior_front",
+    "caption": "Driver's seat and interior cabin view showing the black leather upholstery and M steering wheel.",
+    "visibleFeatures": [
+      "Black leather sport seat",
+      "M steering wheel with tri-color stitching",
+      "Power seat adjustment controls",
+      "Seat memory buttons",
+      "Center console armrest",
+      "Handbrake",
+      "All-weather floor mat",
+      "Red seatbelt buckle"
+    ],
+    "likelyQuestions": [
+      "What kind of seats does this BMW M4 have?",
+      "Are the seats power-adjustable with memory?",
+      "Does it have the M-sport steering wheel?",
+      "What condition is the driver's seat leather in?",
+      "Does it come with all-weather floor mats?"
+    ],
+    "confidence": 0.95,
+    "raw": {
+      "role": "interior_front",
+      "caption": "Driver's seat and interior cabin view showing the black leather upholstery and M steering wheel.",
+      "visibleFeatures": [
+        "Black leather sport seat",
+        "M steering wheel with tri-color stitching",
+        "Power seat adjustment controls",
+        "Seat memory buttons",
+        "Center console armrest",
+        "Handbrake",
+        "All-weather floor mat",
+        "Red seatbelt buckle"
+      ],
+      "likelyQuestions": [
+        "What kind of seats does this BMW M4 have?",
+        "Are the seats power-adjustable with memory?",
+        "Does it have the M-sport steering wheel?",
+        "What condition is the driver's seat leather in?",
+        "Does it come with all-weather floor mats?"
+      ],
+      "confidence": 0.95
+    }
+  },
+  "2018_bmw_m4-pic-484760766590437126-1024x768.webp": {
+    "role": "wheel",
+    "caption": "A detailed shot of a BMW M4 front wheel featuring multi-spoke alloy rims, blue M performance brake calipers, and Continental tires.",
+    "visibleFeatures": [
+      "Multi-spoke alloy wheel",
+      "BMW center cap",
+      "Blue M performance brake caliper",
+      "Cross-drilled brake rotor",
+      "Continental ExtremeContact tire",
+      "White exterior body panel",
+      "Orange front side marker"
+    ],
+    "likelyQuestions": [
+      "What brand of tires are currently on the vehicle?",
+      "Does this car have the upgraded M sport brakes?",
+      "Are the wheels in good condition with any curb rash?",
+      "What color are the brake calipers?",
+      "Are the brake rotors cross-drilled?"
+    ],
+    "confidence": 1,
+    "raw": {
+      "role": "wheel",
+      "caption": "A detailed shot of a BMW M4 front wheel featuring multi-spoke alloy rims, blue M performance brake calipers, and Continental tires.",
+      "visibleFeatures": [
+        "Multi-spoke alloy wheel",
+        "BMW center cap",
+        "Blue M performance brake caliper",
+        "Cross-drilled brake rotor",
+        "Continental ExtremeContact tire",
+        "White exterior body panel",
+        "Orange front side marker"
+      ],
+      "likelyQuestions": [
+        "What brand of tires are currently on the vehicle?",
+        "Does this car have the upgraded M sport brakes?",
+        "Are the wheels in good condition with any curb rash?",
+        "What color are the brake calipers?",
+        "Are the brake rotors cross-drilled?"
+      ],
+      "confidence": 1
+    }
+  },
+  "2018_bmw_m4-pic-5049083477197904547-1024x768.webp": {
+    "role": "interior_front",
+    "caption": "Front cabin view featuring the black leather sport seats and M-branded steering wheel.",
+    "visibleFeatures": [
+      "M sport steering wheel",
+      "steering wheel controls",
+      "black leather bucket seats",
+      "M4 emblem on headrest",
+      "power seat adjustments",
+      "memory seat buttons",
+      "center console",
+      "iDrive controller",
+      "all-weather floor mats",
+      "side-view mirror",
+      "door panel",
+      "air vents"
+    ],
+    "likelyQuestions": [
+      "What is the condition of the driver's seat bolster?",
+      "Does the car have memory seat settings?",
+      "Does it come with rubber all-weather mats?",
+      "What type of steering wheel does it have?",
+      "Are the seats power-adjustable?"
+    ],
+    "confidence": 1,
+    "raw": {
+      "role": "interior_front",
+      "caption": "Front cabin view featuring the black leather sport seats and M-branded steering wheel.",
+      "visibleFeatures": [
+        "M sport steering wheel",
+        "steering wheel controls",
+        "black leather bucket seats",
+        "M4 emblem on headrest",
+        "power seat adjustments",
+        "memory seat buttons",
+        "center console",
+        "iDrive controller",
+        "all-weather floor mats",
+        "side-view mirror",
+        "door panel",
+        "air vents"
+      ],
+      "likelyQuestions": [
+        "What is the condition of the driver's seat bolster?",
+        "Does the car have memory seat settings?",
+        "Does it come with rubber all-weather mats?",
+        "What type of steering wheel does it have?",
+        "Are the seats power-adjustable?"
+      ],
+      "confidence": 1
+    }
+  },
+  "2018_bmw_m4-pic-5525810426135904896-1024x768.webp": {
+    "role": "interior_front",
+    "caption": "Driver's side interior featuring black leather M sport seats, carbon fiber trim, and a multi-function steering wheel.",
+    "visibleFeatures": [
+      "M4 sport seats",
+      "Black leather upholstery",
+      "M-branded steering wheel",
+      "Paddle shifters",
+      "Carbon fiber interior trim",
+      "Center console with gear selector",
+      "iDrive controller",
+      "Instrument cluster",
+      "M4 door sill plate",
+      "Rubber all-weather floor mats",
+      "Illuminated M4 badge on seats",
+      "Infotainment display screen"
+    ],
+    "likelyQuestions": [
+      "What is the condition of the leather seats?",
+      "Does this car have carbon fiber trim?",
+      "Is it an automatic or manual transmission?",
+      "Does it come with all-weather floor mats?",
+      "What kind of steering wheel does it have?"
+    ],
+    "confidence": 0.95,
+    "raw": {
+      "role": "interior_front",
+      "caption": "Driver's side interior featuring black leather M sport seats, carbon fiber trim, and a multi-function steering wheel.",
+      "visibleFeatures": [
+        "M4 sport seats",
+        "Black leather upholstery",
+        "M-branded steering wheel",
+        "Paddle shifters",
+        "Carbon fiber interior trim",
+        "Center console with gear selector",
+        "iDrive controller",
+        "Instrument cluster",
+        "M4 door sill plate",
+        "Rubber all-weather floor mats",
+        "Illuminated M4 badge on seats",
+        "Infotainment display screen"
+      ],
+      "likelyQuestions": [
+        "What is the condition of the leather seats?",
+        "Does this car have carbon fiber trim?",
+        "Is it an automatic or manual transmission?",
+        "Does it come with all-weather floor mats?",
+        "What kind of steering wheel does it have?"
+      ],
+      "confidence": 0.95
+    }
+  },
+  "2018_bmw_m4-pic-5623678729793805385-1024x768.webp": {
+    "role": "detail",
+    "caption": "A close-up view of the driver-side door controls, showing window and power mirror adjustment switches.",
+    "visibleFeatures": [
+      "power window switches",
+      "side mirror control pad",
+      "mirror selector switch",
+      "interior door handle",
+      "speaker grille"
+    ],
+    "likelyQuestions": [
+      "Are the side mirrors power-adjustable?",
+      "Does it have automatic power windows?",
+      "Where are the window controls located?"
+    ],
+    "confidence": 0.95,
+    "raw": {
+      "role": "detail",
+      "caption": "A close-up view of the driver-side door controls, showing window and power mirror adjustment switches.",
+      "visibleFeatures": [
+        "power window switches",
+        "side mirror control pad",
+        "mirror selector switch",
+        "interior door handle",
+        "speaker grille"
+      ],
+      "likelyQuestions": [
+        "Are the side mirrors power-adjustable?",
+        "Does it have automatic power windows?",
+        "Where are the window controls located?"
+      ],
+      "confidence": 0.95
+    }
+  },
+  "2018_bmw_m4-pic-5941831823260090686-1024x768.webp": {
+    "role": "detail",
+    "caption": "A close-up view of the white BMW M4's trunk featuring a carbon fiber rear spoiler and the M4 emblem.",
+    "visibleFeatures": [
+      "carbon fiber rear spoiler",
+      "M4 emblem",
+      "BMW M-series colors",
+      "white trunk lid",
+      "rear tail light edge",
+      "license plate frame"
+    ],
+    "likelyQuestions": [
+      "Does this car have a carbon fiber spoiler?",
+      "Is the car an M4?",
+      "What color is the vehicle?",
+      "Are there any aftermarket exterior parts on the trunk?"
+    ],
+    "confidence": 0.95,
+    "raw": {
+      "role": "detail",
+      "caption": "A close-up view of the white BMW M4's trunk featuring a carbon fiber rear spoiler and the M4 emblem.",
+      "visibleFeatures": [
+        "carbon fiber rear spoiler",
+        "M4 emblem",
+        "BMW M-series colors",
+        "white trunk lid",
+        "rear tail light edge",
+        "license plate frame"
+      ],
+      "likelyQuestions": [
+        "Does this car have a carbon fiber spoiler?",
+        "Is the car an M4?",
+        "What color is the vehicle?",
+        "Are there any aftermarket exterior parts on the trunk?"
+      ],
+      "confidence": 0.95
+    }
+  },
+  "2018_bmw_m4-pic-6067196514796051126-1024x768.webp": {
+    "role": "exterior_front",
+    "caption": "A front view of a white BMW M4 with sleek LED headlights and blacked-out kidney grilles.",
+    "visibleFeatures": [
+      "white exterior paint",
+      "BMW logo emblem",
+      "black kidney grille",
+      "LED headlights",
+      "carbon fiber front lip/splitter",
+      "front bumper",
+      "hood",
+      "side mirrors",
+      "front parking sensors",
+      "sunroof"
+    ],
+    "likelyQuestions": [
+      "What color is this BMW M4?",
+      "What do the headlights look like?",
+      "Does it have a black grille?",
+      "Are there front parking sensors?",
+      "Does it have a carbon fiber front splitter?"
+    ],
+    "confidence": 1,
+    "raw": {
+      "role": "exterior_front",
+      "caption": "A front view of a white BMW M4 with sleek LED headlights and blacked-out kidney grilles.",
+      "visibleFeatures": [
+        "white exterior paint",
+        "BMW logo emblem",
+        "black kidney grille",
+        "LED headlights",
+        "carbon fiber front lip/splitter",
+        "front bumper",
+        "hood",
+        "side mirrors",
+        "front parking sensors",
+        "sunroof"
+      ],
+      "likelyQuestions": [
+        "What color is this BMW M4?",
+        "What do the headlights look like?",
+        "Does it have a black grille?",
+        "Are there front parking sensors?",
+        "Does it have a carbon fiber front splitter?"
+      ],
+      "confidence": 1
+    }
+  },
+  "2018_bmw_m4-pic-6106354617978587640-1024x768.webp": {
+    "role": "exterior_rear",
+    "caption": "Rear view of a white BMW M4 featuring a carbon fiber lip spoiler and signature M badging.",
+    "visibleFeatures": [
+      "BMW logo",
+      "M4 badge",
+      "carbon fiber rear spoiler",
+      "LED taillights",
+      "rear parking sensors",
+      "quad exhaust tips",
+      "license plate frame",
+      "rear bumper"
+    ],
+    "likelyQuestions": [
+      "Does it have the M4 badge?",
+      "Is there a rear spoiler?",
+      "Does the car have parking sensors?",
+      "What color is the exterior?",
+      "How many exhaust tips are there?"
+    ],
+    "confidence": 1,
+    "raw": {
+      "role": "exterior_rear",
+      "caption": "Rear view of a white BMW M4 featuring a carbon fiber lip spoiler and signature M badging.",
+      "visibleFeatures": [
+        "BMW logo",
+        "M4 badge",
+        "carbon fiber rear spoiler",
+        "LED taillights",
+        "rear parking sensors",
+        "quad exhaust tips",
+        "license plate frame",
+        "rear bumper"
+      ],
+      "likelyQuestions": [
+        "Does it have the M4 badge?",
+        "Is there a rear spoiler?",
+        "Does the car have parking sensors?",
+        "What color is the exterior?",
+        "How many exhaust tips are there?"
+      ],
+      "confidence": 1
+    }
+  },
+  "2018_bmw_m4-pic-6552539966441152689-1024x768.webp": {
+    "role": "exterior_front",
+    "caption": "Front three-quarter view of a white BMW M4 Coupe featuring carbon fiber accents and dark alloy wheels.",
+    "visibleFeatures": [
+      "Carbon fiber roof",
+      "Carbon fiber side mirror caps",
+      "Black kidney grilles",
+      "Blue M brake calipers",
+      "Dark multi-spoke alloy wheels",
+      "Front lip spoiler",
+      "LED headlights",
+      "Side fender vents",
+      "Front parking sensors"
+    ],
+    "likelyQuestions": [
+      "Does this BMW M4 have a carbon fiber roof?",
+      "What color are the brake calipers?",
+      "Are the side mirrors carbon fiber?",
+      "Does it come with black kidney grilles?",
+      "What do the wheels look like?"
+    ],
+    "confidence": 1,
+    "raw": {
+      "role": "exterior_front",
+      "caption": "Front three-quarter view of a white BMW M4 Coupe featuring carbon fiber accents and dark alloy wheels.",
+      "visibleFeatures": [
+        "Carbon fiber roof",
+        "Carbon fiber side mirror caps",
+        "Black kidney grilles",
+        "Blue M brake calipers",
+        "Dark multi-spoke alloy wheels",
+        "Front lip spoiler",
+        "LED headlights",
+        "Side fender vents",
+        "Front parking sensors"
+      ],
+      "likelyQuestions": [
+        "Does this BMW M4 have a carbon fiber roof?",
+        "What color are the brake calipers?",
+        "Are the side mirrors carbon fiber?",
+        "Does it come with black kidney grilles?",
+        "What do the wheels look like?"
+      ],
+      "confidence": 1
+    }
+  },
+  "2018_bmw_m4-pic-7110463340821385256-1024x768.webp": {
+    "role": "interior_front",
+    "caption": "Detailed view of the interior door panel featuring leather upholstery, contrast stitching, and premium audio components.",
+    "visibleFeatures": [
+      "leather door panel",
+      "white contrast stitching",
+      "gloss black trim",
+      "door handle",
+      "door pull handle",
+      "Harman Kardon speaker grille",
+      "door storage pocket",
+      "side-view mirror",
+      "frameless window"
+    ],
+    "likelyQuestions": [
+      "What is the condition of the leather on the door panel?",
+      "Does this car have the premium Harman Kardon sound system?",
+      "What kind of trim does the interior have?",
+      "Is there a storage pocket in the door?"
+    ],
+    "confidence": 0.95,
+    "raw": {
+      "role": "interior_front",
+      "caption": "Detailed view of the interior door panel featuring leather upholstery, contrast stitching, and premium audio components.",
+      "visibleFeatures": [
+        "leather door panel",
+        "white contrast stitching",
+        "gloss black trim",
+        "door handle",
+        "door pull handle",
+        "Harman Kardon speaker grille",
+        "door storage pocket",
+        "side-view mirror",
+        "frameless window"
+      ],
+      "likelyQuestions": [
+        "What is the condition of the leather on the door panel?",
+        "Does this car have the premium Harman Kardon sound system?",
+        "What kind of trim does the interior have?",
+        "Is there a storage pocket in the door?"
+      ],
+      "confidence": 0.95
+    }
+  },
+  "2018_bmw_m4-pic-7153278583895275358-1024x768.webp": {
+    "role": "detail",
+    "caption": "A detailed view of the BMW M4's dashboard featuring a Head-Up Display and premium leather stitching.",
+    "visibleFeatures": [
+      "Head-Up Display (HUD) unit",
+      "dashboard with contrast stitching",
+      "windshield",
+      "windshield wiper"
+    ],
+    "likelyQuestions": [
+      "Does this BMW M4 come equipped with a Head-Up Display?",
+      "Is the dashboard leather-wrapped?",
+      "What is the condition of the dashboard surface near the windshield?"
+    ],
+    "confidence": 0.9,
+    "raw": {
+      "role": "detail",
+      "caption": "A detailed view of the BMW M4's dashboard featuring a Head-Up Display and premium leather stitching.",
+      "visibleFeatures": [
+        "Head-Up Display (HUD) unit",
+        "dashboard with contrast stitching",
+        "windshield",
+        "windshield wiper"
+      ],
+      "likelyQuestions": [
+        "Does this BMW M4 come equipped with a Head-Up Display?",
+        "Is the dashboard leather-wrapped?",
+        "What is the condition of the dashboard surface near the windshield?"
+      ],
+      "confidence": 0.9
+    }
+  },
+  "2018_bmw_m4-pic-7187071185038959370-1024x768.webp": {
+    "role": "exterior_rear",
+    "caption": "Rear three-quarter view of a white BMW M4 showcasing its sporty lines, carbon fiber spoiler, and performance wheels.",
+    "visibleFeatures": [
+      "BMW M4 badge",
+      "LED taillights",
+      "Carbon fiber trunk spoiler",
+      "Multi-spoke dark alloy wheels",
+      "Shark fin antenna",
+      "Tinted windows",
+      "Fuel filler door",
+      "Side mirror",
+      "Door handle"
+    ],
+    "likelyQuestions": [
+      "What model BMW is this?",
+      "Does this car have a rear spoiler?",
+      "What color are the wheels?",
+      "Are the windows tinted?",
+      "What is the condition of the rear bodywork?"
+    ],
+    "confidence": 0.95,
+    "raw": {
+      "role": "exterior_rear",
+      "caption": "Rear three-quarter view of a white BMW M4 showcasing its sporty lines, carbon fiber spoiler, and performance wheels.",
+      "visibleFeatures": [
+        "BMW M4 badge",
+        "LED taillights",
+        "Carbon fiber trunk spoiler",
+        "Multi-spoke dark alloy wheels",
+        "Shark fin antenna",
+        "Tinted windows",
+        "Fuel filler door",
+        "Side mirror",
+        "Door handle"
+      ],
+      "likelyQuestions": [
+        "What model BMW is this?",
+        "Does this car have a rear spoiler?",
+        "What color are the wheels?",
+        "Are the windows tinted?",
+        "What is the condition of the rear bodywork?"
+      ],
+      "confidence": 0.95
+    }
+  },
+  "2018_bmw_m4-pic-7400799656167128024-1024x768.webp": {
+    "role": "detail",
+    "caption": "A detailed look at the BMW M Power engine bay featuring a prominent carbon fiber strut brace.",
+    "visibleFeatures": [
+      "M Power engine cover",
+      "Carbon fiber strut brace",
+      "BMW M badge",
+      "Fluid reservoirs",
+      "Hood latch mechanism",
+      "Air intake components",
+      "BMW front badge"
+    ],
+    "likelyQuestions": [
+      "What engine is in this car?",
+      "Does it have the factory carbon fiber strut brace?",
+      "Is the engine compartment well-maintained and clean?",
+      "Can I see the engine's condition?"
+    ],
+    "confidence": 1,
+    "raw": {
+      "role": "detail",
+      "caption": "A detailed look at the BMW M Power engine bay featuring a prominent carbon fiber strut brace.",
+      "visibleFeatures": [
+        "M Power engine cover",
+        "Carbon fiber strut brace",
+        "BMW M badge",
+        "Fluid reservoirs",
+        "Hood latch mechanism",
+        "Air intake components",
+        "BMW front badge"
+      ],
+      "likelyQuestions": [
+        "What engine is in this car?",
+        "Does it have the factory carbon fiber strut brace?",
+        "Is the engine compartment well-maintained and clean?",
+        "Can I see the engine's condition?"
+      ],
+      "confidence": 1
+    }
+  },
+  "2018_bmw_m4-pic-7410222045381061820-1024x768.webp": {
+    "role": "exterior_front",
+    "caption": "Side profile of a white BMW M4 featuring a carbon fiber roof, tinted windows, and carbon fiber mirror caps.",
+    "visibleFeatures": [
+      "white exterior paint",
+      "carbon fiber roof",
+      "carbon fiber side mirror caps",
+      "side fender vent with chrome trim",
+      "blue brake calipers",
+      "multi-spoke alloy wheels",
+      "tinted windows",
+      "two-door coupe body style"
+    ],
+    "likelyQuestions": [
+      "Does this car have a carbon fiber roof?",
+      "Are the side mirrors carbon fiber?",
+      "What color are the brake calipers?",
+      "Is the window tinting legal in my state?",
+      "Does it have the M-sport fender vent?"
+    ],
+    "confidence": 0.95,
+    "raw": {
+      "role": "exterior_front",
+      "caption": "Side profile of a white BMW M4 featuring a carbon fiber roof, tinted windows, and carbon fiber mirror caps.",
+      "visibleFeatures": [
+        "white exterior paint",
+        "carbon fiber roof",
+        "carbon fiber side mirror caps",
+        "side fender vent with chrome trim",
+        "blue brake calipers",
+        "multi-spoke alloy wheels",
+        "tinted windows",
+        "two-door coupe body style"
+      ],
+      "likelyQuestions": [
+        "Does this car have a carbon fiber roof?",
+        "Are the side mirrors carbon fiber?",
+        "What color are the brake calipers?",
+        "Is the window tinting legal in my state?",
+        "Does it have the M-sport fender vent?"
+      ],
+      "confidence": 0.95
+    }
+  },
+  "2018_bmw_m4-pic-7412672979869378728-1024x768.webp": {
+    "role": "trunk",
+    "caption": "Spacious, carpeted trunk featuring a cargo net and side storage compartments for organized hauling.",
+    "visibleFeatures": [
+      "cargo net",
+      "carpeted interior",
+      "side storage pocket",
+      "gooseneck trunk hinges",
+      "rear window",
+      "taillight"
+    ],
+    "likelyQuestions": [
+      "How much trunk space does the M4 have?",
+      "Does the trunk come with a cargo net?",
+      "Are there additional storage compartments in the trunk?",
+      "Do the trunk hinges take up a lot of cargo space?"
+    ],
+    "confidence": 1,
+    "raw": {
+      "role": "trunk",
+      "caption": "Spacious, carpeted trunk featuring a cargo net and side storage compartments for organized hauling.",
+      "visibleFeatures": [
+        "cargo net",
+        "carpeted interior",
+        "side storage pocket",
+        "gooseneck trunk hinges",
+        "rear window",
+        "taillight"
+      ],
+      "likelyQuestions": [
+        "How much trunk space does the M4 have?",
+        "Does the trunk come with a cargo net?",
+        "Are there additional storage compartments in the trunk?",
+        "Do the trunk hinges take up a lot of cargo space?"
+      ],
+      "confidence": 1
+    }
+  },
+  "2018_bmw_m4-pic-7487615400679472699-1024x768.webp": {
+    "role": "wheel",
+    "caption": "A close-up view of the BMW M-series wheel, featuring its distinctive multi-spoke design, signature blue performance brake calipers, and Continental ExtremeContact tires.",
+    "visibleFeatures": [
+      "BMW center cap",
+      "multi-spoke alloy wheel",
+      "blue brake caliper",
+      "drilled brake rotor",
+      "Continental ExtremeContact tire",
+      "white exterior body panel"
+    ],
+    "likelyQuestions": [
+      "What brand of tires are on the car?",
+      "Does it have the upgraded blue brake calipers?",
+      "What is the condition of the wheels?",
+      "Are the brake rotors drilled or slotted?"
+    ],
+    "confidence": 0.95,
+    "raw": {
+      "role": "wheel",
+      "caption": "A close-up view of the BMW M-series wheel, featuring its distinctive multi-spoke design, signature blue performance brake calipers, and Continental ExtremeContact tires.",
+      "visibleFeatures": [
+        "BMW center cap",
+        "multi-spoke alloy wheel",
+        "blue brake caliper",
+        "drilled brake rotor",
+        "Continental ExtremeContact tire",
+        "white exterior body panel"
+      ],
+      "likelyQuestions": [
+        "What brand of tires are on the car?",
+        "Does it have the upgraded blue brake calipers?",
+        "What is the condition of the wheels?",
+        "Are the brake rotors drilled or slotted?"
+      ],
+      "confidence": 0.95
+    }
+  },
+  "2018_bmw_m4-pic-8290056972928963492-1024x768.webp": {
+    "role": "exterior_rear",
+    "caption": "Rear three-quarter exterior view of the white BMW M4 coupe showing the side profile, black wheels, taillights, rear bumper, and decklid spoiler.",
+    "visibleFeatures": [
+      "rear three-quarter view",
+      "white paint",
+      "black wheels",
+      "taillights",
+      "rear bumper",
+      "decklid spoiler",
+      "side profile"
+    ],
+    "likelyQuestions": [
+      "Can I see the rear of the car?",
+      "What does the side profile look like?",
+      "Does it have a rear spoiler?",
+      "Show me the exterior from the back angle."
+    ],
+    "confidence": 0.82,
+    "raw": {
+      "source": "manual inspection after MiniMax insufficient balance"
+    }
+  },
+  "2018_bmw_m4-pic-8353526881053628670-1024x768.webp": {
+    "role": "detail",
+    "caption": "Interior detail close-up showing a driver-side control button near the pedals and lower dashboard trim.",
+    "visibleFeatures": [
+      "driver-side control button",
+      "lower dashboard trim",
+      "pedals",
+      "floor mat",
+      "interior switchgear"
+    ],
+    "likelyQuestions": [
+      "What is this interior control?",
+      "Can I see close-up interior controls?",
+      "Show me small cabin details."
+    ],
+    "confidence": 0.72,
+    "raw": {
+      "source": "manual inspection after MiniMax insufficient balance"
+    }
+  },
+  "2018_bmw_m4-pic-8359900914109193764-1024x768.webp": {
+    "role": "detail",
+    "caption": "Front detail view showing the BMW roundel, hood edge, black kidney grille, and front bumper area.",
+    "visibleFeatures": [
+      "BMW roundel",
+      "hood",
+      "black kidney grille",
+      "front bumper",
+      "front badge detail"
+    ],
+    "likelyQuestions": [
+      "Can I see the front grille?",
+      "Show me the BMW badge detail.",
+      "What does the hood and grille area look like?"
+    ],
+    "confidence": 0.86,
+    "raw": {
+      "source": "manual inspection after MiniMax insufficient balance"
+    }
+  },
+  "2018_bmw_m4-pic-8814846783763534499-1024x768.webp": {
+    "role": "interior_front",
+    "caption": "Front cabin view showing black leather sport seats, center armrest, carbon-fiber console trim, iDrive controller, and manual handbrake area.",
+    "visibleFeatures": [
+      "black leather front seats",
+      "center armrest",
+      "carbon-fiber console trim",
+      "iDrive controller",
+      "manual handbrake",
+      "door panel",
+      "rear seat edge"
+    ],
+    "likelyQuestions": [
+      "Show me the front seats.",
+      "What does the center console look like?",
+      "Does the cabin have carbon-fiber trim?",
+      "Can I see the interior?"
+    ],
+    "confidence": 0.87,
+    "raw": {
+      "source": "manual inspection after MiniMax insufficient balance"
+    }
+  }
+}

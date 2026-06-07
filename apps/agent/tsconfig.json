@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "paths": {
+      "@vox/core": ["../../packages/core/src/index.ts"],
+      "@vox/ai": ["../../packages/ai/src/index.ts"],
+      "@vox/agent-core": ["../../packages/agent-core/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "../../packages/*/src/**/*.ts"]
+}

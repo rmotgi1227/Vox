@@ -1,0 +1,48 @@
+{
+  "name": "vox-specialist-mvp",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm-run-all --parallel dev:api dev:web dev:agent",
+    "dev:web": "npm --workspace @vox/web run dev",
+    "dev:api": "npm --workspace @vox/api run dev",
+    "dev:agent": "npm --workspace @vox/agent run start",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "process:m4-images": "tsx scripts/process-m4-images.ts",
+    "ingest:moss": "tsx scripts/ingest-moss.ts",
+    "export:moss": "tsx scripts/export-moss-docs.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.6",
+    "@livekit/agents": "^1.0.0",
+    "@moss-dev/moss": "^1.1.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "dotenv": "^17.2.3",
+    "hono": "^4.10.7",
+    "livekit-server-sdk": "^2.14.0",
+    "lucide-react": "^0.554.0",
+    "next": "^16.0.7",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tailwind-merge": "^3.4.0",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.57.0",
+    "@tailwindcss/postcss": "^4.1.17",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "npm-run-all": "^4.1.5",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.13"
+  }
+}

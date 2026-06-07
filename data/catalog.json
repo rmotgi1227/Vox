@@ -1,0 +1,27 @@
+[
+  {
+    "vin": "BMW-M4",
+    "year": 2026,
+    "make": "BMW",
+    "model": "M4",
+    "trim": "Demo Coupe",
+    "body": "Coupe",
+    "drivetrain": "RWD",
+    "fuel": "Gas",
+    "price": null,
+    "mileage": 0,
+    "color": "Demo",
+    "features": [
+      "performance coupe",
+      "sport interior",
+      "driver-focused cockpit",
+      "M performance styling",
+      "fixed carbon-fiber roof",
+      "no glass sunroof",
+      "carbon-fiber exterior accents",
+      "black leather interior"
+    ],
+    "availability": "available",
+    "description": "BMW M4 demo vehicle for the Vox visual specialist MVP. The curated image set shows a fixed carbon-fiber hardtop roof, not a glass sunroof or moonroof, plus black leather interior, M performance styling, carbon-fiber trim, wheels, trunk, engine bay, and exterior detail views."
+  }
+]
