@@ -7049,5 +7049,1213 @@
     "boxes": [],
     "zoomTargets": {},
     "pairs": []
+  },
+  {
+    "id": "kia-telluride-1",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/1.jpg",
+    "role": "dashboard",
+    "viewpoint": "driver dashboard",
+    "caption": "The interior dashboard of a 2022 Kia Telluride, showcasing the steering wheel, gearshift, and infotainment system.",
+    "visibleFeatures": [
+      "steering wheel",
+      "infotainment screen",
+      "gearshift",
+      "center console",
+      "dashboard trim"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "dashboard",
+      "interior",
+      "steering wheel",
+      "infotainment system",
+      "kia telluride interior"
+    ],
+    "likelyQuestions": [
+      "What does the dashboard look like?",
+      "What kind of infotainment system does it have?",
+      "Is the interior leather?"
+    ],
+    "confidence": 0.9,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-2",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/2.jpg",
+    "role": "dashboard",
+    "viewpoint": "driver dashboard",
+    "caption": "The interior of a Kia Telluride, focusing on the dashboard and front seats.",
+    "visibleFeatures": [
+      "steering wheel",
+      "infotainment screen",
+      "gearshift",
+      "front seats",
+      "dashboard trim"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "Kia Telluride interior",
+      "dashboard",
+      "front seats"
+    ],
+    "likelyQuestions": [
+      "What does the interior of the Kia Telluride look like?",
+      "What features are available on the Kia Telluride dashboard?"
+    ],
+    "confidence": 0.9,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-3",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/3.jpg",
+    "role": "exterior_front",
+    "viewpoint": "front three-quarter",
+    "caption": "A blue 2022 Kia Telluride SUV on display at a car show.",
+    "visibleFeatures": [
+      "front grille",
+      "headlights",
+      "front bumper",
+      "wheels",
+      "side mirrors",
+      "tinted windows"
+    ],
+    "conditionNotes": [
+      "appears to be new or showroom condition"
+    ],
+    "searchTags": [
+      "Kia Telluride",
+      "blue SUV",
+      "front view",
+      "car show"
+    ],
+    "likelyQuestions": [
+      "What color is the Kia Telluride?",
+      "What is the make and model of the SUV?",
+      "Is the SUV available in this color?"
+    ],
+    "confidence": 0.95,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-4",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/4.jpg",
+    "role": "exterior_rear",
+    "viewpoint": "rear three-quarter",
+    "caption": "The rear and passenger side of a blue 2022 Kia Telluride SUV.",
+    "visibleFeatures": [
+      "rear window",
+      "taillight",
+      "license plate",
+      "wheel",
+      "side window"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "rear view",
+      "back of SUV",
+      "Kia Telluride exterior"
+    ],
+    "likelyQuestions": [
+      "What does the rear of the Kia Telluride look like?",
+      "What are the taillights like on the Kia Telluride?"
+    ],
+    "confidence": 0.95,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-5",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/5.jpg",
+    "role": "dashboard",
+    "viewpoint": "driver dashboard",
+    "caption": "The interior of a car with a large touchscreen display and leather seats.",
+    "visibleFeatures": [
+      "steering wheel",
+      "infotainment screen",
+      "center console",
+      "gearshift",
+      "driver seat",
+      "passenger seat"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "interior",
+      "dashboard",
+      "infotainment",
+      "leather seats"
+    ],
+    "likelyQuestions": [
+      "What is the interior color?",
+      "What type of seats does it have?",
+      "What is the screen size?"
+    ],
+    "confidence": 0.9,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-6",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/6.jpg",
+    "role": "exterior_front",
+    "viewpoint": "front three-quarter",
+    "caption": "The tan 2022 Kia Telluride is shown with its front end and passenger side visible.",
+    "visibleFeatures": [
+      "front grille",
+      "headlights",
+      "front bumper",
+      "tires",
+      "side step bars",
+      "open liftgate"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "Kia Telluride front",
+      "tan SUV",
+      "three-row SUV",
+      "family vehicle"
+    ],
+    "likelyQuestions": [
+      "What color is the Kia Telluride?",
+      "What features does the Kia Telluride have?",
+      "Is the Kia Telluride a three-row SUV?"
+    ],
+    "confidence": 0.9,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-7",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/7.jpg",
+    "role": "exterior_front",
+    "viewpoint": "front three-quarter",
+    "caption": "A dark green 2022 Kia Telluride is displayed on a white tile floor at an auto show.",
+    "visibleFeatures": [
+      "front grille",
+      "headlights",
+      "wheels",
+      "side steps",
+      "front bumper"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "Kia Telluride front",
+      "SUV exterior",
+      "dark green Kia"
+    ],
+    "likelyQuestions": [
+      "What color is the Kia Telluride?",
+      "What features does the Kia Telluride have?",
+      "Is this a new Kia Telluride?"
+    ],
+    "confidence": 0.9,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-8",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/8.jpg",
+    "role": "unknown",
+    "viewpoint": "side road",
+    "caption": "A car carrier truck driving on a road with a gas station in the background.",
+    "visibleFeatures": [],
+    "conditionNotes": [],
+    "searchTags": [
+      "car carrier",
+      "gas station",
+      "truck"
+    ],
+    "likelyQuestions": [
+      "What is the car carrier truck doing?",
+      "Where is the car carrier truck located?"
+    ],
+    "confidence": 0.2,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-9",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/9.jpg",
+    "role": "exterior_front",
+    "viewpoint": "front three-quarter",
+    "caption": "A gray Hyundai Palisade is parked on a city street.",
+    "visibleFeatures": [
+      "front grille",
+      "headlights",
+      "wheels",
+      "side mirrors",
+      "tinted windows"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "Hyundai Palisade",
+      "gray SUV",
+      "city parking"
+    ],
+    "likelyQuestions": [
+      "What color is the SUV?",
+      "What type of vehicle is shown?"
+    ],
+    "confidence": 0.9,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-10",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/10.jpg",
+    "role": "exterior_front",
+    "viewpoint": "front three-quarter",
+    "caption": "A black Kia Telluride SUV is parked in a parking lot.",
+    "visibleFeatures": [
+      "front grille",
+      "headlights",
+      "front bumper",
+      "tires",
+      "side mirrors",
+      "windows",
+      "Kia logo"
+    ],
+    "conditionNotes": [
+      "clean and shiny exterior"
+    ],
+    "searchTags": [
+      "Kia Telluride",
+      "black SUV",
+      "front view",
+      "parked vehicle"
+    ],
+    "likelyQuestions": [
+      "What color is the vehicle?",
+      "What type of vehicle is shown?",
+      "Is the vehicle parked or driving?"
+    ],
+    "confidence": 0.9,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-11",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/11.jpg",
+    "role": "exterior_front",
+    "viewpoint": "front three-quarter",
+    "caption": "A white 2022 Kia Telluride is parked in a lot.",
+    "visibleFeatures": [
+      "front grille",
+      "headlights",
+      "front bumper",
+      "tires",
+      "side mirrors",
+      "roof rack"
+    ],
+    "conditionNotes": [
+      "dirty tires and lower body"
+    ],
+    "searchTags": [
+      "Kia Telluride",
+      "white SUV",
+      "3-row SUV",
+      "family vehicle"
+    ],
+    "likelyQuestions": [
+      "What color is the vehicle?",
+      "What type of vehicle is this?",
+      "Is the vehicle dirty?"
+    ],
+    "confidence": 0.95,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-12",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/12.jpg",
+    "role": "exterior_front",
+    "viewpoint": "front three-quarter",
+    "caption": "A dark gray Kia Telluride SUV is parked in a lot.",
+    "visibleFeatures": [
+      "front grille",
+      "headlights",
+      "front bumper",
+      "tires",
+      "side mirrors",
+      "windows"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "Kia Telluride",
+      "SUV",
+      "dark gray",
+      "front view"
+    ],
+    "likelyQuestions": [
+      "What color is the Kia Telluride?",
+      "What type of vehicle is shown?",
+      "What features are visible on the front of the vehicle?"
+    ],
+    "confidence": 0.9,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-13",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/13.jpg",
+    "role": "exterior_front",
+    "viewpoint": "right three-quarter",
+    "caption": "A white 2022 Kia Telluride SUV parked on the street.",
+    "visibleFeatures": [
+      "front grille",
+      "headlights",
+      "front bumper",
+      "side mirrors",
+      "alloy wheels",
+      "tinted windows",
+      "door handles"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "Kia Telluride",
+      "white SUV",
+      "three-row SUV",
+      "2022 model"
+    ],
+    "likelyQuestions": [
+      "What color is the SUV?",
+      "What is the make and model of the SUV?",
+      "How many rows of seats does the SUV have?"
+    ],
+    "confidence": 0.95,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-14",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/14.jpg",
+    "role": "exterior_rear",
+    "viewpoint": "rear three-quarter",
+    "caption": "The rear and passenger side of a white 2022 Kia Telluride SUV.",
+    "visibleFeatures": [
+      "rear lights",
+      "license plate",
+      "Kia logo",
+      "Telluride badging",
+      "AWD badging",
+      "EX V6 badging",
+      "tinted rear windows",
+      "silver roof rack",
+      "silver trim",
+      "black bumper",
+      "dual exhaust"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "rear view",
+      "back of SUV",
+      "Kia Telluride EX V6",
+      "AWD vehicle"
+    ],
+    "likelyQuestions": [
+      "What does the rear of the Kia Telluride look like?",
+      "Are the rear windows tinted?",
+      "What is the trim level of this Kia Telluride?"
+    ],
+    "confidence": 0.95,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-15",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/15.jpg",
+    "role": "exterior_rear",
+    "viewpoint": "rear three-quarter",
+    "caption": "A white Kia Telluride SUV parked on the street, viewed from the rear three-quarter angle.",
+    "visibleFeatures": [
+      "Kia logo",
+      "Telluride badge",
+      "EX V6 badge",
+      "rear taillights",
+      "rear window",
+      "license plate frame",
+      "alloy wheels",
+      "black trim"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "Kia Telluride rear view",
+      "white SUV rear three-quarter",
+      "Telluride EX V6"
+    ],
+    "likelyQuestions": [
+      "What color is the Kia Telluride?",
+      "What is the trim level of the Kia Telluride?",
+      "What does the rear of the Kia Telluride look like?"
+    ],
+    "confidence": 0.95,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-16",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/16.jpg",
+    "role": "exterior_front",
+    "viewpoint": "front three-quarter",
+    "caption": "A dark gray 2022 Kia Telluride is parked on a city street.",
+    "visibleFeatures": [
+      "front grille",
+      "headlights",
+      "front bumper",
+      "tires",
+      "side mirrors",
+      "windows"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "Kia Telluride exterior",
+      "SUV front view",
+      "dark gray Kia"
+    ],
+    "likelyQuestions": [
+      "What color is the Kia Telluride?",
+      "What is the make and model of the vehicle?",
+      "What features are visible on the exterior?"
+    ],
+    "confidence": 0.9,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-17",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/17.jpg",
+    "role": "exterior_rear",
+    "viewpoint": "rear three-quarter",
+    "caption": "A dark gray Kia Telluride SUV parked on a city street, viewed from the rear right side.",
+    "visibleFeatures": [
+      "red taillights",
+      "Kia logo",
+      "silver rims",
+      "black bumper",
+      "yellow license plate"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "Kia Telluride rear view",
+      "dark gray SUV",
+      "city parking"
+    ],
+    "likelyQuestions": [
+      "What color is the Kia Telluride?",
+      "What type of vehicle is shown?",
+      "Is the vehicle parked on a city street?"
+    ],
+    "confidence": 0.95,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-18",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/18.jpg",
+    "role": "exterior_rear",
+    "viewpoint": "rear three-quarter",
+    "caption": "The rear and passenger side of a gray 2022 Kia Telluride SUV are shown.",
+    "visibleFeatures": [
+      "rear bumper",
+      "license plate frame",
+      "red taillights",
+      "silver Kia logo",
+      "AWD badge",
+      "LXT badge",
+      "rear windshield",
+      "passenger side windows",
+      "silver wheels"
+    ],
+    "conditionNotes": [
+      "some scratches on the rear passenger side wheel well"
+    ],
+    "searchTags": [
+      "rear view",
+      "back of car",
+      "Kia Telluride exterior",
+      "SUV rear"
+    ],
+    "likelyQuestions": [
+      "What does the rear of the Kia Telluride look like?",
+      "Are there any notable features on the rear of the vehicle?",
+      "What is the condition of the vehicle's exterior?"
+    ],
+    "confidence": 0.95,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-19",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/19.jpg",
+    "role": "exterior_front",
+    "viewpoint": "front three-quarter",
+    "caption": "A black Kia Telluride SUV parked in a lot.",
+    "visibleFeatures": [
+      "front grille",
+      "headlights",
+      "front bumper",
+      "tires",
+      "side mirrors",
+      "windows"
+    ],
+    "conditionNotes": [
+      "minor scratches on hood"
+    ],
+    "searchTags": [
+      "Kia Telluride",
+      "black SUV",
+      "front view",
+      "parked vehicle"
+    ],
+    "likelyQuestions": [
+      "What color is the vehicle?",
+      "What type of vehicle is shown?",
+      "Are there any notable features on the front of the vehicle?"
+    ],
+    "confidence": 0.9,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-20",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/20.jpg",
+    "role": "exterior_rear",
+    "viewpoint": "rear three-quarter",
+    "caption": "The rear of a dark brown Kia Telluride SUV with red taillights and a white license plate frame.",
+    "visibleFeatures": [
+      "taillights",
+      "exhaust pipe",
+      "rear window",
+      "Kia logo",
+      "alloy wheels"
+    ],
+    "conditionNotes": [
+      "clean and shiny exterior"
+    ],
+    "searchTags": [
+      "Kia Telluride rear",
+      "SUV taillights",
+      "dark brown Kia"
+    ],
+    "likelyQuestions": [
+      "What color is the Kia Telluride?",
+      "What is the design of the taillights?",
+      "Is the vehicle clean?"
+    ],
+    "confidence": 0.9,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-21",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/21.jpg",
+    "role": "exterior_rear",
+    "viewpoint": "three-quarter rear",
+    "caption": "The dark brown Kia Telluride is shown from a three-quarter rear view.",
+    "visibleFeatures": [
+      "rear taillight",
+      "black alloy wheels",
+      "silver roof rack",
+      "side step bar",
+      "tinted rear windows"
+    ],
+    "conditionNotes": [
+      "glossy paint"
+    ],
+    "searchTags": [
+      "Kia Telluride rear view",
+      "dark brown SUV",
+      "three-quarter rear view",
+      "Kia Telluride exterior"
+    ],
+    "likelyQuestions": [
+      "What color is the Kia Telluride?",
+      "What features are on the side of the Kia Telluride?",
+      "What kind of wheels does the Kia Telluride have?"
+    ],
+    "confidence": 0.9,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-22",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/22.jpg",
+    "role": "exterior_front",
+    "viewpoint": "front three-quarter",
+    "caption": "Close-up of the front end of a gray 2022 Kia Telluride, showcasing its LED headlight and grill.",
+    "visibleFeatures": [
+      "LED headlight",
+      "grill",
+      "front wheel",
+      "tire",
+      "black rim"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "Kia Telluride front",
+      "Telluride headlight",
+      "Kia SUV grill"
+    ],
+    "likelyQuestions": [
+      "What is the color of the Kia Telluride?",
+      "What type of headlight does the Kia Telluride have?",
+      "What is the design of the Kia Telluride's grill?"
+    ],
+    "confidence": 0.9,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-23",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/23.jpg",
+    "role": "exterior_front",
+    "viewpoint": "front three-quarter",
+    "caption": "A dark gray Kia Telluride is parked on a city street.",
+    "visibleFeatures": [
+      "front grille",
+      "headlights",
+      "front bumper",
+      "tires",
+      "side mirrors",
+      "windows"
+    ],
+    "conditionNotes": [
+      "clean and shiny exterior"
+    ],
+    "searchTags": [
+      "Kia Telluride",
+      "SUV",
+      "dark gray",
+      "parked"
+    ],
+    "likelyQuestions": [
+      "What color is the Kia Telluride?",
+      "What type of vehicle is shown?",
+      "Is the vehicle clean?"
+    ],
+    "confidence": 0.95,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-24",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/24.jpg",
+    "role": "exterior_front",
+    "viewpoint": "front three-quarter",
+    "caption": "A silver 2022 Kia Telluride SUV parked on a street.",
+    "visibleFeatures": [
+      "front grille",
+      "headlights",
+      "front bumper",
+      "tires",
+      "side mirrors",
+      "license plate"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "Kia Telluride",
+      "SUV",
+      "silver",
+      "front view"
+    ],
+    "likelyQuestions": [
+      "What color is the car?",
+      "What type of vehicle is shown?",
+      "What is the make of the car?"
+    ],
+    "confidence": 0.9,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-25",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/25.jpg",
+    "role": "exterior_front",
+    "viewpoint": "front three-quarter",
+    "caption": "A white 2022 Kia Telluride is parked on a city street.",
+    "visibleFeatures": [
+      "front grille",
+      "headlights",
+      "front bumper",
+      "tires",
+      "side mirrors",
+      "license plate frame"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "Kia Telluride",
+      "white SUV",
+      "city parking",
+      "front view"
+    ],
+    "likelyQuestions": [
+      "What color is the Kia Telluride?",
+      "What is the make and model of the vehicle?",
+      "Where is the vehicle parked?"
+    ],
+    "confidence": 0.95,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-26",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/26.jpg",
+    "role": "exterior_rear",
+    "viewpoint": "rear three-quarter",
+    "caption": "The rear and side of a silver 2022 Kia Telluride SUV are shown.",
+    "visibleFeatures": [
+      "rear bumper",
+      "license plate",
+      "rear lights",
+      "side windows",
+      "wheels"
+    ],
+    "conditionNotes": [
+      "some dirt on the lower bumper"
+    ],
+    "searchTags": [
+      "rear view",
+      "side view",
+      "silver kia telluride",
+      "kia telluride exterior"
+    ],
+    "likelyQuestions": [
+      "What does the rear of the Kia Telluride look like?",
+      "What color is the Kia Telluride?",
+      "Are there any notable features on the side of the vehicle?"
+    ],
+    "confidence": 0.9,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-27",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/27.jpg",
+    "role": "exterior_front",
+    "viewpoint": "front three-quarter",
+    "caption": "The front of a green Kia Telluride with a bike rack on top.",
+    "visibleFeatures": [
+      "front grille",
+      "headlights",
+      "front bumper",
+      "bike rack",
+      "roof rack",
+      "Kia logo"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "Kia Telluride front",
+      "green Kia Telluride",
+      "Kia Telluride with bike rack"
+    ],
+    "likelyQuestions": [
+      "What color is the Kia Telluride?",
+      "Does the Kia Telluride have a roof rack?",
+      "What features are on the front of the Kia Telluride?"
+    ],
+    "confidence": 0.9,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-28",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/28.jpg",
+    "role": "exterior_front",
+    "viewpoint": "front three-quarter",
+    "caption": "A dark gray 2022 Kia Telluride SUV parked on a concrete lot.",
+    "visibleFeatures": [
+      "front grille",
+      "headlights",
+      "front bumper",
+      "tires",
+      "side mirrors",
+      "Kia logo"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "Kia Telluride",
+      "SUV",
+      "dark gray",
+      "front view"
+    ],
+    "likelyQuestions": [
+      "What color is the Kia Telluride?",
+      "What is the make and model of the vehicle?",
+      "What type of vehicle is shown?"
+    ],
+    "confidence": 0.95,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-29",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/29.jpg",
+    "role": "exterior_front",
+    "viewpoint": "front three-quarter",
+    "caption": "A dark gray Kia Telluride is parked on a concrete lot in front of a building with large windows.",
+    "visibleFeatures": [
+      "front grille",
+      "headlights",
+      "front bumper",
+      "wheels",
+      "side mirrors",
+      "tinted windows"
+    ],
+    "conditionNotes": [
+      "clean and shiny exterior"
+    ],
+    "searchTags": [
+      "Kia Telluride",
+      "SUV",
+      "3-row",
+      "family vehicle",
+      "dark gray"
+    ],
+    "likelyQuestions": [
+      "What color is the Kia Telluride?",
+      "What is the make and model of the vehicle?",
+      "How many rows of seats does the vehicle have?"
+    ],
+    "confidence": 0.9,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-30",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/30.jpg",
+    "role": "exterior_rear",
+    "viewpoint": "rear three-quarter",
+    "caption": "A black Kia Telluride SUV parked on a concrete lot, viewed from the rear three-quarter angle.",
+    "visibleFeatures": [
+      "rear window",
+      "taillights",
+      "license plate",
+      "wheels",
+      "exhaust pipe",
+      "Kia logo",
+      "Telluride badge"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "Kia Telluride rear",
+      "black SUV rear view",
+      "Telluride three-quarter rear"
+    ],
+    "likelyQuestions": [
+      "What does the rear of the Kia Telluride look like?",
+      "What are the design features of the Kia Telluride's rear end?"
+    ],
+    "confidence": 0.95,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-31",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/31.jpg",
+    "role": "exterior_rear",
+    "viewpoint": "rear three-quarter",
+    "caption": "The rear and passenger side of a dark gray 2022 Kia Telluride SUV.",
+    "visibleFeatures": [
+      "rear window",
+      "license plate",
+      "Kia logo",
+      "Telluride badge",
+      "rear taillights",
+      "passenger side windows",
+      "alloy wheels"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "rear view",
+      "three-quarter view",
+      "Kia Telluride exterior"
+    ],
+    "likelyQuestions": [
+      "What does the rear of the Kia Telluride look like?",
+      "What color is the Kia Telluride?",
+      "Are there any notable features on the rear of the Kia Telluride?"
+    ],
+    "confidence": 0.95,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-32",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/32.jpg",
+    "role": "exterior_front",
+    "viewpoint": "front three-quarter",
+    "caption": "A white 2022 Kia Telluride with its front door open is displayed at an auto show.",
+    "visibleFeatures": [
+      "front grille",
+      "headlights",
+      "front bumper",
+      "door",
+      "roof rack"
+    ],
+    "conditionNotes": [
+      "clean and shiny"
+    ],
+    "searchTags": [
+      "Kia Telluride",
+      "white SUV",
+      "front view",
+      "auto show"
+    ],
+    "likelyQuestions": [
+      "What color is the Kia Telluride?",
+      "What features does the Kia Telluride have?",
+      "Is the Kia Telluride a large SUV?"
+    ],
+    "confidence": 0.9,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-33",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/33.jpg",
+    "role": "exterior_front",
+    "viewpoint": "front three-quarter",
+    "caption": "A black Kia Telluride is parked in a lot, angled to the left.",
+    "visibleFeatures": [
+      "front grille",
+      "headlights",
+      "wheels",
+      "side mirrors",
+      "tinted windows"
+    ],
+    "conditionNotes": [
+      "glossy paint"
+    ],
+    "searchTags": [
+      "Kia Telluride exterior",
+      "black SUV",
+      "front view"
+    ],
+    "likelyQuestions": [
+      "What color is the car?",
+      "What type of vehicle is this?",
+      "What features does the car have?"
+    ],
+    "confidence": 0.9,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-34",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/34.jpg",
+    "role": "exterior_front",
+    "viewpoint": "front three-quarter",
+    "caption": "A silver 2022 Kia Telluride is parked in a lot, angled to the left.",
+    "visibleFeatures": [
+      "front grille",
+      "headlights",
+      "front bumper",
+      "tires",
+      "side mirrors",
+      "roof rack"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "Kia Telluride",
+      "silver SUV",
+      "3-row SUV",
+      "family vehicle"
+    ],
+    "likelyQuestions": [
+      "What color is the Kia Telluride?",
+      "What type of vehicle is shown?",
+      "Are there any notable features on the exterior?"
+    ],
+    "confidence": 0.9,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-35",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/35.jpg",
+    "role": "exterior_front",
+    "viewpoint": "front three-quarter",
+    "caption": "A green 2022 Kia Telluride SUV parked on a checkered floor.",
+    "visibleFeatures": [
+      "front grille",
+      "headlights",
+      "front bumper",
+      "tires",
+      "side mirrors",
+      "roof rack"
+    ],
+    "conditionNotes": [
+      "clean",
+      "no visible damage"
+    ],
+    "searchTags": [
+      "Kia Telluride",
+      "SUV",
+      "green",
+      "front view"
+    ],
+    "likelyQuestions": [
+      "What color is the car?",
+      "What type of vehicle is this?",
+      "Are there any visible damages?"
+    ],
+    "confidence": 0.9,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-36",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/36.jpg",
+    "role": "exterior_front",
+    "viewpoint": "front three-quarter",
+    "caption": "A blue 2022 Kia Telluride with its front passenger door open.",
+    "visibleFeatures": [
+      "front grille",
+      "headlights",
+      "front bumper",
+      "side step",
+      "black wheels",
+      "open front passenger door"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "Kia Telluride front",
+      "blue SUV",
+      "Telluride exterior"
+    ],
+    "likelyQuestions": [
+      "What color is the Kia Telluride?",
+      "What features does the Kia Telluride have?",
+      "Is the Kia Telluride a 3-row SUV?"
+    ],
+    "confidence": 0.9,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-37",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/37.jpg",
+    "role": "exterior_front",
+    "viewpoint": "front three-quarter",
+    "caption": "A blue 2022 Kia Telluride SUV is shown at an indoor car show.",
+    "visibleFeatures": [
+      "front grille",
+      "headlights",
+      "front bumper",
+      "side steps",
+      "black wheels",
+      "roof rack"
+    ],
+    "conditionNotes": [
+      "clean and shiny exterior"
+    ],
+    "searchTags": [
+      "Kia Telluride",
+      "SUV",
+      "blue",
+      "front view"
+    ],
+    "likelyQuestions": [
+      "What color is the Kia Telluride?",
+      "What features does the Kia Telluride have?",
+      "Is the Kia Telluride a 2022 model?"
+    ],
+    "confidence": 0.9,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-38",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/38.jpg",
+    "role": "exterior_front",
+    "viewpoint": "aerial front three-quarter",
+    "caption": "A white 2022 Kia Telluride is shown from above at an angle, stopped at a crosswalk.",
+    "visibleFeatures": [
+      "front grille",
+      "headlights",
+      "front bumper",
+      "license plate",
+      "side mirrors",
+      "sunroof",
+      "tires"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "Kia Telluride front",
+      "white SUV",
+      "aerial view",
+      "three-quarter view"
+    ],
+    "likelyQuestions": [
+      "What color is the car?",
+      "What type of vehicle is shown?",
+      "What is the angle of the photo?"
+    ],
+    "confidence": 0.95,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-39",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/39.jpg",
+    "role": "exterior_front",
+    "viewpoint": "aerial front",
+    "caption": "A silver 2022 Kia Telluride is shown from above at an intersection.",
+    "visibleFeatures": [
+      "front grille",
+      "headlights",
+      "license plate",
+      "sunroof",
+      "side mirrors"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "Kia Telluride",
+      "silver SUV",
+      "front view"
+    ],
+    "likelyQuestions": [
+      "What color is the Kia Telluride?",
+      "What is the make and model of the vehicle?",
+      "What features are visible on the front of the vehicle?"
+    ],
+    "confidence": 0.9,
+    "status": "processed"
+  },
+  {
+    "id": "kia-telluride-40",
+    "vin": "KIA-TELLURIDE",
+    "url": "/cars/KIA-TELLURIDE/40.jpg",
+    "role": "exterior_front",
+    "viewpoint": "overhead three-quarter front",
+    "caption": "An overhead three-quarter front view of a dark gray 2022 Kia Telluride driving on a city street.",
+    "visibleFeatures": [
+      "front grille",
+      "headlights",
+      "front bumper",
+      "license plate",
+      "side mirrors",
+      "tinted windows",
+      "alloy wheels"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "Kia Telluride",
+      "SUV",
+      "three-row",
+      "family vehicle",
+      "dark gray",
+      "city driving"
+    ],
+    "likelyQuestions": [
+      "What color is the vehicle?",
+      "What type of vehicle is this?",
+      "How many rows of seats does it have?"
+    ],
+    "confidence": 0.95,
+    "status": "processed"
   }
 ]
