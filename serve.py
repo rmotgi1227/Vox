@@ -144,6 +144,34 @@ async def stage():
     return FileResponse("stage.html")       # the old TikTok-style live stage
 
 
+# ── Live avatar (LiveKit + Simli): the real-time saleswoman, run by agent.py ──
+
+@app.get("/live")
+async def live():
+    return FileResponse("live.html")
+
+
+@app.get("/token")
+async def token(room: str | None = None, identity: str = "visitor"):
+    """Mint a LiveKit join token for the browser. The agent worker (agent.py dev)
+    auto-joins the room and brings her Simli avatar + the Moss/MiniMax brain.
+
+    Each page load gets a UNIQUE room so LiveKit always dispatches a fresh agent
+    (re-joining a room it already served won't trigger a new dispatch)."""
+    import secrets
+
+    from livekit import api as lk_api
+
+    room = room or f"vox-live-{secrets.token_hex(4)}"
+    at = (
+        lk_api.AccessToken(os.environ["LIVEKIT_API_KEY"], os.environ["LIVEKIT_API_SECRET"])
+        .with_identity(identity)
+        .with_name(identity)
+        .with_grants(lk_api.VideoGrants(room_join=True, room=room))
+    )
+    return {"url": os.environ["LIVEKIT_URL"], "token": at.to_jwt(), "room": room}
+
+
 # ── The dealership site: a vehicle detail page (VDP) with the embedded host ──
 
 def _car_public(c) -> dict:

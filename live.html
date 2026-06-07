@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vox — Live Saleswoman</title>
+<script src="https://cdn.jsdelivr.net/npm/livekit-client@2/dist/livekit-client.umd.min.js"></script>
+<style>
+  :root { --bg:#0d0f12; --panel:#15181d; --line:#262b33; --text:#e8eaed; --muted:#8b93a1; --accent:#3b82f6; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.5 -apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--text); }
+  .wrap { display:grid; grid-template-columns: 1fr 380px; gap:16px; height:100vh; padding:16px; }
+  .stage { position:relative; background:#000; border-radius:14px; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+  .stage video { width:100%; height:100%; object-fit:cover; }
+  .badge { position:absolute; top:12px; left:12px; background:rgba(0,0,0,.55); padding:6px 12px; border-radius:999px; font-size:13px; display:flex; gap:8px; align-items:center; }
+  .dot { width:8px; height:8px; border-radius:50%; background:#f59e0b; }
+  .dot.live { background:#22c55e; }
+  .placeholder { color:var(--muted); text-align:center; padding:24px; }
+  .side { display:flex; flex-direction:column; background:var(--panel); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+  .side h1 { font-size:15px; margin:0; padding:14px 16px; border-bottom:1px solid var(--line); }
+  .side h1 small { color:var(--muted); font-weight:400; }
+  .chat { flex:1; overflow-y:auto; padding:14px 16px; display:flex; flex-direction:column; gap:10px; }
+  .msg { max-width:85%; padding:9px 12px; border-radius:12px; white-space:pre-wrap; }
+  .msg.her { background:#1f2937; align-self:flex-start; border-bottom-left-radius:3px; }
+  .msg.me { background:var(--accent); align-self:flex-end; border-bottom-right-radius:3px; }
+  .msg.sys { align-self:center; color:var(--muted); font-size:13px; background:none; }
+  .composer { display:flex; gap:8px; padding:12px; border-top:1px solid var(--line); }
+  .composer input { flex:1; background:#0d0f12; border:1px solid var(--line); color:var(--text); border-radius:10px; padding:10px 12px; font-size:14px; }
+  .composer button { background:var(--accent); color:#fff; border:0; border-radius:10px; padding:0 16px; font-weight:600; cursor:pointer; }
+  .composer button:disabled { opacity:.4; cursor:default; }
+  .mic { background:#262b33; }
+  .mic.on { background:#22c55e; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="stage">
+    <div class="badge"><span class="dot" id="dot"></span><span id="status">connecting…</span></div>
+    <div class="placeholder" id="ph">Her avatar will appear here once she joins.</div>
+    <video id="avatar" autoplay playsinline></video>
+  </div>
+  <div class="side">
+    <h1>Vox <small>— live saleswoman</small></h1>
+    <div class="chat" id="chat"></div>
+    <div class="composer">
+      <button class="mic" id="mic" title="Talk (needs STT)">🎤</button>
+      <input id="input" placeholder="Ask about a car…" autocomplete="off" disabled />
+      <button id="send" disabled>Send</button>
+    </div>
+  </div>
+</div>
+<script>
+const LK = LivekitClient;
+const $ = (id) => document.getElementById(id);
+const chat = $("chat");
+
+function addMsg(text, who) {
+  const d = document.createElement("div");
+  d.className = "msg " + who;
+  d.textContent = text;
+  chat.appendChild(d);
+  chat.scrollTop = chat.scrollHeight;
+  return d;
+}
+
+function setStatus(text, live) {
+  $("status").textContent = text;
+  $("dot").classList.toggle("live", !!live);
+}
+
+(async () => {
+  let res;
+  try {
+    res = await (await fetch("/token")).json();
+  } catch (e) { setStatus("token error"); addMsg("Could not get a LiveKit token — is serve.py running?", "sys"); return; }
+
+  const room = new LK.Room({ adaptiveStream: true, dynacast: true });
+
+  room.on(LK.RoomEvent.TrackSubscribed, (track) => {
+    if (track.kind === "video") { track.attach($("avatar")); $("ph").style.display = "none"; setStatus("live", true); }
+    if (track.kind === "audio") { const el = track.attach(); el.autoplay = true; document.body.appendChild(el); ensureAudio(); }
+  });
+
+  // Browsers block autoplay audio until a user gesture. room.startAudio() unblocks it.
+  async function ensureAudio() {
+    try { if (!room.canPlaybackAudio) await room.startAudio(); } catch (e) {}
+  }
+  room.on(LK.RoomEvent.AudioPlaybackStatusChanged, () => {
+    if (!room.canPlaybackAudio) setStatus("click anywhere to enable sound 🔇", true);
+    else setStatus("live", true);
+  });
+  document.body.addEventListener("click", ensureAudio);
+
+  room.on(LK.RoomEvent.ParticipantConnected, (p) => addMsg("(she joined)", "sys"));
+  room.on(LK.RoomEvent.Disconnected, () => setStatus("disconnected"));
+
+  // Transcriptions stream for BOTH sides: your speech (STT) and her replies.
+  // Key bubbles by segment id so interim+final updates reuse one bubble (no dupes).
+  const bubbles = {};
+  room.registerTextStreamHandler("lk.transcription", async (reader, info) => {
+    const mine = info?.identity === room.localParticipant.identity;
+    const who = mine ? "me" : "her";
+    const attrs = reader.info?.attributes || {};
+    const key = attrs["lk.segment_id"] || reader.info?.id;
+    let bubble = bubbles[key];
+    if (!bubble) { bubble = addMsg("", who); bubbles[key] = bubble; }
+    let full = "";
+    for await (const chunk of reader) {
+      full += chunk;
+      bubble.textContent = full;
+      chat.scrollTop = chat.scrollHeight;
+    }
+  });
+
+  await room.connect(res.url, res.token);
+  setStatus("waiting for her…", false);
+  addMsg("Connected. She’ll greet you in a moment — then ask anything about the lot.", "sys");
+
+  $("input").disabled = false; $("send").disabled = false;
+
+  async function send() {
+    const text = $("input").value.trim();
+    if (!text) return;
+    $("input").value = "";
+    addMsg(text, "me");
+    await room.localParticipant.sendText(text, { topic: "lk.chat" });
+  }
+  $("send").onclick = send;
+  $("input").addEventListener("keydown", (e) => { if (e.key === "Enter") send(); });
+
+  // Optional mic (only useful once an STT key is set in .env).
+  $("mic").onclick = async () => {
+    const on = !room.localParticipant.isMicrophoneEnabled;
+    await room.localParticipant.setMicrophoneEnabled(on);
+    $("mic").classList.toggle("on", on);
+  };
+})();
+</script>
+</body>
+</html>
