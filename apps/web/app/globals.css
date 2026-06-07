@@ -431,8 +431,8 @@ button, input, textarea { font: inherit; }
   object-fit: contain;
   display: block;
   box-sizing: border-box;
-  /* dotted "light black" frame around the photo */
-  border: 1.5px dotted rgba(15, 17, 21, 0.45);
+  /* dotted black frame around the photo — thicker + clearly visible */
+  border: 3px dotted rgba(12, 14, 18, 0.85);
   border-radius: var(--r-lg);
 }
 
@@ -480,6 +480,114 @@ button, input, textarea { font: inherit; }
   animation: vox-spin 0.7s linear infinite;
 }
 @keyframes vox-spin { to { transform: rotate(360deg); } }
+
+/* ---- spec card (the salesman's notepad — grounded facts typed onto the canvas) ---- */
+.canvas-spec {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  padding: clamp(12px, 2vw, 36px);
+}
+.spec-card {
+  width: min(620px, 100%);
+  max-height: 100%;
+  overflow: auto;
+  background: #ffffff;
+  border-radius: var(--r-lg);
+  border: 1.5px dotted rgba(15, 17, 21, 0.45);
+  box-shadow: 0 22px 50px -24px rgba(12, 14, 18, 0.45);
+  padding: clamp(22px, 3vw, 40px);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.spec-card-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+}
+.spec-rows { display: flex; flex-direction: column; gap: 14px; }
+.spec-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed rgba(15, 17, 21, 0.14);
+}
+.spec-row:last-child { border-bottom: none; padding-bottom: 0; }
+.spec-row-muted .spec-label,
+.spec-row-muted .spec-value {
+  color: var(--muted-2);
+}
+.spec-row-separator {
+  margin-top: 6px;
+  padding-top: 18px;
+  border-top: 2px solid rgba(15, 17, 21, 0.72);
+}
+.spec-row-total {
+  border-bottom: none;
+}
+.spec-row-total .spec-label {
+  color: var(--ink);
+  font-weight: 800;
+}
+/* The punchline row (savings / best price) reads as a WIN — render it green. */
+.spec-row-total .spec-value {
+  font-size: clamp(24px, 3vw, 38px);
+  color: #0a8f4f;
+  font-weight: 850;
+}
+.spec-row-total .spec-caret { background: #0a8f4f; }
+.spec-label {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--muted-2);
+  text-transform: capitalize;
+}
+.spec-value {
+  font-size: clamp(20px, 2.4vw, 30px);
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+/* single-fact hero treatment — big centered number */
+.spec-card-single {
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  padding: clamp(32px, 5vw, 64px);
+}
+.spec-card-single .spec-row {
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.spec-card-single .spec-label {
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.spec-card-single .spec-value { font-size: clamp(40px, 7vw, 76px); text-align: center; }
+.spec-typed { display: inline-flex; align-items: baseline; }
+.spec-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 3px;
+  background: currentColor;
+  transform: translateY(0.12em);
+  animation: spec-blink 1s steps(1) infinite;
+}
+@keyframes spec-blink { 50% { opacity: 0; } }
 
 /* ---- canvas outer wrapper (hosts Canvas + dev harness) ---- */
 
@@ -676,6 +784,33 @@ button, input, textarea { font: inherit; }
   pointer-events: none;
 }
 
+/* Contour annotation: traces the object's real shape (e.g. the trunk opening). */
+.canvas-mark-outline {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.canvas-mark-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.canvas-mark-svg polygon {
+  fill: rgba(47, 107, 255, 0.1);
+  stroke: var(--brand);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  /* viewBox is stretched (preserveAspectRatio:none) to match the image aspect,
+     so keep the stroke a uniform width instead of scaling it non-uniformly. */
+  vector-effect: non-scaling-stroke;
+  paint-order: stroke;
+  filter: drop-shadow(0 1px 3px rgba(47, 107, 255, 0.35));
+}
+
 /* ---- shimmer tile (pending generated item) ---------------- */
 
 .canvas-shimmer {
@@ -870,6 +1005,27 @@ button, input, textarea { font: inherit; }
   flex-direction: column;
   gap: 12px;
 }
+
+/* TEMP A/B brain selector */
+.brain-toggle-temp {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.brain-toggle-label { font-weight: 650; letter-spacing: -0.01em; }
+.brain-toggle-select {
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  padding: 4px 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.brain-toggle-hint { color: var(--muted-2); font-style: italic; }
 
 /* voice (existing, compressed) + chat toggle, side by side */
 .composer-actions {

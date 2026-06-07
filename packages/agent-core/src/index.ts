@@ -7,6 +7,7 @@ import type {
   ImageRole,
   ItemFilter,
   ItemRef,
+  Polygon,
   SpecialistSource,
   SpecialistTurn,
   ViewState
@@ -52,6 +53,13 @@ export type SpecialistDependencies = {
   catalog: CatalogStore;
   ai: AiProvider;
 };
+
+// Minimum rank score for the rule-7 generic "showImage top-ranked" fallback to
+// fire. On-topic matches score high (navigation ~99, seats ~153, brakes ~76); a
+// tangential one — a pricing/financing question grabbing a random speaker
+// close-up — scores ~2. Below this, planCanvas returns [] so the canvas reverts
+// to the overview hero instead of surfacing an irrelevant photo.
+const MIN_DEFAULT_SHOW_SCORE = 3;
 
 const ROLE_KEYWORDS: Array<{ role: ImageRole; terms: string[] }> = [
   { role: "trunk", terms: ["trunk", "cargo", "storage", "boot", "luggage"] },
@@ -640,6 +648,140 @@ export function selectItems(
     .map((img): CanvasItem => ({ kind: "image", carId: img.vin, imageId: img.id }));
 }
 
+// ── Spec writing (the salesman's notepad) ─────────────────────────────────────
+//
+// A writeSpec action names WHICH facts to surface; this registry resolves each
+// field key to a formatted { label, value } row straight from the grounded Car
+// record. The model never types the number — it only picks the field — so the
+// canvas can never show a figure that disagrees with the catalog.
+
+export type SpecRow = {
+  label: string;
+  value: string;
+  emphasis?: "normal" | "muted" | "total";
+  separatorBefore?: boolean;
+};
+
+const formatMoney = (n: number): string => `$${Math.round(n).toLocaleString("en-US")}`;
+
+type SpecResolver = (car: Car) => SpecRow | SpecRow[] | undefined;
+
+function resolvePricingMathRows(car: Car): SpecRow[] | undefined {
+  if (!car.specs && car.price == null) return undefined;
+
+  const msrp = car.specs?.msrp;
+  const ourPrice = car.price;
+  const pricing = car.pricingGuidance;
+  const bestPossiblePrice = pricing?.incentiveRangeMin ?? ourPrice;
+  const savings = msrp != null && bestPossiblePrice != null ? Math.max(0, msrp - bestPossiblePrice) : undefined;
+
+  const rows: SpecRow[] = [];
+  if (msrp != null) rows.push({ label: "MSRP", value: formatMoney(msrp), emphasis: "muted" });
+  if (ourPrice != null) rows.push({ label: "Our Price", value: formatMoney(ourPrice) });
+  if (pricing) {
+    rows.push({
+      label: "Possible Range After Discounts",
+      value: `${formatMoney(pricing.incentiveRangeMin)}-${formatMoney(pricing.incentiveRangeMax)}`
+    });
+  }
+  if (savings != null) {
+    rows.push({
+      label: "Total Possible Savings",
+      value: `Up to ${formatMoney(savings)}`,
+      emphasis: "total",
+      separatorBefore: true
+    });
+  }
+  return rows.length > 0 ? rows : undefined;
+}
+
+const SPEC_FIELDS: Record<string, SpecResolver> = {
+  mileage: (c) => ({ label: "Mileage", value: `${c.mileage.toLocaleString("en-US")} mi` }),
+  pricingMath: resolvePricingMathRows,
+  price: (c) => ({ label: "Price", value: c.price != null ? formatMoney(c.price) : "Inquire for price" }),
+  msrp: (c) => (c.specs ? { label: "MSRP", value: formatMoney(c.specs.msrp) } : undefined),
+  incentiveRange: (c) => (c.pricingGuidance ? {
+    label: "Incentive Range",
+    value: `${formatMoney(c.pricingGuidance.incentiveRangeMin)}-${formatMoney(c.pricingGuidance.incentiveRangeMax)}`
+  } : undefined),
+  year: (c) => ({ label: "Year", value: String(c.year) }),
+  color: (c) => ({ label: "Exterior", value: c.specs?.exteriorColor ?? c.color }),
+  interiorColor: (c) => (c.specs ? { label: "Interior", value: c.specs.interiorColor } : undefined),
+  drivetrain: (c) => ({ label: "Drivetrain", value: c.drivetrain }),
+  fuel: (c) => ({ label: "Fuel", value: c.specs?.fuelType ?? c.fuel }),
+  condition: (c) => (c.specs ? { label: "Condition", value: c.specs.condition } : undefined),
+  vin: (c) => ({ label: "VIN", value: c.specs?.vin ?? c.vin }),
+  stockNumber: (c) => (c.specs ? { label: "Stock #", value: c.specs.stockNumber } : undefined),
+  engine: (c) => (c.specs ? { label: "Engine", value: c.specs.engine } : undefined),
+  horsepower: (c) => (c.specs ? { label: "Horsepower", value: `${c.specs.horsepower} hp` } : undefined),
+  torque: (c) => (c.specs ? { label: "Torque", value: c.specs.torque } : undefined),
+  transmission: (c) => (c.specs ? { label: "Transmission", value: c.specs.transmission } : undefined),
+  zeroToSixty: (c) => (c.specs ? { label: "0–60 mph", value: `${c.specs.zeroToSixtySeconds} s` } : undefined),
+  topSpeed: (c) => (c.specs ? { label: "Top speed", value: `${c.specs.topSpeedMph} mph` } : undefined),
+  mpg: (c) => (c.specs ? { label: "Fuel economy", value: `${c.specs.mpgCity}/${c.specs.mpgHighway} mpg` } : undefined),
+  seating: (c) => (c.specs ? { label: "Seating", value: `${c.specs.seating} seats` } : undefined),
+  doors: (c) => (c.specs ? { label: "Doors", value: String(c.specs.doors) } : undefined),
+  warranty: (c) => (c.specs ? { label: "Warranty", value: c.specs.warranty } : undefined)
+};
+
+// Loose natural-language aliases → canonical field key, so the model/heuristic
+// can pass names like "0-60", "hp", or "miles" and still resolve.
+const SPEC_ALIASES: Record<string, string> = {
+  miles: "mileage",
+  odometer: "mileage",
+  cost: "price",
+  asking: "price",
+  hp: "horsepower",
+  power: "horsepower",
+  bhp: "horsepower",
+  "0-60": "zeroToSixty",
+  "zero-to-sixty": "zeroToSixty",
+  acceleration: "zeroToSixty",
+  topspeed: "topSpeed",
+  "fuel-economy": "mpg",
+  "gas-mileage": "mpg",
+  economy: "mpg",
+  seats: "seating",
+  exteriorcolor: "color",
+  paint: "color",
+  interior: "interiorColor",
+  gearbox: "transmission",
+  motor: "engine",
+  stock: "stockNumber"
+};
+
+/** Canonical writeSpec field keys, exported so deciders can advertise them. */
+export const SPEC_FIELD_KEYS = Object.keys(SPEC_FIELDS);
+
+function resolveSpecRow(car: Car, field: string): SpecRow | undefined {
+  const key = field.trim();
+  const canonical = SPEC_FIELDS[key] ? key : (SPEC_ALIASES[key.toLowerCase()] ?? key);
+  const resolved = SPEC_FIELDS[canonical]?.(car);
+  return Array.isArray(resolved) ? undefined : resolved;
+}
+
+/**
+ * Resolve a list of field keys to formatted rows, dropping unknown/missing
+ * fields and de-duplicating by label. Pure and total.
+ */
+export function resolveSpecRows(car: Car, fields: string[]): SpecRow[] {
+  const rows: SpecRow[] = [];
+  const seen = new Set<string>();
+  for (const field of fields) {
+    const key = field.trim();
+    const canonical = SPEC_FIELDS[key] ? key : (SPEC_ALIASES[key.toLowerCase()] ?? key);
+    const resolved = SPEC_FIELDS[canonical]?.(car);
+    const nextRows = Array.isArray(resolved) ? resolved : resolved ? [resolved] : [];
+    for (const row of nextRows) {
+      if (!seen.has(row.label)) {
+        seen.add(row.label);
+        rows.push(row);
+      }
+    }
+  }
+  return rows;
+}
+
 /**
  * Pure, synchronous, total reducer. Returns the new ViewState for a given
  * CanvasAction. Never throws on valid-typed input; unresolvable refs produce
@@ -716,19 +858,37 @@ export function applyAction(state: ViewState, action: CanvasAction, catalog: Cat
 
     case "annotate": {
       const target = resolveItemRef(action.itemRef, catalog, state);
-      if (!target) return state;
+      if (!target || target.kind !== "image") return state;
       const itemIndex = state.items.findIndex(
         (it) =>
           it.kind === "image" &&
-          target.kind === "image" &&
           it.imageId === target.imageId &&
           it.carId === target.carId
       );
       const resolvedIndex = itemIndex >= 0 ? itemIndex : 0;
-      const marks = action.marks.map((m) => ({
+
+      // Marks come from the action when the caller supplied them; otherwise we
+      // backfill from the target image's PRECOMPUTED `boxes` — measurement-
+      // labeled boxes (label contains a digit, e.g. "Cargo space · 15.5 cu ft")
+      // first, else every box. This is the key move: a text-only decider can
+      // ask to annotate an image without ever inventing pixel coordinates.
+      type MarkSource = { box: BBox; label: string; polygon?: Polygon };
+      let source: MarkSource[] | undefined =
+        action.marks && action.marks.length > 0 ? action.marks : undefined;
+      if (!source) {
+        const image = catalog.images.find((i) => i.id === target.imageId);
+        const boxes = image?.boxes ?? [];
+        const measurement = boxes.filter((b) => /\d/.test(b.label));
+        source = (measurement.length > 0 ? measurement : boxes).map((b) => ({ box: b.box, label: b.label, polygon: b.polygon }));
+      }
+      if (source.length === 0) return state; // nothing to annotate → no-op
+      const marks = source.map((m) => ({
         itemIndex: resolvedIndex,
         box: m.box,
-        label: m.label
+        label: m.label,
+        // Carry the contour through when present so the renderer can outline the
+        // real shape instead of a rectangle.
+        ...(m.polygon ? { polygon: m.polygon } : {})
       }));
       return { ...state, marks };
     }
@@ -753,6 +913,20 @@ export function applyAction(state: ViewState, action: CanvasAction, catalog: Cat
       }
       const item: CanvasItem = { kind: "image", carId: firstImage.vin, imageId: firstImage.id };
       return { layout: "single", items: [item] };
+    }
+
+    case "writeSpec": {
+      // Resolve the car from whatever is currently on screen (else the first
+      // catalog car), then fill each requested field with its grounded value.
+      const currentCarId = state.items
+        .map((it) => (it.kind === "image" || it.kind === "car" ? it.carId : undefined))
+        .find((id): id is string => Boolean(id));
+      const car = catalog.cars.find((c) => c.vin === currentCarId) ?? catalog.cars[0];
+      if (!car) return state;
+      const rows = resolveSpecRows(car, action.fields);
+      if (rows.length === 0) return state; // no resolvable fields → no-op
+      const item: CanvasItem = { kind: "spec", title: action.title, rows };
+      return { layout: "spec", items: [item] };
     }
 
     case "generate": {
@@ -865,6 +1039,75 @@ const PART_REGIONS: Record<string, BBox> = {
 const DEFAULT_PART_REGION: BBox = [0.28, 0.3, 0.44, 0.44];
 
 /**
+ * Find an image's PRECOMPUTED zoom region for a named part, matching a
+ * `zoomTargets` key to the requested part by substring either direction
+ * (e.g. part "gear shifter" matches the seeded "shifter" key). Returns the
+ * grounded box when found so the close-up lands exactly on the object, instead
+ * of the generic guessed `PART_REGIONS` fallback.
+ */
+function zoomTargetFor(image: CarImage, part: string): BBox | undefined {
+  const targets = image.zoomTargets ?? {};
+  if (targets[part]) return targets[part];
+  for (const [key, box] of Object.entries(targets)) {
+    if (part.includes(key) || key.includes(part)) return box;
+  }
+  return undefined;
+}
+
+// Size / measurement questions ("how big is it", "how much room") → draw the
+// precomputed measurement annotation on the relevant image rather than writing a
+// spec card. Only fires when a target image actually carries measurement boxes,
+// so non-measurable asks fall through harmlessly.
+const MEASUREMENT_INTENT = [
+  "how big", "how large", "how much space", "how much room", "how spacious",
+  "how roomy", "dimensions", "cargo capacity", "cargo space", "cargo volume",
+  "trunk space", "trunk size", "trunk capacity", "how many cubic", "cubic feet",
+  "how much can it hold", "how much fits", "luggage space", "storage space",
+  "will my luggage fit", "fit my luggage", "fit luggage"
+];
+
+// Spec/number questions → writeSpec (the salesman writes the fact on the canvas).
+// Each entry maps trigger phrases → the field key(s) to surface. Multi-field
+// entries (e.g. "the specs") write a small fact sheet.
+const SPEC_INTENT_MAP: Array<{ fields: string[]; terms: string[] }> = [
+  { fields: ["mileage"], terms: ["how many miles", "how many kms", "mileage", "odometer", "miles on it", "miles on the clock"] },
+  { fields: ["pricingMath"], terms: ["how much is it", "how much does it cost", "how much for", "what's the price", "what is the price", "asking price", "the price", "out the door"] },
+  { fields: ["msrp"], terms: ["msrp", "sticker price"] },
+  { fields: ["horsepower"], terms: ["horsepower", "how much power", "how many hp", "how much hp", "bhp"] },
+  { fields: ["torque"], terms: ["torque", "lb-ft", "pound feet", "pound-feet"] },
+  { fields: ["zeroToSixty"], terms: ["0-60", "0 to 60", "zero to sixty", "how fast is it", "how quick", "acceleration"] },
+  { fields: ["topSpeed"], terms: ["top speed", "how fast can it go", "max speed", "fastest"] },
+  { fields: ["mpg"], terms: ["mpg", "gas mileage", "fuel economy", "miles per gallon"] },
+  // NOTE: engine is intentionally NOT here — it's a photographable part, so an
+  // engine question should SHOW the engine-bay photo (the ranked default below),
+  // not a text card. writeSpec is for abstract numbers with no meaningful photo.
+  { fields: ["transmission"], terms: ["transmission", "gearbox", "manual or automatic", "how many gears", "automatic or manual"] },
+  { fields: ["seating"], terms: ["how many seats", "how many people", "seating capacity"] },
+  { fields: ["warranty"], terms: ["warranty", "is it covered", "coverage left"] },
+  { fields: ["vin"], terms: ["vin number", "what's the vin", "vehicle identification"] },
+  { fields: ["stockNumber"], terms: ["stock number", "stock #"] },
+  { fields: ["year"], terms: ["what year", "model year"] },
+  { fields: ["horsepower", "torque", "zeroToSixty", "topSpeed"], terms: ["performance specs", "performance numbers", "how does it perform", "power numbers"] },
+  { fields: ["price", "mileage", "horsepower", "zeroToSixty"], terms: ["the specs", "full specs", "spec sheet", "the numbers", "key numbers", "the rundown"] }
+];
+
+// If the shopper is clearly asking to SEE something, a photo wins over a written
+// fact — so spec detection bails when any of these visual cues are present.
+const VISUAL_VERBS = ["show", "see ", "look at", "pull up", "let me see", "picture", "photo", "pic ", " pics", "image", "view of", "zoom"];
+
+// Verbal-only intents — handled entirely by the spoken reply, never the canvas.
+// Discounts are steered to an in-person visit (no figures, no card); financing /
+// lease / payment / scheduling have no photo either. planCanvas returns [] for
+// these so the rule-7 fallback can't surface a tangential image — the canvas
+// reverts to the overview hero.
+const VERBAL_ONLY_TERMS = [
+  "discount", "discounts", "rebate", "rebates", "incentive", "incentives",
+  "how low can you go", "best price", "best you can do", "come down on the price",
+  "knock off", "deal on it", "financing", "finance", "lease", "monthly payment",
+  "trade in", "trade-in", "test drive", "book a", "appointment", "come in"
+];
+
+/**
  * Gather images matching any of the given roles, sorted by confidence desc,
  * limited to `limit`. Used to build the interior grid that spans both
  * interior_front and interior_rear.
@@ -900,6 +1143,46 @@ export function planCanvas(message: string, images: CarImage[], state: ViewState
 
   const lower = message.toLowerCase();
 
+  // 0a. Verbal-only intents (discounts, financing, scheduling) → no canvas. Return
+  //     [] so the caller reverts to the overview hero instead of the rule-7
+  //     fallback pulling a tangential image (e.g. "how low can you go").
+  if (VERBAL_ONLY_TERMS.some((term) => lower.includes(term))) return [];
+
+  // 0. Spec / number question → write the grounded fact onto the canvas, UNLESS
+  //    the shopper is clearly asking to SEE something (visual verbs win). This
+  //    runs first so "how many miles" types the number instead of pulling a
+  //    photo; "show me the engine" still routes to the image branches below.
+  if (!VISUAL_VERBS.some((verb) => lower.includes(verb))) {
+    const specHit = SPEC_INTENT_MAP.find((entry) => entry.terms.some((term) => lower.includes(term)));
+    if (specHit) return [{ op: "writeSpec", fields: specHit.fields }];
+  }
+
+  // 0b. Measurement / size question → draw the precomputed measurement
+  //     annotation on the relevant image. Prefers the image already on screen
+  //     (resolves "how big is IT"); else the top-ranked image that actually
+  //     carries measurement boxes. Marks are backfilled by the reducer from
+  //     image.boxes — no coordinates are guessed here.
+  if (MEASUREMENT_INTENT.some((term) => lower.includes(term))) {
+    const hasMeasure = (img: CarImage | undefined): img is CarImage =>
+      !!img && (img.boxes ?? []).some((b) => /\d/.test(b.label));
+    const current = state.items[0];
+    const currentImg =
+      current?.kind === "image" ? images.find((i) => i.id === current.imageId) : undefined;
+    const target = hasMeasure(currentImg)
+      ? currentImg
+      : rankImagesForQuestion(message, images).map((r) => r.image).find(hasMeasure);
+    if (target) {
+      if (currentImg && currentImg.id === target.id) {
+        return [{ op: "annotate", itemRef: { index: 0 } }];
+      }
+      return [
+        { op: "showImage", carId: target.vin, imageId: target.id },
+        { op: "annotate", itemRef: { carId: target.vin, imageId: target.id } }
+      ];
+    }
+    // No image carries measurement data → fall through to area/default below.
+  }
+
   // 1. "show all / everything / all pics / all angles"
   if (SHOW_ALL_PHRASES.some((phrase) => lower.includes(phrase))) {
     return [{ op: "showImages" }];
@@ -918,7 +1201,11 @@ export function planCanvas(message: string, images: CarImage[], state: ViewState
     const ranked = rankImagesForQuestion(message, images);
     const top = ranked[0];
     if (!top) return [];
-    const region: BBox = PART_REGIONS[matchedPart] ?? DEFAULT_PART_REGION;
+    // Prefer the image's PRECOMPUTED zoom region for this part (seeded by the
+    // annotation pass — e.g. the console's exact gear-selector box) over the
+    // generic guessed box, so the close-up lands right on the object.
+    const region: BBox =
+      zoomTargetFor(top.image, matchedPart) ?? PART_REGIONS[matchedPart] ?? DEFAULT_PART_REGION;
     const itemRef: ItemRef = { carId: top.image.vin, imageId: top.image.id };
     return [
       { op: "showImage", carId: top.image.vin, imageId: top.image.id },
@@ -980,9 +1267,14 @@ export function planCanvas(message: string, images: CarImage[], state: ViewState
     // No matching images — fall through to ranked default below.
   }
 
-  // 7. Default: showImage of top-ranked
+  // 7. Default: showImage of top-ranked — ONLY when the match is strong. A weak
+  //    top score means the message isn't really about anything in a photo (e.g.
+  //    a pricing / financing / "is it worth it" / objection turn). Surfacing a
+  //    tangential image there is the bug where "justifying the pricing" pulled a
+  //    random speaker close-up (score ~2). Below the threshold we return [] and
+  //    let the caller revert the canvas to the overview hero instead.
   const ranked = rankImagesForQuestion(message, images);
   const top = ranked[0];
-  if (!top) return [];
+  if (!top || top.score < MIN_DEFAULT_SHOW_SCORE) return [];
   return [{ op: "showImage", carId: top.image.vin, imageId: top.image.id }];
 }

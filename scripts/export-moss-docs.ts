@@ -18,6 +18,8 @@ function carDoc(car: unknown): MossDoc {
       title: `${c.year} ${c.make} ${c.model}`,
       variant: `${c.trim} · ${c.drivetrain} · ${c.color}`,
       price: String(c.price ?? ""),
+      incentive_range_min: String(c.pricingGuidance?.incentiveRangeMin ?? ""),
+      incentive_range_max: String(c.pricingGuidance?.incentiveRangeMax ?? ""),
       available: c.availability === "available" ? "true" : "false",
       opt_body: c.body,
       opt_drivetrain: c.drivetrain,

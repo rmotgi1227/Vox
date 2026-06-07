@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CarImageSchema, CarSchema } from "@vox/core";
+import { CarImageSchema, CarSchema, carFactSheet } from "@vox/core";
 import { rankImagesForQuestion, selectImageForQuestion } from "@vox/agent-core";
 
 const images = [
@@ -15,6 +15,45 @@ describe("core schemas", () => {
       drivetrain: "RWD", fuel: "Gas", price: null, mileage: 0, color: "Demo",
       features: [], availability: "available", description: "demo"
     })).not.toThrow();
+  });
+
+  it("includes pricing guidance in the grounded fact sheet", () => {
+    const car = CarSchema.parse({
+      vin: "x", year: 2026, make: "BMW", model: "M4", trim: "Demo", body: "Coupe",
+      drivetrain: "RWD", fuel: "Gas", price: 89900, mileage: 0, color: "Demo",
+      features: [], availability: "available", description: "demo",
+      specs: {
+        condition: "New",
+        vin: "WBS123",
+        stockNumber: "M4-1",
+        msrp: 92595,
+        exteriorColor: "Demo",
+        interiorColor: "Black",
+        engine: "I6",
+        horsepower: 503,
+        torque: "479 lb-ft",
+        transmission: "8-speed automatic",
+        zeroToSixtySeconds: 3.8,
+        topSpeedMph: 155,
+        fuelType: "Premium",
+        mpgCity: 16,
+        mpgHighway: 23,
+        mpgCombined: 19,
+        fuelTankGallons: 15.6,
+        seating: 4,
+        doors: 2,
+        warranty: "4-year / 50,000-mile",
+        packages: [],
+        options: []
+      },
+      pricingGuidance: {
+        incentiveRangeMin: 87000,
+        incentiveRangeMax: 89900
+      }
+    });
+
+    expect(carFactSheet(car)).toContain("Pricing guidance: MSRP is $92,595; our price is $89,900.");
+    expect(carFactSheet(car)).toContain("target discussion range is $87,000-$89,900");
   });
 });
 

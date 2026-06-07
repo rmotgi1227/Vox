@@ -19,6 +19,7 @@
  *   pending item   → shimmer tile
  */
 
+import { useEffect, useRef, useState } from "react";
 import { ImageIcon } from "lucide-react";
 import type { CarImage, CanvasItem, ViewState } from "@vox/core";
 
@@ -115,12 +116,110 @@ function ShimmerTile({ label }: { label?: string }) {
   );
 }
 
+type SpecCardRow = {
+  label: string;
+  value: string;
+  emphasis?: "normal" | "muted" | "total";
+  separatorBefore?: boolean;
+};
+
+/**
+ * Types a string out character-by-character — the "salesman writing it down"
+ * effect. The caret blinks while typing and DISAPPEARS once the value is fully
+ * written. Calls `onDone` when finished (used to advance the sequential reveal).
+ * Presentation only; the final value is always the full grounded string.
+ */
+function TypedText({ text, speed = 42, onDone }: { text: string; speed?: number; onDone?: () => void }) {
+  const [shown, setShown] = useState("");
+  const [done, setDone] = useState(false);
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
+  useEffect(() => {
+    setShown("");
+    setDone(false);
+    let i = 0;
+    const id = window.setInterval(() => {
+      i += 1;
+      setShown(text.slice(0, i));
+      if (i >= text.length) {
+        window.clearInterval(id);
+        setDone(true);
+        onDoneRef.current?.();
+      }
+    }, speed);
+    return () => window.clearInterval(id);
+  }, [text, speed]);
+  return (
+    <span className="spec-typed">
+      {shown}
+      {!done && <span className="spec-caret" aria-hidden="true" />}
+    </span>
+  );
+}
+
+/**
+ * Full-screen "notepad" of grounded facts. One row → big hero number; several
+ * rows → a stacked fact sheet. Rows reveal SEQUENTIALLY — each types out, and
+ * only when it finishes does the next row appear and start — so the card builds
+ * line-by-line like the specialist talking through it. Earlier rows sit static
+ * (no caret); the active row carries the blinking caret until it lands.
+ */
+function SpecCard({ title, rows }: { title?: string; rows: SpecCardRow[] }) {
+  const single = rows.length === 1;
+  // How many rows are visible/started. Resets to 1 whenever the card content
+  // changes (keyed on a stable signature so it doesn't reset every render).
+  const rowsKey = rows.map((r) => `${r.label}=${r.value}`).join("|");
+  const [revealed, setRevealed] = useState(1);
+  useEffect(() => {
+    setRevealed(1);
+  }, [rowsKey]);
+
+  return (
+    <div className={`spec-card${single ? " spec-card-single" : ""}`}>
+      {title && !single && <div className="spec-card-title">{title}</div>}
+      <div className="spec-rows">
+        {rows.slice(0, revealed).map((row, i) => {
+          const isActive = i === revealed - 1;
+          return (
+            <div
+              className={[
+                "spec-row",
+                row.emphasis ? `spec-row-${row.emphasis}` : "",
+                row.separatorBefore ? "spec-row-separator" : "",
+              ].filter(Boolean).join(" ")}
+              key={`${row.label}-${i}`}
+            >
+              <span className="spec-label">{row.label}</span>
+              <span className="spec-value">
+                {isActive ? (
+                  <TypedText
+                    text={row.value}
+                    onDone={() => setRevealed((r) => (r < rows.length ? r + 1 : r))}
+                  />
+                ) : (
+                  // Already-finished row: full value, no caret.
+                  <span className="spec-typed">{row.value}</span>
+                )}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /** Annotation mark boxes overlaid on an item. Normalized coords → %. */
 function MarkOverlays({
   marks,
   itemIndex,
 }: {
-  marks: { itemIndex: number; box: [number, number, number, number]; label: string }[];
+  marks: {
+    itemIndex: number;
+    box: [number, number, number, number];
+    label: string;
+    polygon?: [number, number][];
+  }[];
   itemIndex: number;
 }) {
   const relevant = marks.filter((m) => m.itemIndex === itemIndex);
@@ -128,6 +227,26 @@ function MarkOverlays({
   return (
     <>
       {relevant.map((mark, i) => {
+        // Contour annotation: outline the real shape with an SVG polygon and
+        // anchor the label pill at the contour's top-left, instead of a rectangle.
+        if (mark.polygon && mark.polygon.length >= 3) {
+          const points = mark.polygon.map(([x, y]) => `${(x * 100).toFixed(2)},${(y * 100).toFixed(2)}`).join(" ");
+          const minX = Math.min(...mark.polygon.map(([x]) => x));
+          const minY = Math.min(...mark.polygon.map(([, y]) => y));
+          return (
+            <div key={i} className="canvas-mark-outline">
+              <svg className="canvas-mark-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                <polygon points={points} />
+              </svg>
+              <span
+                className="canvas-mark-label"
+                style={{ left: `${(minX * 100).toFixed(2)}%`, top: `${(minY * 100).toFixed(2)}%` }}
+              >
+                {mark.label}
+              </span>
+            </div>
+          );
+        }
         const [bx, by, bw, bh] = mark.box;
         return (
           <div
@@ -242,6 +361,12 @@ export function Canvas({ viewState, images, imageBusy = false }: CanvasProps) {
           }
         />
         {marks && <MarkOverlays marks={marks} itemIndex={0} />}
+        {/* Caption sits ON the image (anchored to the wrapper = image box) and
+            stays put during zoom, since the wrapper isn't transformed — only the
+            figure inside it is. */}
+        {!imageBusy && captionText ? (
+          <div className="canvas-caption">{captionText}</div>
+        ) : null}
       </div>
     );
   }
@@ -284,6 +409,19 @@ export function Canvas({ viewState, images, imageBusy = false }: CanvasProps) {
     );
   }
 
+  // ── Layout: spec (full-screen written fact sheet, no photo) ──────────────
+  function renderSpec() {
+    const item = items[0];
+    if (!item || item.kind !== "spec") {
+      return <div className="empty-image"><ImageIcon /></div>;
+    }
+    return (
+      <div className="canvas-spec">
+        <SpecCard title={item.title} rows={item.rows} />
+      </div>
+    );
+  }
+
   // ── Caption: always rendered, even when empty (e2e asserts .canvas-caption) ──
   const captionText =
     caption ??
@@ -299,14 +437,19 @@ export function Canvas({ viewState, images, imageBusy = false }: CanvasProps) {
 
   return (
     <div className="image-canvas">
-      {layout === "grid" && items.length > 1
+      {layout === "spec"
+        ? renderSpec()
+        : layout === "grid" && items.length > 1
         ? renderGrid()
         : layout === "compare" && items.length > 1
         ? renderCompare()
         : renderSingle()}
 
-      {/* Caption pill — always in DOM (.canvas-caption e2e selector) */}
-      {!imageBusy && (
+      {/* Grid/compare caption sits on the canvas (multiple images, no single
+          image to anchor to). Single layout renders its caption ON the image
+          inside renderSingle. Spec carries its own heading. (.canvas-caption is
+          still in the DOM for every image layout — the e2e selector holds.) */}
+      {!imageBusy && ((layout === "grid" && items.length > 1) || (layout === "compare" && items.length > 1)) && (
         <div className="canvas-caption">{captionText}</div>
       )}
 

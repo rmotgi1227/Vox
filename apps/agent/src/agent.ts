@@ -19,10 +19,11 @@ import {
   resolveModelProfile,
   type Car,
   type CarImage,
-  type ViewState
+  type ViewState,
+  type ItemRef
 } from "@vox/core";
 import { applyAction, planCanvas, selectOverviewImage } from "@vox/agent-core";
-import { getCar, listImages, generateSpokenReply, decideCanvas } from "@vox/ai";
+import { getCar, listImages, generateSpokenReply, decideCanvas, decideTurn, generateVisualization } from "@vox/ai";
 
 config({ path: findRootEnv(process.cwd()) });
 
@@ -145,12 +146,35 @@ function textStream(text: string): ReadableStream<string> {
   });
 }
 
+/**
+ * Resolve a generate action's baseRef to the public URL of the real photo to
+ * edit. {imageId} → that catalog image; {index} (or missing) → the item at that
+ * index currently on screen. Returns undefined → pure text-to-image.
+ */
+function resolveBaseImageUrl(
+  baseRef: ItemRef | undefined,
+  view: ViewState,
+  images: CarImage[]
+): string | undefined {
+  const urlById = (id: string) => images.find((img) => img.id === id)?.url;
+  if (baseRef && "imageId" in baseRef) return urlById(baseRef.imageId);
+  const idx = baseRef && "index" in baseRef ? baseRef.index : 0;
+  const item = view.items[idx] ?? view.items[0];
+  if (item?.kind === "image") return urlById(item.imageId);
+  if (item?.kind === "generated") return item.url;
+  return undefined;
+}
+
 
 class VoxSpecialistVoiceAgent extends voice.Agent {
   // ViewState tracks what the canvas is currently showing. Seeded in entry()
   // from the first processed image; updated exclusively via applyAction so the
   // canvas lane and voice narration always see a coherent view.
   private viewState: ViewState = { layout: "single", items: [] };
+  // The "home" view — the overview hero (OG first image). When a turn needs no
+  // image or text, the canvas reverts here instead of lingering on a stale or
+  // weakly-matched photo.
+  private overviewView: ViewState = { layout: "single", items: [] };
   private lastHandled = "";
   private lastHandledAt = 0;
   private turnCounter = 0;
@@ -162,7 +186,12 @@ class VoxSpecialistVoiceAgent extends voice.Agent {
 
   constructor(
     private readonly ctx: JobContext,
-    private readonly llmModel: string
+    private readonly llmModel: string,
+    // True on a reconnect within the same page session — skip the full opener.
+    private readonly returning: boolean = false,
+    // TEMP A/B: "single" = one LLM call (reply + canvas together), "double" =
+    // two parallel calls (speech + canvas). Default single.
+    private readonly brainMode: "single" | "double" = "single"
   ) {
     super({
       instructions: "You are Vox, a voice-first BMW M4 sales specialist. You hold a natural spoken conversation; a screen beside you can show photos as a visual aid, but you lead with talking, not images."
@@ -172,6 +201,22 @@ class VoxSpecialistVoiceAgent extends voice.Agent {
   /** Seed the initial ViewState from the overview image chosen in entry(). */
   setInitialViewState(state: ViewState) {
     this.viewState = state;
+    this.overviewView = state; // remember the OG hero so we can revert to it
+  }
+
+  /**
+   * Revert the canvas to the overview hero (the OG first image) when a turn
+   * produced no image/text. No-op if we're already there or have no overview.
+   */
+  private revertToOverview(turnId: number, tag: string): void {
+    if (this.overviewView.items.length === 0) return;
+    if (JSON.stringify(this.viewState) === JSON.stringify(this.overviewView)) {
+      console.log(`Vox turn #${turnId} ${tag} canvas: no actions (already overview)`);
+      return;
+    }
+    this.viewState = this.overviewView;
+    this.publishViewUpdate(this.overviewView);
+    console.log(`Vox turn #${turnId} ${tag} canvas: reverted to overview`);
   }
 
   /** Track whether Vox is currently speaking (driven by AgentStateChanged). */
@@ -187,14 +232,54 @@ class VoxSpecialistVoiceAgent extends voice.Agent {
     publishSpecialistDataAsync(this.ctx, { type: "view_update", view });
   }
 
+  /**
+   * Run a Nano Banana generative visualization on a non-blocking lane: show a
+   * shimmer placeholder immediately, call Gemini (slow, ~10–30s), then swap in
+   * the result — or a "failed" tile if it errors (e.g. out of image quota). The
+   * spoken reply ("generating that now…") has already gone out by the time this
+   * runs, so the voice never waits on it.
+   */
+  private async runGeneration(prompt: string, baseImageUrl: string | undefined, vin: string, turnId: number): Promise<void> {
+    const placeholderId = `gen_${this.turnCounter}_${Date.now()}`;
+    const pending: ViewState = {
+      layout: "single",
+      items: [{ kind: "generated", id: placeholderId, prompt, status: "pending" }]
+    };
+    this.viewState = pending;
+    this.publishViewUpdate(pending);
+    console.log(`Vox turn #${turnId} [generate] start (base=${baseImageUrl ?? "none"}): ${prompt.slice(0, 90)}`);
+    try {
+      const { id, url } = await generateVisualization({ prompt, baseImageUrl, vin });
+      const ready: ViewState = {
+        layout: "single",
+        items: [{ kind: "generated", id, prompt, status: "ready", url }]
+      };
+      this.viewState = ready;
+      this.publishViewUpdate(ready);
+      console.log(`Vox turn #${turnId} [generate] ready → ${url}`);
+    } catch (err) {
+      console.warn(`Vox turn #${turnId} [generate] failed: ${err instanceof Error ? err.message : String(err)}`);
+      const failed: ViewState = {
+        layout: "single",
+        items: [{ kind: "generated", id: placeholderId, prompt, status: "failed" }]
+      };
+      this.viewState = failed;
+      this.publishViewUpdate(failed);
+    }
+  }
+
   // Speak a deterministic, voice-first opener once when the conversation
   // starts — so the first thing the shopper hears is a real greeting, not a
   // phantom turn that ends up describing whatever photo happens to be loaded.
   override async onEnter(): Promise<void> {
     try {
+      // Reconnect within the same session → a quick re-prompt, not the full
+      // intro. First connect → a short, warm opener (interruptible either way).
       const car = await getCar(DEFAULT_VIN);
-      const name = car ? `${car.year} ${car.make} ${car.model} ${car.trim}` : "BMW M4";
-      const greeting = `Hey, welcome! I'm Vox. This is the ${name} — beautiful car. What would you like to know, or want me to walk you through it?`;
+      const model = car ? `${car.make} ${car.model}` : "M4";
+      const greeting = this.returning
+        ? "How can I help you?"
+        : `Hey, welcome — I'm Vox. What would you like to know about this ${model}?`;
       // Use the same reply_done protocol every other turn uses, so the greeting
       // reliably renders in the chat log (the legacy specialist_turn.reply field
       // is no longer read by the web).
@@ -242,7 +327,54 @@ class VoxSpecialistVoiceAgent extends voice.Agent {
       const resolvedImages = images;
       const recentTurns = this.history.slice(-6);
 
-      // ── TWO INDEPENDENT CEREBRAS CALLS ───────────────────────────────────
+      // ── SINGLE BRAIN (default) ───────────────────────────────────────────
+      // ONE Cerebras call decides the spoken reply AND the canvas actions
+      // together, so the words and the picture come from the same decision and
+      // can never disagree. Returns early; the two-call path below only runs in
+      // "double" mode.
+      if (this.brainMode === "single") {
+        const { reply, actions } = await decideTurn({
+          message,
+          viewState: this.viewState,
+          car: resolvedCar,
+          images: resolvedImages,
+          recentTurns
+        });
+        let finalActs = actions;
+        if (finalActs.length === 0) {
+          const hinted = planCanvas(message, resolvedImages, this.viewState);
+          if (hinted.length > 0) finalActs = hinted;
+        }
+        // `generate` (Nano Banana) is async + slow — split it out and run it on a
+        // non-blocking lane (shows a shimmer placeholder, then the result). The
+        // rest of the actions apply synchronously as usual.
+        const genActs = finalActs.filter((a) => a.op === "generate");
+        const syncActs = finalActs.filter((a) => a.op !== "generate");
+        if (syncActs.length > 0) {
+          let nextView = this.viewState;
+          const catalog = { images: resolvedImages, cars: [resolvedCar] };
+          for (const act of syncActs) nextView = applyAction(nextView, act, catalog);
+          this.viewState = nextView;
+          this.publishViewUpdate(nextView);
+          console.log(`Vox turn #${turnId} [single] canvas: layout=${nextView.layout} items=${nextView.items.length} ops=[${syncActs.map((a) => a.op).join(",")}]`);
+        } else if (genActs.length === 0) {
+          // Nothing to show this turn → return to the overview hero.
+          this.revertToOverview(turnId, "[single]");
+        }
+        for (const g of genActs) {
+          if (g.op !== "generate") continue;
+          const baseUrl = resolveBaseImageUrl(g.baseRef, this.viewState, resolvedImages);
+          void this.runGeneration(g.prompt, baseUrl, resolvedCar.vin, turnId);
+        }
+        const spoken = reply.trim() || FALLBACK_REPLY;
+        publishSpecialistDataAsync(this.ctx, { type: "reply_delta", text: spoken });
+        publishSpecialistDataAsync(this.ctx, { type: "reply_done", reply: spoken });
+        this.recordTurn(message, spoken);
+        console.log(`Vox turn #${turnId} [single] reply: ${spoken}`);
+        return textStream(spoken);
+      }
+
+      // ── TWO INDEPENDENT CEREBRAS CALLS (brainMode === "double") ──────────
       // One call speaks, one call drives the canvas. They run in parallel, each
       // on its own key via the revolver, fully decoupled: the canvas call never
       // blocks voice, and decideCanvas returns [] on any failure so a canvas
@@ -266,7 +398,8 @@ class VoxSpecialistVoiceAgent extends voice.Agent {
             this.publishViewUpdate(nextView);
             console.log(`Vox turn #${turnId} canvas: published view_update layout=${nextView.layout} items=${nextView.items.length} ops=[${finalActs.map((a) => a.op).join(",")}]`);
           } else {
-            console.log(`Vox turn #${turnId} canvas: no actions — canvas unchanged`);
+            // Nothing to show this turn → return to the overview hero.
+            this.revertToOverview(turnId, "[double]");
           }
         })
         .catch((err) => {
@@ -339,6 +472,8 @@ export default defineAgent({
     // Fall back to DEFAULT_MODEL_PROFILE_ID if metadata is absent or invalid.
     // -----------------------------------------------------------------------
     let profileId: string | undefined;
+    let isReturning = false;
+    let brainMode: "single" | "double" = "single";
     try {
       const raw = ctx.job.metadata;
       if (raw) {
@@ -346,17 +481,30 @@ export default defineAgent({
         if (typeof parsed.profileId === "string") {
           profileId = parsed.profileId;
         }
+        if (parsed.returning === true) isReturning = true;
+        if (parsed.brainMode === "double") brainMode = "double";
       }
     } catch {
       // malformed metadata — use default
     }
+    console.log(`Vox brain mode: ${brainMode}`);
     const profile = resolveModelProfile(profileId ?? DEFAULT_MODEL_PROFILE_ID);
     console.log(`Vox profile: ${profile.id} (llm=${profile.llmModel}, tts=${profile.ttsModel})`);
 
-    // Build TTS string from profile: "cartesia/<ttsModel>:<voiceId>"
-    const ttsString = `cartesia/${profile.ttsModel}:${CARTESIA_VOICE}`;
+    // Cartesia TTS via LiveKit Inference. `speed` is the main pacing lever —
+    // "fast" gives the brighter, more energetic cadence a salesman has, and also
+    // shortens time-to-first-word. Overridable via CARTESIA_SPEED
+    // ("slow" | "normal" | "fast"); drop to "normal" if the faster pace ever
+    // clips clarity. Keep modelOptions to documented Cartesia fields only — an
+    // unsupported option can silently drop the Inference stream (see STT note).
+    const cartesiaSpeed = (process.env.CARTESIA_SPEED as "slow" | "normal" | "fast" | undefined) ?? "fast";
+    const ttsOption = new inference.TTS({
+      model: `cartesia/${profile.ttsModel}`,
+      voice: CARTESIA_VOICE,
+      modelOptions: { speed: cartesiaSpeed }
+    });
 
-    const specialist = new VoxSpecialistVoiceAgent(ctx, profile.llmModel);
+    const specialist = new VoxSpecialistVoiceAgent(ctx, profile.llmModel, isReturning, brainMode);
 
     // Seed the initial ViewState from the overview image so the canvas shows
     // something meaningful the moment the session connects.
@@ -392,7 +540,7 @@ export default defineAgent({
     const session = new voice.AgentSession({
       stt: sttOption,
       llm: new voice.testing.FakeLLM(),
-      tts: ttsString,
+      tts: ttsOption,
       userAwayTimeout: null,
       turnHandling: {
         // "stt" uses Deepgram's end-of-speech signal then applies our minDelay.

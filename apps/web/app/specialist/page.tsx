@@ -98,6 +98,19 @@ function loadStoredProfile(): ModelProfile {
   }
 }
 
+// TEMP A/B brain toggle, persisted in localStorage. Read fresh at connect time
+// so the dropdown choice always applies on the next connect.
+const BRAIN_STORAGE_KEY = "vox.brain.mode";
+type BrainMode = "single" | "double";
+function loadBrainMode(): BrainMode {
+  if (typeof window === "undefined") return "single";
+  try {
+    return localStorage.getItem(BRAIN_STORAGE_KEY) === "double" ? "double" : "single";
+  } catch {
+    return "single";
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Main page
 // ---------------------------------------------------------------------------
@@ -118,6 +131,8 @@ export default function SpecialistPage() {
   const [liveTranscript, setLiveTranscript] = useState("");
   const [chatOpen, setChatOpen] = useState(false);
   const [activeProfile] = useState<ModelProfile>(() => loadStoredProfile());
+  // TEMP A/B: single vs double brain (applies on next connect).
+  const [brainMode, setBrainMode] = useState<BrainMode>(() => loadBrainMode());
   // hover-to-disconnect state
   const [buttonHovered, setButtonHovered] = useState(false);
   // visualizer-only signals — never feed the voiceState machine / button label
@@ -135,6 +150,9 @@ export default function SpecialistPage() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const remoteAudioRef = useRef<HTMLDivElement>(null);
   const roomRef = useRef<LiveKitRoomLike | null>(null);
+  // True once the shopper has connected at least once this page session, so a
+  // disconnect → reconnect gets a short "how can I help?" not the full opener.
+  const hasConnectedRef = useRef(false);
   const agentJoinedRef = useRef<Promise<void> | null>(null);
   const agentJoinedResolveRef = useRef<(() => void) | undefined>(undefined);
   const chatLogRef = useRef<HTMLDivElement>(null);
@@ -481,6 +499,8 @@ export default function SpecialistPage() {
       roomName,
       identity: `shopper-${Date.now()}`,
       profileId,
+      returning: hasConnectedRef.current,
+      brainMode: loadBrainMode(),
     });
     const { Room, RoomEvent } = await import("livekit-client");
     // Capture-side cleanup runs in the browser BEFORE audio is encoded/sent —
@@ -615,6 +635,8 @@ export default function SpecialistPage() {
       }
 
       setVoiceState("connected");
+      // Mark connected so the next reconnect skips the full first-time opener.
+      hasConnectedRef.current = true;
     } catch (err) {
       // Clean up on failure
       roomRef.current?.disconnect();
@@ -775,20 +797,49 @@ export default function SpecialistPage() {
                 {message.text}
               </div>
             ))}
-            {busy ? (
+            {liveTranscript ? (
+              <div className="message user live">{liveTranscript}</div>
+            ) : null}
+            {/* Typing loader while a reply is pending — both the typed path (busy)
+                and the voice path (agent is "thinking" and hasn't begun streaming
+                a reply bubble yet). Sits directly under the latest user input. */}
+            {(busy ||
+              (agentActivity === "thinking" &&
+                !(messages[messages.length - 1]?.role === "assistant" &&
+                  messages[messages.length - 1]?.streaming))) ? (
               <div className="message typing" role="status" aria-label="Specialist is typing">
                 <span />
                 <span />
                 <span />
               </div>
             ) : null}
-            {liveTranscript ? (
-              <div className="message user live">{liveTranscript}</div>
-            ) : null}
             {error ? <div className="message assistant">Error: {error}</div> : null}
           </div>
 
           <div className="composer" ref={composerRef}>
+            {/* TEMP A/B brain selector — applies on next connect */}
+            <div className="brain-toggle-temp">
+              <span className="brain-toggle-label">Brain</span>
+              <select
+                className="brain-toggle-select"
+                value={brainMode}
+                onChange={(e) => {
+                  const m = e.target.value === "double" ? "double" : "single";
+                  setBrainMode(m);
+                  try {
+                    localStorage.setItem(BRAIN_STORAGE_KEY, m);
+                  } catch {
+                    // ignore storage errors
+                  }
+                }}
+              >
+                <option value="single">Single brain</option>
+                <option value="double">Double brain</option>
+              </select>
+              {voiceState === "connected" ? (
+                <span className="brain-toggle-hint">reconnect to apply</span>
+              ) : null}
+            </div>
             <div className="composer-actions">
               {chatOpen ? (
                 <div className="chat-popover" role="dialog" aria-label="Type a message">

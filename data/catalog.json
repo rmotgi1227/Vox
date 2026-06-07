@@ -28,6 +28,11 @@
       "Wireless Apple CarPlay & Android Auto"
     ],
     "availability": "available",
+    "pricingGuidance": {
+      "incentiveRangeMin": 87000,
+      "incentiveRangeMax": 89900,
+      "note": "Final pricing depends on current incentives, eligibility, taxes, fees, trade, and finance or lease structure."
+    },
     "description": "This 2026 BMW M4 Competition is a rear-wheel-drive performance coupe powered by a 3.0-liter M TwinPower Turbo inline-six producing 503 horsepower and 479 lb-ft of torque, paired with an 8-speed M Steptronic automatic. It sprints from 0 to 60 mph in 3.8 seconds and is electronically limited to 155 mph (180 mph with the M Driver's Package). Finished in Brooklyn Grey Metallic over a Black Merino leather interior, it features M Carbon bucket seats, a carbon-fiber roof, carbon-fiber interior and exterior accents, the Executive Package, Driving Assistance Professional, Harman Kardon surround sound, a head-up display, and Laserlight headlights. As a new demonstrator unit it shows just 28 delivery miles and is backed by BMW's 4-year/50,000-mile new-vehicle warranty with complimentary scheduled maintenance. EPA-estimated fuel economy is 16 city / 23 highway / 19 combined mpg.",
     "specs": {
       "condition": "New",
@@ -49,6 +54,7 @@
       "fuelTankGallons": 15.6,
       "seating": 4,
       "doors": 2,
+      "cargoCubicFeet": 15.5,
       "warranty": "4-year / 50,000-mile new-vehicle limited warranty, 3-year / 36,000-mile complimentary scheduled maintenance, and 12-year unlimited-mile rust perforation coverage",
       "packages": [
         "Carbon Fiber Roof",

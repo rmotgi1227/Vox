@@ -34,9 +34,21 @@ export const CarSpecsSchema = z.object({
   fuelTankGallons: z.number().positive(),
   seating: z.number().int().positive(),
   doors: z.number().int().positive(),
+  // Optional so existing catalog data parses unchanged. When present, the voice
+  // lane can answer "how big is the trunk" with a grounded figure (the canvas
+  // annotation overlays the same number visually).
+  cargoCubicFeet: z.number().positive().optional(),
   warranty: z.string().min(1),
   packages: z.array(z.string()),
   options: z.array(z.string())
+});
+
+export const PricingGuidanceSchema = z.object({
+  incentiveRangeMin: z.number().nonnegative(),
+  incentiveRangeMax: z.number().nonnegative(),
+  note: z.string().min(1).optional()
+}).refine((value) => value.incentiveRangeMin <= value.incentiveRangeMax, {
+  message: "incentiveRangeMin must be less than or equal to incentiveRangeMax"
 });
 
 export const CarSchema = z.object({
@@ -54,7 +66,8 @@ export const CarSchema = z.object({
   features: z.array(z.string()),
   availability: z.enum(["available", "sold", "unknown"]),
   description: z.string(),
-  specs: CarSpecsSchema.optional()
+  specs: CarSpecsSchema.optional(),
+  pricingGuidance: PricingGuidanceSchema.optional()
 });
 
 // ── Canvas agent foundation (Phase 0) ────────────────────────────────────────
@@ -65,6 +78,12 @@ export const BBoxSchema = z.tuple([
   z.number().min(0).max(1),
   z.number().min(0).max(1)
 ]);
+
+// A normalized contour point [x, y] in 0..1. A PolygonSchema is an ordered ring
+// of these points tracing an object's actual shape — so an annotation can hug
+// the trunk opening (an outline) instead of drawing a crude bounding rectangle.
+export const NormPointSchema = z.tuple([z.number().min(0).max(1), z.number().min(0).max(1)]);
+export const PolygonSchema = z.array(NormPointSchema).min(3);
 
 export const CarImageSchema = z.object({
   id: z.string().min(1),
@@ -81,7 +100,7 @@ export const CarImageSchema = z.object({
   status: ImageStatusSchema,
   // Optional canvas metadata — seeded by ingest (Phase 6+). Safe defaults let
   // the existing 46-image data/images.json parse without any changes.
-  boxes: z.array(z.object({ label: z.string(), box: BBoxSchema })).optional().default([]),
+  boxes: z.array(z.object({ label: z.string(), box: BBoxSchema, polygon: PolygonSchema.optional() })).optional().default([]),
   zoomTargets: z.record(z.string(), BBoxSchema).optional().default({}),
   pairs: z.array(z.string()).optional().default([])
 });
@@ -148,10 +167,18 @@ export const SpecialistStateSchema = z.object({
 
 export const ModelProfileIdSchema = z.enum(["instant", "natural", "expressive"]);
 
+// TEMP A/B toggle: "single" = one LLM call (reply + canvas together, coherent);
+// "double" = two parallel calls (speech + canvas). Defaults to single.
+export const BrainModeSchema = z.enum(["single", "double"]);
+
 export const LiveKitTokenRequestSchema = z.object({
   roomName: z.string().min(1).default("vox-specialist-demo"),
   identity: z.string().min(1).default("shopper"),
-  profileId: ModelProfileIdSchema.optional()
+  profileId: ModelProfileIdSchema.optional(),
+  // True when the shopper has already connected once this page session, so the
+  // agent gives a short "how can I help?" instead of the full first-time opener.
+  returning: z.boolean().optional(),
+  brainMode: BrainModeSchema.optional().default("single")
 });
 
 export type ImageRole = z.infer<typeof ImageRoleSchema>;
@@ -168,10 +195,12 @@ export type SpecialistSource = z.infer<typeof SpecialistSourceSchema>;
 export type SpecialistTurn = z.infer<typeof SpecialistTurnSchema>;
 export type SpecialistState = z.infer<typeof SpecialistStateSchema>;
 export type LiveKitTokenRequest = z.infer<typeof LiveKitTokenRequestSchema>;
+export type BrainMode = z.infer<typeof BrainModeSchema>;
 export type ModelProfileId = z.infer<typeof ModelProfileIdSchema>;
 
 // Canvas agent inferred types (Phase 0)
 export type BBox = z.infer<typeof BBoxSchema>;
+export type Polygon = z.infer<typeof PolygonSchema>;
 export type CanvasItem = z.infer<typeof CanvasItemSchema>;
 export type ItemRef = z.infer<typeof ItemRefSchema>;
 export type ItemFilter = z.infer<typeof ItemFilterSchema>;
@@ -212,12 +241,26 @@ export const CanvasItemSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("car"),
     carId: z.string().min(1)
+  }),
+  // A "notepad" of grounded facts the specialist writes out as text instead of
+  // a photo — e.g. mileage, price, horsepower. `rows` are already resolved and
+  // formatted by the reducer (the renderer never sees the Car), so the canvas
+  // can only ever display numbers that match the catalog data.
+  z.object({
+    kind: z.literal("spec"),
+    title: z.string().optional(),
+    rows: z.array(z.object({
+      label: z.string(),
+      value: z.string(),
+      emphasis: z.enum(["normal", "muted", "total"]).optional(),
+      separatorBefore: z.boolean().optional()
+    })).min(1)
   })
 ]);
 
 // What the screen is showing right now. The renderer is a pure function of this.
 export const ViewStateSchema = z.object({
-  layout: z.enum(["single", "grid", "compare", "focus"]),
+  layout: z.enum(["single", "grid", "compare", "focus", "spec"]),
   items: z.array(CanvasItemSchema),
   zoom: z.object({
     itemIndex: z.number().int().min(0),
@@ -226,7 +269,10 @@ export const ViewStateSchema = z.object({
   marks: z.array(z.object({
     itemIndex: z.number().int().min(0),
     box: BBoxSchema,
-    label: z.string()
+    label: z.string(),
+    // Optional contour: when present the renderer outlines this shape instead of
+    // drawing the rectangular box (box stays as the label anchor + fallback).
+    polygon: PolygonSchema.optional()
   })).optional(),
   caption: z.string().optional()
 });
@@ -261,10 +307,13 @@ export const CanvasActionSchema = z.discriminatedUnion("op", [
     region: z.union([BBoxSchema, z.string()])
   }),
   // ── Tier 2: schema now, behavior in Phase 5–6 ─────────────────────────────
+  // marks is OPTIONAL: when omitted, the reducer backfills the marks from the
+  // target image's precomputed `boxes` (so a text-only LLM never has to invent
+  // pixel coordinates it cannot see — it just points at the image to annotate).
   z.object({
     op: z.literal("annotate"),
     itemRef: ItemRefSchema,
-    marks: z.array(z.object({ box: BBoxSchema, label: z.string() }))
+    marks: z.array(z.object({ box: BBoxSchema, label: z.string(), polygon: PolygonSchema.optional() })).optional()
   }),
   z.object({
     op: z.literal("compare"),
@@ -273,6 +322,16 @@ export const CanvasActionSchema = z.discriminatedUnion("op", [
   z.object({
     op: z.literal("focusCar"),
     carId: z.string().min(1)
+  }),
+  // ── Text: write grounded facts onto the canvas (the salesman's notepad) ──────
+  // The model names WHICH facts to surface (e.g. ["mileage","price"]); the
+  // reducer resolves each field to a formatted value from the Car record. The
+  // model never types the number itself, so the figure on screen can't drift
+  // from the catalog. `title` is an optional short heading ("Performance").
+  z.object({
+    op: z.literal("writeSpec"),
+    fields: z.array(z.string().min(1)).min(1).max(6),
+    title: z.string().optional()
   }),
   // ── Tier 3: stub, no behavior yet (Phase 7) ───────────────────────────────
   z.object({
@@ -295,6 +354,7 @@ export const DEFAULT_VIN = "BMW-M4";
  */
 export function carFactSheet(car: Car): string {
   const priceLine = car.price != null ? `$${car.price.toLocaleString()}` : "Inquire for price";
+  const pricing = car.pricingGuidance;
   const lines: string[] = [
     `${car.year} ${car.make} ${car.model} ${car.trim} — ${car.body}, ${car.drivetrain}, ${car.fuel}.`,
     `Asking price: ${priceLine}. Mileage: ${car.mileage.toLocaleString()} mi. Availability: ${car.availability}. Exterior color: ${car.color}.`
@@ -307,9 +367,15 @@ export function carFactSheet(car: Car): string {
       `Engine: ${s.engine} making ${s.horsepower} hp and ${s.torque}. Transmission: ${s.transmission}.`,
       `0-60 mph in ${s.zeroToSixtySeconds} seconds; top speed ${s.topSpeedMph} mph.`,
       `Fuel: ${s.fuelType}; ${s.mpgCity} city / ${s.mpgHighway} highway / ${s.mpgCombined} combined mpg; ${s.fuelTankGallons}-gallon tank.`,
+      s.cargoCubicFeet ? `Trunk / cargo volume: ${s.cargoCubicFeet} cu ft (about ${Math.round(s.cargoCubicFeet * 28.3)} liters), expandable via the split-folding rear seatbacks.` : "",
       `Warranty: ${s.warranty}.`,
       s.packages.length ? `Packages: ${s.packages.join(", ")}.` : "",
       s.options.length ? `Options: ${s.options.join(", ")}.` : ""
+    );
+  }
+  if (pricing) {
+    lines.push(
+      `Pricing guidance: MSRP is ${s ? `$${s.msrp.toLocaleString()}` : "not listed"}; our price is ${priceLine}. After applicable discounts, rebates, and incentives, target discussion range is $${pricing.incentiveRangeMin.toLocaleString()}-$${pricing.incentiveRangeMax.toLocaleString()}.${pricing.note ? ` ${pricing.note}` : ""}`
     );
   }
   lines.push(

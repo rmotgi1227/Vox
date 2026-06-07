@@ -16,7 +16,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { CarImageSchema, ViewStateSchema } from "@vox/core";
 import type { CanvasAction, CanvasItem, CarImage, Car, ViewState } from "@vox/core";
-import { applyAction, planCanvas, selectItems } from "@vox/agent-core";
+import { applyAction, planCanvas, selectItems, resolveSpecRows } from "@vox/agent-core";
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 
@@ -389,6 +389,150 @@ describe("applyAction: reset", () => {
   });
 });
 
+// ── applyAction: writeSpec ──────────────────────────────────────────────────────
+
+const carWithSpecs: Car = {
+  ...carA,
+  vin: "CAR-S",
+  mileage: 12400,
+  price: 74900,
+  specs: {
+    condition: "Certified Pre-Owned",
+    vin: "WBS-FULL-VIN-123",
+    stockNumber: "M4-0420",
+    msrp: 84500,
+    exteriorColor: "São Paulo Yellow",
+    interiorColor: "Black Merino",
+    engine: "3.0L twin-turbo I6",
+    horsepower: 503,
+    torque: "479 lb-ft",
+    transmission: "8-speed automatic",
+    zeroToSixtySeconds: 3.4,
+    topSpeedMph: 180,
+    fuelType: "Premium",
+    mpgCity: 16,
+    mpgHighway: 23,
+    mpgCombined: 19,
+    fuelTankGallons: 15.6,
+    seating: 4,
+    doors: 2,
+    warranty: "4yr / 50,000 mi",
+    packages: ["Competition"],
+    options: ["Carbon bucket seats"]
+  },
+  pricingGuidance: {
+    incentiveRangeMin: 72000,
+    incentiveRangeMax: 74900
+  }
+};
+
+const specCatalog = { images: [imgFront], cars: [carWithSpecs] };
+const specSeedState: ViewState = {
+  layout: "single",
+  items: [{ kind: "image", carId: "CAR-S", imageId: "img-front" }]
+};
+
+describe("applyAction: writeSpec", () => {
+  it("writes a single grounded fact as a full-screen spec card", () => {
+    const action: CanvasAction = { op: "writeSpec", fields: ["mileage"] };
+    const next = applyAction(specSeedState, action, specCatalog);
+    expect(next.layout).toBe("spec");
+    expect(next.items).toHaveLength(1);
+    const item = next.items[0];
+    expect(item?.kind).toBe("spec");
+    if (item?.kind === "spec") {
+      expect(item.rows).toEqual([{ label: "Mileage", value: "12,400 mi" }]);
+    }
+  });
+
+  it("resolves multiple fields in order with formatting and keeps the title", () => {
+    const action: CanvasAction = {
+      op: "writeSpec",
+      fields: ["price", "horsepower", "zeroToSixty"],
+      title: "Performance"
+    };
+    const next = applyAction(specSeedState, action, specCatalog);
+    const item = next.items[0];
+    if (item?.kind === "spec") {
+      expect(item.title).toBe("Performance");
+      expect(item.rows).toEqual([
+        { label: "Price", value: "$74,900" },
+        { label: "Horsepower", value: "503 hp" },
+        { label: "0–60 mph", value: "3.4 s" }
+      ]);
+    }
+  });
+
+  it("resolves loose aliases (miles, hp, 0-60)", () => {
+    const action: CanvasAction = { op: "writeSpec", fields: ["miles", "hp", "0-60"] };
+    const next = applyAction(specSeedState, action, specCatalog);
+    const item = next.items[0];
+    if (item?.kind === "spec") {
+      expect(item.rows.map((r) => r.label)).toEqual(["Mileage", "Horsepower", "0–60 mph"]);
+    }
+  });
+
+  it("drops unknown fields and is a no-op when none resolve", () => {
+    const action: CanvasAction = { op: "writeSpec", fields: ["banana", "nonsense"] };
+    const next = applyAction(specSeedState, action, specCatalog);
+    expect(next).toBe(specSeedState);
+  });
+
+  it("resolves the car from whatever image is currently on screen", () => {
+    // Current view is CAR-B; writeSpec must read CAR-B's mileage, not CAR-A's.
+    const stateB: ViewState = {
+      layout: "single",
+      items: [{ kind: "image", carId: "CAR-B", imageId: "img-b-front" }]
+    };
+    const action: CanvasAction = { op: "writeSpec", fields: ["mileage"] };
+    const next = applyAction(stateB, action, catalog);
+    const item = next.items[0];
+    if (item?.kind === "spec") expect(item.rows[0]?.value).toBe("5,000 mi");
+  });
+
+  it("falls back to the first catalog car when nothing is on screen", () => {
+    const action: CanvasAction = { op: "writeSpec", fields: ["price"] };
+    const next = applyAction(emptyState, action, specCatalog);
+    const item = next.items[0];
+    if (item?.kind === "spec") expect(item.rows[0]?.value).toBe("$74,900");
+  });
+});
+
+// ── resolveSpecRows (unit) ──────────────────────────────────────────────────────
+
+describe("resolveSpecRows", () => {
+  it("handles a missing price gracefully", () => {
+    const noPrice: Car = { ...carWithSpecs, price: null };
+    expect(resolveSpecRows(noPrice, ["price"])).toEqual([{ label: "Price", value: "Inquire for price" }]);
+  });
+
+  it("resolves incentive range from pricing guidance", () => {
+    expect(resolveSpecRows(carWithSpecs, ["incentiveRange"])).toEqual([
+      { label: "Incentive Range", value: "$72,000-$74,900" }
+    ]);
+  });
+
+  it("resolves pricing math as a calculation-style row set", () => {
+    expect(resolveSpecRows(carWithSpecs, ["pricingMath"])).toEqual([
+      { label: "MSRP", value: "$84,500", emphasis: "muted" },
+      { label: "Our Price", value: "$74,900" },
+      { label: "Possible Range After Discounts", value: "$72,000-$74,900" },
+      { label: "Total Possible Savings", value: "Up to $12,500", emphasis: "total", separatorBefore: true }
+    ]);
+  });
+
+  it("de-duplicates fields that map to the same label", () => {
+    // "color" and "paint" (alias → color) both resolve to the Exterior row.
+    expect(resolveSpecRows(carWithSpecs, ["color", "paint"])).toHaveLength(1);
+  });
+
+  it("skips spec-only fields when the car has no specs block", () => {
+    expect(resolveSpecRows(carA, ["horsepower"])).toEqual([]);
+    // top-level fields still resolve
+    expect(resolveSpecRows(carA, ["mileage"])).toEqual([{ label: "Mileage", value: "1,200 mi" }]);
+  });
+});
+
 // ── selectItems ───────────────────────────────────────────────────────────────
 
 describe("selectItems", () => {
@@ -505,6 +649,24 @@ describe("planCanvas: intents (fixture images)", () => {
     }
   });
 
+  it("spec/number question → writeSpec (no photo)", () => {
+    const actions = planCanvas("how many miles does it have", fixtureImages, emptyState);
+    expect(actions).toHaveLength(1);
+    expect(actions[0]?.op).toBe("writeSpec");
+    if (actions[0]?.op === "writeSpec") expect(actions[0].fields).toContain("mileage");
+  });
+
+  it("price question → writeSpec price", () => {
+    const actions = planCanvas("what's the price", fixtureImages, emptyState);
+    expect(actions[0]?.op).toBe("writeSpec");
+    if (actions[0]?.op === "writeSpec") expect(actions[0].fields).toContain("pricingMath");
+  });
+
+  it("visual verb wins over spec terms: 'show me the price' does not writeSpec", () => {
+    const actions = planCanvas("show me the price", fixtureImages, emptyState);
+    expect(actions.every((a) => a.op !== "writeSpec")).toBe(true);
+  });
+
   it("specific-part (caliper) → showImage + zoom pair", () => {
     // "caliper" is a specific small part, so planCanvas now routes to the
     // specific-part branch: showImage of the best wheel shot + a zoom action
@@ -584,6 +746,18 @@ describe("ViewStateSchema", () => {
     const raw = {
       layout: "focus",
       items: [{ kind: "car", carId: "CAR-A" }]
+    };
+    expect(() => ViewStateSchema.parse(raw)).not.toThrow();
+  });
+
+  it("parses a spec card item", () => {
+    const raw = {
+      layout: "spec",
+      items: [{
+        kind: "spec",
+        title: "Pricing",
+        rows: [{ label: "Total Possible Savings", value: "Up to $12,500", emphasis: "total", separatorBefore: true }]
+      }]
     };
     expect(() => ViewStateSchema.parse(raw)).not.toThrow();
   });

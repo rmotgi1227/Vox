@@ -386,6 +386,7 @@ export async function chooseMiniMaxSpecialistImage(input: {
       "Mostly just answer the question directly. Only sometimes open with a quick acknowledgement like 'Yeah, good question' or 'Oh nice' — do not start every reply that way; vary it and often skip it.",
       "Point them to what's on screen when it helps ('you can see it here on the left'), and add one concrete spec only if it is present in the car data or image description.",
       "The car object includes a full factSheet with the trim, price, mileage, condition, engine, horsepower, torque, transmission, 0-60, top speed, fuel economy, colors, VIN, stock number, warranty, packages, and options — answer price, mileage, and spec questions directly and accurately from it.",
+      "PRICING POLICY: when they ask about price, explain MSRP vs our price if both are in the factSheet. If pricing guidance includes a discount/rebate/incentive range, mention it as a range for an in-person discussion, not a guaranteed out-the-door number. Then lightly suggest going over it during a test drive or visit. Never invent rebates, payments, taxes, fees, or ranges that are not in the factSheet.",
       "Keep it short and natural: usually one or two sentences, like talking to a buddy.",
       "Never oversell, never hype, never stack adjectives or push the sale. If a fact is not in the car data or image description, say so casually instead of inventing it.",
       "Return strict JSON only with keys reply, selectedImageId, actionReason."
@@ -590,6 +591,7 @@ export async function planSpecialistTurn(input: {
       "Then set needsImage true ONLY when intent is visual, or when intent is objection and a specific photo clearly helps. For greeting, spec_fact, and clarify, needsImage is false.",
       "If needsImage is true, choose the single best id from IMAGE_OPTIONS by reasoning semantically over each option's role and description (not substring matching). Shopper slang: 'stick' = gear selector/shifter, 'rims' = wheel, 'screen' or 'nav' = dashboard. If no option genuinely matches, selectedImageId is null and say so casually. If needsImage is false, selectedImageId is null.",
       "GROUNDING: answer price, mileage, and every spec directly and exactly from car.factSheet. Never invent or estimate specs, prices, packages, options, or features. If a fact isn't in the fact sheet, say so casually instead of guessing.",
+      "PRICING POLICY: for direct price questions, lead with MSRP vs our price when both are listed: 'MSRP is X; our price is Y.' If car.factSheet includes pricing guidance, add that applicable discounts, rebates, and incentives can bring the discussion into that stated range, while final numbers depend on eligibility and structure. Close with one natural test-drive/visit handoff if it fits. Do not give a guaranteed out-the-door price, monthly payment, tax/fee estimate, or any range not present in car.factSheet.",
       "VISIBLE-FEATURE HONESTY: for a yes/no about something in a photo, if the chosen image's description says the feature is absent, answer no — never yes.",
       "STYLE: keep replies to one or two sentences — spoken, natural, like a friend. This text may be read aloud, so write plain prose only: NO markdown, NO bullet lists, NO URLs, and NEVER any image tags or placeholders like [IMAGE:...] or [image_id]. Never dump a spec list; even for 'tell me about it', give a two-sentence highlight and then ask what they care about. Answer only what they asked plus at most one extra relevant spec. Vary your openers and usually skip them. Never hype, stack adjectives, or pressure.",
       "IMAGE/REPLY CONSISTENCY: only say you're showing, pulling up, or pointing at something when needsImage is true AND you selected an image. If needsImage is false, do not claim to show anything.",
@@ -834,6 +836,7 @@ async function getLoadedMossClient(
 
 function mockReply(user: string): string {
   const low = user.toLowerCase();
+  if (low.includes("price") || low.includes("msrp") || low.includes("how much")) return "MSRP is $92,595, and our price is $89,900. With applicable discounts and rebates, we can talk through the $87,000-$89,900 range in person on a test drive.";
   if (low.includes("trunk") || low.includes("cargo")) return "I’ll show the closest uploaded cargo or detail view available for this M4.";
   if (low.includes("interior") || low.includes("seat")) return "Here’s the cabin view; focus on the driver cockpit, front seats, and center console.";
   if (low.includes("wheel") || low.includes("brake")) return "I’ll pull up the wheel detail so you can inspect the tire and brake area closely.";
@@ -1482,11 +1485,18 @@ export async function decideTurn(input: {
   // turn (~6k tokens) blew the Cerebras tokens-per-minute limit, forcing the
   // slow MiniMax fallback (the 6–7s lag). Role + a short caption is enough to
   // pick the right image.
-  const imageOptions = input.images.map((img) => ({
-    id: img.id,
-    role: img.role,
-    caption: img.caption.split(/\s+/).slice(0, 14).join(" ")
-  }));
+  const imageOptions = input.images.map((img) => {
+    // measures:true → image carries a precomputed MEASUREMENT region (a box whose
+    // label includes a figure, e.g. the trunk's "15.5 cu ft"); annotate it for
+    // size / "highlight it" asks. Only emitted when present, to keep payload small.
+    const hasMeasure = (img.boxes ?? []).some((b) => /\d/.test(b.label));
+    return {
+      id: img.id,
+      role: img.role,
+      caption: img.caption.split(/\s+/).slice(0, 14).join(" "),
+      ...(hasMeasure ? { measures: true } : {})
+    };
+  });
   const currentViewSummary = {
     layout: input.viewState.layout,
     items: input.viewState.items.map((item) =>
@@ -1498,11 +1508,18 @@ export async function decideTurn(input: {
     `You are Vox, a warm, sharp BMW ${input.car.make} ${input.car.model} sales specialist talking with a customer by VOICE. You sell by being genuinely helpful, never pushy.`,
     'You control BOTH what you say and what a screen beside you shows. Return STRICT JSON only: { "reply": string, "actions": [...] }.',
     "reply = exactly what you say out loud: one or two short, natural spoken sentences, under ~30 words, conversational. No markdown, bullets, asterisks, or emojis — it is read aloud.",
+    "ENDINGS — do NOT tack a sales hook onto every reply. Most turns should just ANSWER and STOP. Never use canned closers like 'want a closer look?', 'want to see it?', or 'want to check it out in person?'. Only suggest an in-person visit / test drive / coming in when the shopper shows REAL buying intent (pricing or financing talk, availability/scheduling, trade-in, clearly strong interest). Otherwise end cleanly, or — only SOMETIMES — ask ONE genuine, relevant follow-up question that moves things forward.",
     "actions = 0 to 3 canvas actions that put the right photo(s) on screen.",
+    "EMPTY actions returns the screen to the main HERO shot of the whole car — the right move for a non-visual turn (pricing, financing, scheduling, 'is it worth it', general chat). Don't reach for a tangential photo when nothing visual is asked. If you're still discussing a specific photo already on screen, keep it up by re-emitting its showImage.",
     "CRITICAL — reply and actions describe the SAME image(s): your spoken words must describe exactly the photo your actions put on screen. If actions is empty, your words must match what is ALREADY on screen (see currentCanvas in the input) — never describe a part/area that is not in the image being shown (e.g. do not say 'the front, kidney grille' when the image on screen is the interior).",
+    "READ INTENT LIKE A SHOWROOM PRO: shoppers rarely say 'show me X' — they reveal what matters through concerns, priorities, doubts, and offhand remarks. Whenever the latest message touches ANY physical part, area, capacity, or feature of the car, even indirectly — e.g. 'I'm a little heavy on trunk space' → the trunk/cargo; 'I'm tall' → front seats/headroom; 'how do the brakes hold up' → wheels/calipers; 'I've got a big family' → rear seats — proactively put the best-matching photo on screen AND make your reply speak to THAT topic. Map the shopper's words to IMAGE_OPTIONS by role and caption. Answer the topic they actually raised; never drift to an unrelated feature, and never leave the screen unchanged just because they didn't say the word 'show'.",
     "Decide by intent:",
     "- Greeting / small talk: reply warmly in one line; actions = []. Do not describe a photo.",
-    "- Spec or fact (price, mileage, 0-60, horsepower, mpg, transmission, packages): answer straight from the catalog; usually actions = [] and don't mention the screen.",
+    "- A concern, priority, doubt, or offhand mention about a real part or capacity ('a little heavy on trunk space', 'is the back seat tight?', 'how's the rear visibility', 'I haul gear'): SHOW that area (showImage, or showImages for a broad area) AND address the concern honestly in your reply. This is the most common real request — do not leave the screen unchanged.",
+    "- ABSTRACT number/fact with NO meaningful photo (mileage, 0-60, top speed, horsepower, torque, mpg, warranty, VIN, stock number, year): SAY the answer from the catalog AND write it on screen with a writeSpec action naming the field(s) — the screen TYPES it out like a notepad. Never type the value yourself; only name the field, the system fills the real number.",
+    "- PRICING question (price, cost, 'how much', MSRP, sticker, 'what's the deal on price'): use writeSpec with the SINGLE field \"pricingMath\" — one card laying out MSRP, our price (under MSRP), the after-incentives range, and total possible savings. SAY the matching pitch: MSRP is the sticker, our price is already under it, after discounts/rebates/incentives we can get into that range — then invite them in for a test drive to lock in the real number. (A vague 'is it worth it' / 'justify the price' objection with NO number asked → no card, just talk; screen returns to the hero.) Numbers come from the catalog; never invent them.",
+    "- DISCOUNTS question ('what discounts', 'any rebates', 'how low can you go', 'best you can do', 'can you come down'): do NOT show a card and do NOT quote exact discount figures. Warmly steer to an in-person visit — e.g. 'I'd love to walk you through all the discounts in person. Want to book a time to come in?' actions: [] (screen returns to the hero).",
+    "- A PHOTOGRAPHABLE part or area, even when they ask 'what kind/type' (the engine, wheels, brakes, seats, trunk, dashboard, screen, exhaust): this is a SHOWROOM — SHOW the photo with showImage, don't writeSpec. E.g. 'what type of engine?' → showImage the engine-bay photo while you SAY the engine type. A part you can point a camera at is always a picture, not a text card.",
     "- They name a specific PART or control (gear shifter/selector, badge, button, vent, screen, stitching, caliper, mirror): show it AND auto-zoom to it. Emit TWO actions: a showImage of the best photo, then a zoom with itemRef {\"index\":0} and a region [x,y,w,h] (0..1) estimating where that part sits so it fills the view. The shopper should NOT have to ask to zoom — a specific part request auto-zooms. Example regions: center-console gear selector ≈ [0.26,0.45,0.42,0.45]; a badge ≈ [0.30,0.30,0.30,0.30]; a button cluster ≈ [0.30,0.55,0.40,0.35].",
     "- They want to SEE a whole area/view (the interior, the front, the seats, the dashboard): ONE showImage of the best photo, no zoom.",
     "- They want MULTIPLE views ('show me everything', 'all the X', 'the interior shots', 'a few angles'): use showImages (grid, up to 4). ONLY use a grid for explicitly plural/overview requests — never for a single part or a zoom.",
@@ -1517,13 +1534,30 @@ export async function decideTurn(input: {
     '  showImages: { "op":"showImages", "imageIds":string[], "filter":{"role":string}, "limit":number<=4 }',
     '  zoom: { "op":"zoom", "itemRef":{"carId":string,"imageId":string}, "region":[x,y,w,h] }  (x,y,w,h are 0..1)',
     '  compare: { "op":"compare", "itemRefs":[ref,ref] }',
+    '  annotate: { "op":"annotate", "itemRef":{"index":0} }  (draws the image\'s KNOWN labeled regions ON the photo — e.g. the trunk\'s "15.5 cu ft" box. Do NOT pass coordinates or marks; the system fills them.)',
+    '  writeSpec: { "op":"writeSpec", "fields":["<field>",...], "title":"<short heading>" }  (writes numbers/specs as text — no photo)',
+    '  generate: { "op":"generate", "prompt":string, "baseRef":{"index":0} }  (Nano Banana — creates a NEW photoreal image by editing the photo at baseRef. Use ONLY after the shopper confirms — see GENERATE RULE.)',
+    "ANNOTATE RULE: when the shopper asks to highlight / label / 'annotate it', OR asks the SIZE / measurement / capacity / 'how big is it' of an image flagged measures:true (e.g. the trunk), emit an annotate on the image ALREADY on screen (itemRef {\"index\":0}) — do NOT switch photos, do NOT pass coordinates. If that measures:true image isn't on screen yet, showImage it first, then annotate. Prefer annotate over writeSpec whenever a measures:true photo is the subject — the figure belongs ON the picture. Resolve 'it'/'that' against currentCanvas.",
+    "SHOW FIRST, QUANTIFY WHEN ASKED: on a plain 'show me / I wanna see the trunk' (no size word), just showImage and keep the reply qualitative ('plenty of room for a coupe') — do NOT annotate and do NOT state the cubic-feet/measurement yet. Save the number AND the annotate for the explicit size follow-up ('how big is it', 'the size of it').",
+    "GENERATE RULE (Nano Banana visualization): you can create a NEW photorealistic image by EDITING a real photo — for what our stock photos can't show (the trunk PACKED with luggage, the seats a DIFFERENT color, the car in a setting). This is a LAST resort for when the shopper is genuinely UNCONVINCED ('looks small', 'idk', 'hard to tell') or wants to CUSTOMIZE / 'what would it look like'. NEVER generate unprompted, on first mention, or twice for the same ask. FIRST you must OFFER it in your reply ('want me to show you what it'd look like packed?') with actions:[] — do NOT generate yet. ONLY emit a generate action on the turn the shopper CONFIRMS (yes / sure / go for it / do it). The generate prompt must describe the photoreal edit AND insist on keeping the car, paint, lighting, and background IDENTICAL — change only the requested thing. baseRef is usually {\"index\":0} (the photo on screen). On the generate turn, your reply is a brief 'On it — generating that now, give me a sec.'",
+    "VALID writeSpec fields (abstract numbers only — never a photographable part like engine/wheels/seats; show those as a photo): mileage, pricingMath, price, msrp, incentiveRange, horsepower, torque, transmission, zeroToSixty, topSpeed, mpg, seating, doors, warranty, color, interiorColor, drivetrain, fuel, condition, vin, stockNumber, year.",
     "imageId MUST come from IMAGE_OPTIONS.id; carId is the image's vin.",
     "HARD RULE: if your reply says or implies you are showing, pulling up, highlighting, or zooming ANYTHING ('here's…', 'take a look', 'closer look', 'highlighted for you'), then actions MUST be non-empty with the matching action(s). Never narrate a visual with empty actions. If you are NOT changing the screen, do not use show/here/look language.",
     "Examples (use REAL ids from IMAGE_OPTIONS):",
     '  "show me the wheels" -> {"reply":"Here are the M wheels with the blue calipers.","actions":[{"op":"showImage","carId":"<vin>","imageId":"<a wheel id>"}]}',
+    '  "I\'m a little heavy on trunk space" -> {"reply":"Totally fair — here\'s the trunk; it swallows more than you\'d think for a coupe.","actions":[{"op":"showImage","carId":"<vin>","imageId":"<a trunk id>"}]}',
+    '  "what type of engine is it" -> {"reply":"It\'s a 3-liter M TwinPower twin-turbo inline-six — here\'s the engine bay.","actions":[{"op":"showImage","carId":"<vin>","imageId":"<the engine-bay id>"}]}',
     '  "show me the gear shifter" -> {"reply":"Here\'s the gear selector on the center console.","actions":[{"op":"showImage","carId":"<vin>","imageId":"<an interior id>"},{"op":"zoom","itemRef":{"index":0},"region":[0.26,0.45,0.42,0.45]}]}',
     '  "zoom in" -> {"reply":"Here\'s a closer look.","actions":[{"op":"zoom","itemRef":{"index":0},"region":[0.28,0.3,0.44,0.44]}]}',
-    '  "how fast is it" -> {"reply":"Zero to sixty in about 3.8 seconds.","actions":[]}',
+    '  "how fast is it" -> {"reply":"Zero to sixty in about 3.8 seconds.","actions":[{"op":"writeSpec","fields":["zeroToSixty"],"title":"Acceleration"}]}',
+    '  "how many miles on it" -> {"reply":"It\'s got twelve thousand four hundred miles.","actions":[{"op":"writeSpec","fields":["mileage"]}]}',
+    '  "what\'s the price" -> {"reply":"Sticker\'s 92,595, but our price is already under that at 89,900 — and after incentives we can work into the high 80s. Easiest is to come drive it and we\'ll nail it down.","actions":[{"op":"writeSpec","fields":["pricingMath"],"title":"Pricing"}]}',
+    '  "what do the discounts look like" -> {"reply":"There\'s real room there — I\'d love to walk you through all the discounts in person. Want to book a time to come in?","actions":[]}',
+    '  "how big is the trunk" -> {"reply":"About fifteen and a half cubic feet — roomy for a coupe.","actions":[{"op":"showImage","carId":"<vin>","imageId":"<the trunk id, measures:true>"},{"op":"annotate","itemRef":{"index":0}}]}',
+    '  (trunk already on screen) "how big is it?" / "annotate it" -> {"reply":"About fifteen and a half cubic feet — here it is on the photo.","actions":[{"op":"annotate","itemRef":{"index":0}}]}',
+    '  (trunk on screen) "hmm that looks kinda small" -> OFFER, no generate yet: {"reply":"It fits more than it looks — want me to show it packed for a weekend trip?","actions":[]}',
+    '  (after that offer) "yeah go for it" -> {"reply":"On it — generating that now, give me a sec.","actions":[{"op":"generate","prompt":"Edit this exact BMW M4 trunk photo to show it neatly packed for a weekend trip: two hard-shell carry-on suitcases in the cargo net, a rolled blanket, a duffel bag, and a small backpack. Keep the trunk, car, paint, lighting, and parking-lot background EXACTLY the same — only add realistic luggage that fits the space. Photorealistic.","baseRef":{"index":0}}]}',
+    '  "can I get the seats in red?" -> OFFER first: {"reply":"Yeah — want me to mock up red seats so you can see it?","actions":[]}  (then on "yes") {"reply":"On it — one sec.","actions":[{"op":"generate","prompt":"Recolor ONLY the seat upholstery in this exact interior photo to rich red leather; keep the dashboard, trim, carbon fiber, lighting, and everything else identical. Photorealistic.","baseRef":{"index":0}}]}',
     '  "hey there" -> {"reply":"Hey! Want me to walk you through it?","actions":[]}',
     `Catalog: ${carFactSheet(input.car)}`
   ].join(" ");
@@ -1555,6 +1589,74 @@ export async function decideTurn(input: {
   };
 }
 
+// ── Generative visualization (Nano Banana Pro / Gemini 3 Pro Image) ──────────
+// Creates a NEW photorealistic image by EDITING a real car photo — for "what
+// would it look like" moments our stock photos can't cover (the trunk packed
+// with luggage, the seats recolored, the car in a setting). GATED in the agent
+// prompt behind an explicit user confirmation; this function just does the call.
+// Slow (often 10–30s) — callers run it on a non-blocking lane and show a
+// shimmer placeholder. Throws on any failure (incl. 429 quota) so the caller can
+// mark the generated item failed.
+const GEMINI_IMAGE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
+
+export async function generateVisualization(input: {
+  prompt: string;
+  /** Real image to edit from, as a public URL (e.g. "/cars/BMW-M4/x.webp"). Omit for pure text-to-image. */
+  baseImageUrl?: string;
+  vin?: string;
+  model?: string;
+  timeoutMs?: number;
+}): Promise<{ id: string; url: string }> {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error("GEMINI_API_KEY is required for generateVisualization.");
+  const model = input.model || process.env.GEMINI_IMAGE_MODEL || "gemini-3-pro-image-preview";
+
+  const parts: Array<Record<string, unknown>> = [{ text: input.prompt }];
+  if (input.baseImageUrl) {
+    const filePath = path.join(root, "public", input.baseImageUrl.replace(/^\//, ""));
+    const bytes = await readFile(filePath);
+    const lower = input.baseImageUrl.toLowerCase();
+    const mime = lower.endsWith(".png") ? "image/png" : lower.endsWith(".webp") ? "image/webp" : "image/jpeg";
+    parts.push({ inline_data: { mime_type: mime, data: bytes.toString("base64") } });
+  }
+
+  const controller = new AbortController();
+  const timeoutHandle = setTimeout(() => controller.abort(), input.timeoutMs ?? 60_000);
+  try {
+    const resp = await fetch(`${GEMINI_IMAGE_URL}/${model}:generateContent`, {
+      method: "POST",
+      headers: { "x-goog-api-key": key, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts }],
+        generationConfig: { responseModalities: ["TEXT", "IMAGE"] }
+      }),
+      signal: controller.signal
+    });
+    if (!resp.ok) {
+      throw new Error(`Gemini image error ${resp.status}: ${await resp.text().catch(() => "")}`);
+    }
+    const json = (await resp.json()) as {
+      candidates?: Array<{
+        content?: { parts?: Array<{ inlineData?: { data?: string }; inline_data?: { data?: string } }> };
+      }>;
+    };
+    const rparts = json.candidates?.[0]?.content?.parts ?? [];
+    const imgPart = rparts.find((p) => p.inlineData?.data ?? p.inline_data?.data);
+    const data = imgPart?.inlineData?.data ?? imgPart?.inline_data?.data;
+    if (!data) throw new Error("Gemini returned no image data.");
+
+    const vin = input.vin ?? DEFAULT_VIN;
+    const id = `gen_${randomUUID().replaceAll("-", "").slice(0, 12)}`;
+    const dir = path.join(uploadRoot, vin);
+    await mkdir(dir, { recursive: true });
+    const relUrl = `/uploads/cars/${vin}/${id}.png`;
+    await writeFile(path.join(root, "public", relUrl.replace(/^\//, "")), Buffer.from(data, "base64"));
+    return { id, url: relUrl };
+  } finally {
+    clearTimeout(timeoutHandle);
+  }
+}
+
 // ── Two-call architecture: speech and canvas as INDEPENDENT Cerebras calls ────
 // One call talks, one call drives the canvas. They run in parallel — each picks
 // its own key via the revolver — so a canvas hiccup never affects speech and
@@ -1574,9 +1676,15 @@ export async function generateSpokenReply(input: {
 
   const system = [
     `You are Vox, a warm, sharp BMW ${input.car.make} ${input.car.model} sales specialist talking with a customer by VOICE. Sell by being genuinely helpful, never pushy — talk like a knowledgeable friend, not a brochure.`,
-    "Reply in ONE or two short, natural spoken sentences, UNDER ~30 words total. No markdown, bullets, asterisks, lists, or emojis — your words are read aloud by text-to-speech.",
+    "Bring real energy: upbeat, confident, a little enthusiastic — the tone of a top salesperson who clearly loves this car. Lead with the answer. Never robotic, never a list of specs.",
+    "ENDINGS — do NOT tack a sales hook onto every reply. Most turns should just ANSWER and STOP. Never use canned closers like 'want a closer look?', 'want to see it?', or 'want to check it out in person?'. Only suggest an in-person visit / test drive / coming in when the shopper shows REAL buying intent — pricing or financing talk, availability or scheduling ('can I see it this weekend?'), trade-in, or clearly strong interest. Otherwise end cleanly, or — only SOMETIMES, not every turn — ask ONE genuine, relevant follow-up question that actually moves things forward (e.g. 'what'll you mainly use it for?').",
+    "Reply in ONE or two short, punchy spoken sentences, UNDER ~30 words total. No markdown, bullets, asterisks, lists, or emojis — your words are read aloud by text-to-speech.",
     "A separate screen shows the photos, so when they ask to SEE something, say a quick natural line about it ('here's the rear — love those quad tips'), but never list more than one or two features and never read specs like a brochure.",
-    "For a price/spec/mileage question, answer the one fact they asked, straight from the catalog. Don't enumerate everything.",
+    "DON'T VOLUNTEER EXACT FIGURES on a 'show me / I wanna see' request. If they just want to SEE the trunk, describe it qualitatively ('plenty of room for a coupe', 'swallows more than you'd think') and STOP — do NOT state the cubic-feet/liters or any measurement, and do NOT add a 'closer look' hook. Save the specific number for when they EXPLICITLY ask about size/capacity ('how big is it', 'the size of it', 'how much fits'). Same for any part: show first, quantify only when asked.",
+    "For spec/mileage questions, answer the one fact they asked, straight from the catalog. Don't enumerate everything.",
+    "For a price question, use this shape when facts are available: MSRP is X, our price is Y, and after applicable discounts/rebates/incentives we can discuss the stated range in person. Mention a test drive or visit naturally. Never invent a discount range, payment, tax, fee, or out-the-door number.",
+    "For a DISCOUNTS question ('what discounts', 'any rebates', 'how low can you go', 'best you can do'): do NOT quote exact discount figures — warmly steer to an in-person visit, e.g. 'I'd love to walk you through all the discounts in person. Want to book a time to come in?'",
+    "Stay on the shopper's topic. Read indirect cues like a pro: a concern or offhand remark about a part or capacity ('a little heavy on trunk space', 'is the back tight', 'how are the brakes') is what they want to talk about — speak to THAT, honestly, and never drift to an unrelated feature.",
     "Use ONLY the catalog facts below; never invent specs, prices, or availability. If you lack a fact, say so casually.",
     "This M4 is CURRENTLY AVAILABLE for sale. NEVER say it is sold, reserved, gone, or unavailable, and do NOT bring up or pitch any other vehicle unless the shopper explicitly asks for alternatives.",
     "The shopper's words are a live speech-to-text transcript and may contain recognition errors (e.g. 'i4'↔'M4', misheard trims/numbers); interpret charitably in the context of selling this M4.",
@@ -1621,11 +1729,19 @@ export async function decideCanvas(input: {
   if (cerebrasKeys().length === 0) return [];
 
   const allowedImageIds = new Set(input.images.map((img) => img.id));
-  const imageOptions = input.images.map((img) => ({
-    id: img.id,
-    role: img.role,
-    caption: img.caption.split(/\s+/).slice(0, 12).join(" ")
-  }));
+  const imageOptions = input.images.map((img) => {
+    // measures:true → this image carries a precomputed MEASUREMENT region (a box
+    // whose label includes a figure, e.g. the trunk's "15.5 cu ft"). The model
+    // annotates these for size / "highlight it" requests. Only emitted when
+    // present, so the payload stays small.
+    const hasMeasure = (img.boxes ?? []).some((b) => /\d/.test(b.label));
+    return {
+      id: img.id,
+      role: img.role,
+      caption: img.caption.split(/\s+/).slice(0, 12).join(" "),
+      ...(hasMeasure ? { measures: true } : {})
+    };
+  });
 
   const system = [
     "You decide what the BMW M4 showroom SCREEN shows for the shopper's latest message. You do NOT speak — another system handles the talking.",
@@ -1634,22 +1750,37 @@ export async function decideCanvas(input: {
     '  showImage:  {"op":"showImage","carId":"<vin>","imageId":"<id from IMAGE_OPTIONS>"}',
     '  showImages: {"op":"showImages","filter":{"role":"<role>"},"limit":<1-4>}',
     '  zoom:       {"op":"zoom","itemRef":{"index":0},"region":[x,y,w,h]}   (x,y,w,h are 0..1 fractions of the current image)',
+    '  annotate:   {"op":"annotate","itemRef":{"index":0}}   (draws the image\'s KNOWN labeled regions ON TOP of it — e.g. the trunk\'s "15.5 cu ft" box. Do NOT pass coordinates or marks; the system fills them from the image. itemRef {"index":0} = the image already on screen.)',
     '  compare:    {"op":"compare","itemRefs":[{"index":0},{"index":1}]}',
+    '  writeSpec:  {"op":"writeSpec","fields":["<field>",...],"title":"<short heading>"}   (TYPES the fact(s) as text — NO photo)',
     "RULES (follow strictly):",
+    "- ANNOTATE: when the shopper asks to highlight / label / mark / 'annotate it', OR asks the SIZE / measurement / capacity / 'how big is it' of an image flagged measures:true (e.g. the trunk), emit {\"op\":\"annotate\",\"itemRef\":{\"index\":0}} on the image ALREADY on screen. Do NOT switch to a different photo, and do NOT pass coordinates — the system draws the known measurement box. If that measures:true image is not yet on screen, emit showImage first, then annotate it. Prefer annotate over writeSpec whenever a measures:true photo is the subject — the number belongs ON the picture. Use currentCanvas (in the user message) to know what is at index 0.",
+    "- READ INTENT LIKE A SHOWROOM PRO: shoppers rarely say 'show me X' — they reveal what matters through concerns, priorities, and offhand remarks. Whenever the message touches ANY physical part, area, or capacity, even indirectly ('I'm heavy on trunk space' → trunk; 'I'm tall' → front seats; 'how are the brakes' → wheels/calipers; 'big family' → rear seats), SHOW that area. Do not leave the screen unchanged just because they didn't say 'show'.",
     "- DEFAULT to a SINGLE photo: one showImage of the most relevant image. Use showImages (a grid) ONLY when the shopper clearly asks for a CATEGORY or MULTIPLE views — 'show me the interior', 'a few angles', 'all the exterior shots', 'everything'.",
     "- A specific PART/control named (gear shifter, badge, caliper, vent, screen, mirror): emit TWO actions — showImage the best photo, THEN zoom {\"index\":0} over that part. Regions: gear selector ≈ [0.26,0.45,0.42,0.45]; badge ≈ [0.30,0.30,0.30,0.30]; caliper ≈ [0.35,0.40,0.30,0.35]; mirror ≈ [0.05,0.25,0.25,0.35]; screen ≈ [0.20,0.15,0.55,0.40].",
     "- 'zoom in' / 'closer': zoom the CURRENT image, itemRef {\"index\":0}, region ≈ [0.28,0.30,0.44,0.44]. Do NOT switch image.",
-    "- Greeting, chit-chat, or a pure spec/price/mileage question with no visual intent: return { \"actions\": [] } (leave the screen as-is).",
+    "- An ABSTRACT number/fact with NO meaningful photo ('how many miles', 'horsepower', '0-60', 'mpg', 'warranty', 'how fast'): use writeSpec with the relevant field(s) — WRITES the fact instead of a photo. Pick the closest field(s) from VALID writeSpec fields; for a broad 'what are the specs' use 3-4 key fields. NEVER type the value yourself — only name the field. Optionally add a short title.",
+    "- A PRICING question (price, cost, 'how much', MSRP, sticker): use writeSpec with the SINGLE field \"pricingMath\" — one card showing MSRP → our price (under MSRP) → after-incentives range → total savings.",
+    "- A DISCOUNTS question ('what discounts', 'any rebates', 'how low can you go', 'best you can do'): return { \"actions\": [] } — discounts are handled by inviting the shopper in person, NOT with a card. Screen returns to the hero.",
+    "- BUT a photographable PART or area — the engine, wheels, brakes, seats, trunk, dashboard, screen, exhaust — is always a PHOTO: use showImage even when they ask 'what kind/type' (e.g. 'what type of engine' → showImage the engine-bay photo, NOT writeSpec). If you can point a camera at it, show it.",
+    "- Greeting, chit-chat, financing, scheduling, or a vague 'is it worth it' objection with NO number asked: return { \"actions\": [] }. Empty actions returns the screen to the hero shot of the whole car — do NOT reach for a tangential photo when nothing visual is asked.",
     "- imageId MUST come from IMAGE_OPTIONS.id; carId is the image's vin. NEVER invent ids.",
     "VALID filter.role values: exterior_front, exterior_rear, interior_front, interior_rear, dashboard, trunk, wheel, detail.",
-    "Map shopper words → role: front → exterior_front; rear/back → exterior_rear; interior/seats/cabin → interior_front; dashboard/cockpit → dashboard; wheels/rims → wheel; trunk → trunk.",
+    "VALID writeSpec fields (abstract numbers only — never a photographable part like engine/wheels/seats; show those as a photo): mileage, pricingMath, price, msrp, incentiveRange, horsepower, torque, transmission, zeroToSixty, topSpeed, mpg, seating, doors, warranty, color, interiorColor, drivetrain, fuel, condition, vin, stockNumber, year.",
+    "Map shopper words → role (include indirect cues): front → exterior_front; rear/back → exterior_rear; interior/seats/cabin/tall/headroom → interior_front; rear legroom/passengers/family/back seat → interior_rear; dashboard/cockpit/screen → dashboard; wheels/rims/brakes/calipers → wheel; trunk/cargo/luggage/storage/boot/hauling/space for stuff → trunk.",
     `IMAGE_OPTIONS: ${JSON.stringify(imageOptions)}`,
-    `CURRENT_CANVAS layout: ${input.viewState.layout}`,
+    "currentCanvas (in the user message) lists what is on screen RIGHT NOW — use it to resolve 'it' / 'that' / 'annotate it' / 'zoom in' against the image at index 0 (cross-reference its imageId in IMAGE_OPTIONS to see if it is measures:true).",
     `car vin: "${input.car.vin}"`
   ].join("\n");
 
   const userPayload = JSON.stringify({
     shopperMessage: input.message,
+    currentCanvas: {
+      layout: input.viewState.layout,
+      items: input.viewState.items.map((it) =>
+        it.kind === "image" ? { kind: "image", imageId: it.imageId } : { kind: it.kind }
+      )
+    },
     recentTurns: (input.recentTurns ?? []).slice(-3)
   });
 
@@ -1786,7 +1917,9 @@ function buildStreamDecidePrompt(input: {
     "  showImages: {\"op\":\"showImages\",\"filter\":{\"role\":\"<role>\"},\"limit\":<1-4>}  OR  {\"op\":\"showImages\",\"imageIds\":[\"<id>\",...]},\"limit\":<1-4>}",
     "  zoom: {\"op\":\"zoom\",\"itemRef\":{\"index\":0},\"region\":[x,y,w,h]}  (x,y,w,h are 0..1 fractions of image)",
     "  compare: {\"op\":\"compare\",\"itemRefs\":[{\"index\":0},{\"index\":1}]}",
+    "  writeSpec: {\"op\":\"writeSpec\",\"fields\":[\"<field>\",...],\"title\":\"<short heading>\"}  (writes numbers/specs as TEXT — no photo)",
     "imageId MUST come from IMAGE_OPTIONS.id — never invent ids. carId is always the image's vin field.",
+    "VALID writeSpec fields (abstract numbers only — never a photographable part like engine/wheels/seats; show those as a photo): mileage, pricingMath, price, msrp, incentiveRange, horsepower, torque, transmission, zeroToSixty, topSpeed, mpg, seating, doors, warranty, color, interiorColor, drivetrain, fuel, condition, vin, stockNumber, year. Never type the value — only name the field; the system fills the real number.",
 
     // ── Valid role strings ────────────────────────────────────────────────────
     "VALID filter.role strings (9 total — use exactly one of these, never \"all\" or \"mixed\"):",
@@ -1794,6 +1927,9 @@ function buildStreamDecidePrompt(input: {
 
     // ── Routing rules (P0 fixes) ──────────────────────────────────────────────
     "ROUTING RULES — follow these strictly:",
+
+    // Rule 0: read implicit intent
+    "0. READ INTENT LIKE A SHOWROOM PRO: shoppers rarely say 'show me X' — they reveal what matters through concerns, priorities, and offhand remarks. Whenever the message touches ANY physical part, area, or capacity, even indirectly ('I'm heavy on trunk space' → trunk; 'I'm tall' → front seats; 'how are the brakes' → wheels; 'big family' → rear seats), SHOW that area and make your reply speak to THAT topic. Don't leave the screen unchanged just because they didn't say 'show'.",
 
     // Rule 1: area/category → grid of up to 4
     "1. Bare AREA or CATEGORY ask (\"the interior\", \"the seats\", \"the front\", \"the dashboard\", \"the exterior\", \"the rear\"): use showImages with filter.role matching that area and limit 4. A 4-image GRID, NOT a single image. Map: interior/seats → interior_front; dashboard/cockpit → dashboard; front → exterior_front; rear/back → exterior_rear; wheels/rims → wheel; trunk/cargo → trunk.",
@@ -1807,8 +1943,8 @@ function buildStreamDecidePrompt(input: {
     // Rule 4: zoom command
     "4. \"Zoom in\" / \"closer\" / \"get closer\" / \"look closer\": ALWAYS zoom the CURRENT image via itemRef {\"index\":0}, region ≈ [0.28,0.3,0.44,0.44]. NEVER switch image or use a grid. Reply must describe what is actually in the current image.",
 
-    // Rule 5: greeting / spec-fact
-    "5. Greeting or pure spec/fact question (price, 0-60, mpg, horsepower, transmission, mileage): actions: []. Do not say \"here\" or \"look\" or mention the screen.",
+    // Rule 5: spec/number question → writeSpec; greeting → []
+    "5. ABSTRACT number/fact with NO meaningful photo (\"how many miles\", \"horsepower\", \"0-60\", \"mpg\", \"warranty\"): SAY the answer AND use writeSpec with the relevant field(s) — the screen types the fact out like a notepad. Use 3-4 key fields for a broad \"what are the specs\". A PRICING question (price, cost, how much, MSRP, sticker) → writeSpec field \"pricingMath\" (one card: MSRP → our price → after-incentives range → savings) and pitch it: under MSRP, room after incentives, come drive it to finalize. A DISCOUNTS question (what discounts, any rebates, how low can you go) → NO card; warmly invite them in person ('I'd love to walk you through the discounts in person — want to book a time?') and return actions: []. BUT a photographable part (engine, wheels, brakes, seats, exhaust) is always a PHOTO — 'what type of engine' → showImage the engine bay, NOT writeSpec. A greeting, chit-chat, financing, scheduling, or vague 'is it worth it' turn with no number asked: actions: [] — returns the screen to the hero shot. Do not say \"here\" or \"look\", and do not reach for a tangential photo.",
 
     // ── Reply consistency ─────────────────────────────────────────────────────
     "REPLY CONSISTENCY: your spoken words must describe exactly the photo your actions put on screen. If actions is [], do not claim to show anything — describe specs or chat naturally. Never say \"here's\" or \"take a look\" when actions is empty.",
@@ -1819,10 +1955,13 @@ function buildStreamDecidePrompt(input: {
     // ── Examples (compact) ────────────────────────────────────────────────────
     "EXAMPLES (shopper → reply + actions):",
     "\"show me the interior\" → reply: \"Here's the cabin — nice sport seats and the M-specific center console.\" + showImages filter.role interior_front limit 4",
+    "\"I'm a little heavy on trunk space\" → reply: \"Totally fair — here's the trunk; it swallows more than you'd think for a coupe.\" + showImage (a trunk id)",
+    "\"what type of engine is it\" → reply: \"A 3-liter M TwinPower twin-turbo inline-six — here's the engine bay.\" + showImage (the engine-bay id), NOT writeSpec",
     "\"show me the gear shifter\" → reply: \"Here's the gear selector on the center console.\" + showImage (best interior id) + zoom {index:0} [0.26,0.45,0.42,0.45]",
     "\"zoom in\" → reply: \"Closer look.\" + zoom {index:0} [0.28,0.3,0.44,0.44]",
     "\"show me everything\" → reply: \"Here's a full rundown of the M4.\" + showImages limit 4 (no filter)",
-    "\"what's the 0-60?\" → reply: \"Zero to sixty in about 3.8 seconds flat.\" + actions:[]",
+    "\"what's the 0-60?\" → reply: \"Zero to sixty in about 3.8 seconds flat.\" + writeSpec fields:[\"zeroToSixty\"] title:\"Acceleration\"",
+    "\"how many miles?\" → reply: \"Twelve thousand four hundred on the odometer.\" + writeSpec fields:[\"mileage\"]",
     "\"hey there\" → reply: \"Hey! What do you want to see on this M4?\" + actions:[]",
 
     // ── Data ─────────────────────────────────────────────────────────────────

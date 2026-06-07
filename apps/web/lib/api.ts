@@ -40,7 +40,7 @@ export async function selectSpecialistImage(input: {
   return res.json();
 }
 
-export async function getLiveKitToken(input: { roomName: string; identity: string; profileId?: ModelProfileId }): Promise<{ token: string; url: string; roomName: string }> {
+export async function getLiveKitToken(input: { roomName: string; identity: string; profileId?: ModelProfileId; returning?: boolean; brainMode?: "single" | "double" }): Promise<{ token: string; url: string; roomName: string }> {
   const res = await fetch(`${API_BASE}/api/livekit/token`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
