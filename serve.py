@@ -152,17 +152,19 @@ async def live():
 
 
 @app.get("/token")
-async def token(room: str | None = None, identity: str = "visitor"):
+async def token(room: str | None = None, identity: str = "visitor", vin: str | None = None):
     """Mint a LiveKit join token for the browser. The agent worker (agent.py dev)
     auto-joins the room and brings her Simli avatar + the Moss/MiniMax brain.
 
-    Each page load gets a UNIQUE room so LiveKit always dispatches a fresh agent
-    (re-joining a room it already served won't trigger a new dispatch)."""
+    On a vehicle page, pass ?vin=... — it's baked into the room name (vox-car-<vin>-<rand>)
+    so the agent anchors her to that car. Each load gets a UNIQUE room so LiveKit always
+    dispatches a fresh agent (re-joining a served room won't trigger a new dispatch)."""
     import secrets
 
     from livekit import api as lk_api
 
-    room = room or f"vox-live-{secrets.token_hex(4)}"
+    if room is None:
+        room = f"vox-car-{vin}-{secrets.token_hex(3)}" if vin else f"vox-live-{secrets.token_hex(4)}"
     at = (
         lk_api.AccessToken(os.environ["LIVEKIT_API_KEY"], os.environ["LIVEKIT_API_SECRET"])
         .with_identity(identity)

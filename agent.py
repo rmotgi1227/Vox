@@ -42,6 +42,7 @@ from livekit.plugins import openai, silero, simli
 from moss import MossClient
 
 import brain
+import car_catalog
 import voice
 
 load_dotenv()
@@ -160,32 +161,63 @@ def _face_id() -> str:
 
 
 class VoxHost(Agent):
-    """The saleswoman. Persona from brain.SYSTEM; every turn is grounded in Moss."""
+    """The saleswoman. Persona from brain.SYSTEM; every turn is grounded in Moss.
 
-    def __init__(self, moss: MossClient) -> None:
-        super().__init__(instructions=brain.SYSTEM)
+    On a vehicle page she's ANCHORED to the car being viewed (car!=None): she leads
+    with it and only pivots to alternatives when asked — or when it JUST SOLD."""
+
+    def __init__(self, moss: MossClient, car=None) -> None:
+        instructions = brain.SYSTEM
+        if car is not None:
+            instructions += (
+                f"\n\nThe shopper is on the page for THIS car: {car.to_text()} "
+                "Lead with this car. Only bring up another car if they ask for something "
+                "cheaper/different, or if this car just sold."
+            )
+        super().__init__(instructions=instructions)
         self._moss = moss
+        self._car = car
+
+    async def _anchor_available(self) -> bool:
+        """Is the viewed car still in stock? (retrieve filters available=true, so if its
+        own VIN no longer comes back for its own title, it's sold.)"""
+        if self._car is None:
+            return True
+        docs = await brain.retrieve(self._moss, self._car.title, top_k=8)
+        return any(d.id == self._car.vin for d in docs)
 
     async def on_user_turn_completed(self, turn_ctx: ChatContext, new_message: ChatMessage) -> None:
-        """RAG: pull the live, in-stock cars matching what they just asked, inject as context.
-
-        This is what keeps her honest — she only ever sees cars actually on the lot,
-        so she can't invent stock, price, or availability (the 'never sell what's
-        sold out' pivot, live)."""
+        """RAG: reload the live index (to see sales made this session), pull matching
+        in-stock cars, and inject them as grounding so she can't invent stock — the
+        'never sell what's sold out' pivot, live."""
         query = new_message.text_content
         if not query:
             return
+        await self._moss.load_index(INDEX)  # see /sold_out upserts from the other process
         docs = await brain.retrieve(self._moss, query)
-        turn_ctx.add_message(
-            role="assistant",
-            content=f"CONTEXT — in-stock cars matching their question:\n{brain.format_context(docs)}",
-        )
+        block = ""
+        if self._car is not None:
+            sold = not await self._anchor_available()
+            status = (" — NOTE: this exact car JUST SOLD; tell them warmly and pivot to the "
+                      "closest match below.") if sold else ""
+            block += f"THE CAR THEY'RE VIEWING:\n{self._car.to_text()}{status}\n\n"
+        block += f"OTHER CARS ON THE LOT:\n{brain.format_context(docs)}"
+        turn_ctx.add_message(role="assistant", content=block)
+
+
+def _car_from_room(room_name: str | None):
+    """Room is 'vox-car-<VIN>-<rand>' on a vehicle page -> the car she's anchored to."""
+    if not room_name or not room_name.startswith("vox-car-"):
+        return None
+    parts = room_name.split("-")
+    return car_catalog.by_vin(parts[2]) if len(parts) >= 3 else None
 
 
 async def entrypoint(ctx: JobContext) -> None:
-    # Moss: the live catalog she's grounded in (whole inventory, agnostic to page).
+    # Moss: the live catalog she's grounded in (whole inventory).
     moss = MossClient(os.environ["MOSS_PROJECT_ID"], os.environ["MOSS_PROJECT_KEY"])
     await moss.load_index(INDEX)
+    car = _car_from_room(ctx.room.name)
 
     session = AgentSession(
         stt=_stt(),                                          # visitor voice -> text (optional)
@@ -202,19 +234,53 @@ async def entrypoint(ctx: JobContext) -> None:
     await avatar.start(session, room=ctx.room)
 
     await session.start(
-        agent=VoxHost(moss),
+        agent=VoxHost(moss, car),
         room=ctx.room,
-        # Accept the visitor's typed chat (no STT needed); the avatar publishes the audio.
+        # Accept the visitor's typed chat + mic; the avatar publishes the audio.
         room_input_options=RoomInputOptions(text_enabled=True),
         room_output_options=RoomOutputOptions(audio_enabled=False, transcription_enabled=True),
     )
 
-    # Greet the moment they land — a scripted line via TTS (no LLM call). This is the
-    # predictable opener; MiniMax rejects an empty-user-turn generate_reply anyway.
-    await session.say(
-        "Hey, welcome in! I'm Vox — I can help you find the right car on the lot. "
-        "Ask me anything: your budget, the kind of car you need, or about the one you're looking at."
-    )
+    # Scripted greeting (no LLM call). Anchored to the car on a VDP, generic otherwise.
+    if car is not None:
+        highlight = (car.features[0] if car.features else car.blurb) or "a great spec"
+        greeting = (
+            f"Hey, welcome in! You're looking at the {car.year} {car.make} {car.model} "
+            f"in {car.color} — {highlight.lower() if isinstance(highlight, str) else highlight}. "
+            "Want me to walk you through it, or do you have a question?"
+        )
+    else:
+        greeting = (
+            "Hey, welcome in! I'm Vox — I can help you find the right car on the lot. "
+            "Ask me anything: your budget, the kind of car you need, or about the one you're looking at."
+        )
+
+    # Don't greet until the client has SUBSCRIBED to the avatar tracks + unblocked audio,
+    # otherwise the avatar speaks into the void and only the transcript text shows. The
+    # browser sends a 'greet' data packet once it's ready; a timeout fallback covers older
+    # clients so she always greets.
+    _greeted = False
+
+    async def _greet():
+        nonlocal _greeted
+        if _greeted:
+            return
+        _greeted = True
+        await session.say(greeting)
+
+    @ctx.room.on("data_received")
+    def _on_data(pkt) -> None:
+        try:
+            if getattr(pkt, "topic", "") == "vox-control" and bytes(pkt.data).decode() == "greet":
+                asyncio.create_task(_greet())
+        except Exception:
+            pass
+
+    async def _greet_fallback() -> None:
+        await asyncio.sleep(5)
+        await _greet()
+
+    asyncio.create_task(_greet_fallback())
 
 
 if __name__ == "__main__":
