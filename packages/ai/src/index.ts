@@ -2265,7 +2265,6 @@ export async function generateSpokenReply(input: {
   recentTurns?: { role: string; text: string }[];
 }): Promise<string> {
   if (process.env.VOX_PROVIDER_MODE === "mock") return mockReply(input.message);
-  if (cerebrasKeys().length === 0) throw new Error("CEREBRAS_API_KEY is required for generateSpokenReply.");
 
   const system = [
     `You are Vox, a warm, sharp BMW ${input.car.make} ${input.car.model} sales specialist talking with a customer by VOICE. Sell by being genuinely helpful, never pushy — talk like a knowledgeable friend, not a brochure.`,
@@ -2291,21 +2290,12 @@ export async function generateSpokenReply(input: {
     recentTurns: (input.recentTurns ?? []).slice(-4)
   });
 
-  const json = await cerebrasChatCompletion({
-    model: process.env.CEREBRAS_SPEECH_MODEL || process.env.CEREBRAS_MODEL || "gpt-oss-120b",
-    messages: [
-      { role: "system", content: system },
-      { role: "user", content: userPayload }
-    ],
-    temperature: 0.4,
-    reasoning_effort: "low",
-    max_completion_tokens: 300,
-    stream: false
-  }, { timeoutMs: 12_000 });
-
-  const text = json.choices?.[0]?.message?.content?.trim() ?? "";
+  // MiniMax for the spoken reply — this env has MINIMAX_API_KEY (no Cerebras key),
+  // and MiniMax is the chosen demo LLM. System prompt above is unchanged
+  // (including the sold-awareness conditional). generateMiniMaxReply compacts.
+  const text = await generateMiniMaxReply({ system, user: userPayload });
   console.log(`[speech] LLM reply → ${JSON.stringify(text)}`);
-  return compactReply(text);
+  return text;
 }
 
 /**
