@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { readFile, writeFile, mkdir, copyFile } from "node:fs/promises";
+import { readFile, writeFile, mkdir, copyFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import type { Car, CarImage, ImageRole, CanvasAction, ViewState } from "@vox/core";
@@ -14,10 +14,12 @@ const mossCachePath = path.join(root, ".moss-cache");
 
 let catalogCache: Promise<Car[]> | undefined;
 let imagesCache: Promise<CarImage[]> | undefined;
+let catalogMtimeMs = 0; // mtime of the catalog file backing catalogCache
 
 function invalidateDataCaches(): void {
   catalogCache = undefined;
   imagesCache = undefined;
+  catalogMtimeMs = 0;
 }
 
 export type MossSearchResult = {
@@ -113,11 +115,25 @@ function findRepoRoot(start: string): string {
 }
 
 export async function readCatalog(): Promise<Car[]> {
+  // mtime-aware: another process (the API marking a car sold) may have rewritten
+  // catalog.json. Re-read when the file is newer than what we cached so the voice
+  // agent picks up sold status on its next turn without a restart.
+  let freshMtime = catalogMtimeMs;
+  try {
+    freshMtime = (await stat(catalogPath)).mtimeMs;
+  } catch {
+    // stat failed — fall through and let readFile surface the error
+  }
+  if (catalogCache && freshMtime > catalogMtimeMs) {
+    catalogCache = undefined;
+  }
   if (!catalogCache) {
+    catalogMtimeMs = freshMtime;
     catalogCache = readFile(catalogPath, "utf8")
       .then((raw) => CarSchema.array().parse(JSON.parse(raw)))
       .catch((error) => {
         catalogCache = undefined;
+        catalogMtimeMs = 0;
         throw error;
       });
   }
@@ -144,6 +160,33 @@ export async function writeImages(images: CarImage[]): Promise<void> {
 export async function getCar(vin = DEFAULT_VIN): Promise<Car | undefined> {
   const cars = await readCatalog();
   return cars.find((car) => car.vin === vin);
+}
+
+export async function writeCatalog(cars: Car[]): Promise<void> {
+  await writeFile(catalogPath, JSON.stringify(CarSchema.array().parse(cars), null, 2) + "\n");
+  invalidateDataCaches();
+}
+
+// Flip a car's availability to "sold" and persist. Returns the updated car (or
+// undefined if the vin isn't found). The file write + cache invalidation make
+// the change visible to the voice agent (separate process) on its next turn.
+export async function markCarSold(vin: string): Promise<Car | undefined> {
+  const cars = await readCatalog();
+  let updated: Car | undefined;
+  const next = cars.map((car) => {
+    if (car.vin !== vin) return car;
+    updated = { ...car, availability: "sold" as const };
+    return updated;
+  });
+  if (!updated) return undefined;
+  await writeCatalog(next);
+  return updated;
+}
+
+// Set of vins that are currently sold — used to keep sold cars out of cross-sell.
+async function soldVins(): Promise<Set<string>> {
+  const cars = await readCatalog();
+  return new Set(cars.filter((car) => car.availability === "sold").map((car) => car.vin));
 }
 
 export async function listImages(vin = DEFAULT_VIN): Promise<CarImage[]> {
@@ -1361,12 +1404,16 @@ async function getLoadedMossClient(
     return mossClientCache.client;
   }
 
-  const { MossClient } = await import("@moss-dev/moss");
+  // Flagship @inferedge/moss (Rust+WASM, on-device embeddings) — same client API
+  // as the old @moss-dev/moss, so loadIndex/query are drop-in. It nests its own
+  // cache under <cachePath>/<indexName>/, so we pass a single per-project base
+  // dir (kept separate from the old SDK's cache to avoid format collisions).
+  const { MossClient } = await import("@inferedge/moss");
   const client = new MossClient(pid, key) as MossClientLike;
-  const cacheBase = path.join(mossCachePath, pid);
+  const cacheBase = path.join(mossCachePath, "inferedge", pid);
   const loaded = Promise.all([
-    client.loadIndex(catalogIndex, { cachePath: path.join(cacheBase, catalogIndex) }),
-    client.loadIndex(imagesIndex, { cachePath: path.join(cacheBase, imagesIndex) })
+    client.loadIndex(catalogIndex, { cachePath: cacheBase }),
+    client.loadIndex(imagesIndex, { cachePath: cacheBase })
   ]).then(() => undefined);
 
   const nextCache: MossClientCache = { signature, client, loaded };
@@ -2232,7 +2279,9 @@ export async function generateSpokenReply(input: {
     "For a DISCOUNTS question ('what discounts', 'any rebates', 'how low can you go', 'best you can do'): do NOT quote exact discount figures — warmly steer to an in-person visit, e.g. 'I'd love to walk you through all the discounts in person. Want to book a time to come in?'",
     "Stay on the shopper's topic. Read indirect cues like a pro: a concern or offhand remark about a part or capacity ('a little heavy on trunk space', 'is the back tight', 'how are the brakes') is what they want to talk about — speak to THAT, honestly, and never drift to an unrelated feature.",
     "Use ONLY the catalog facts below; never invent specs, prices, or availability. If you lack a fact, say so casually.",
-    "This M4 is CURRENTLY AVAILABLE for sale. NEVER say it is sold, reserved, gone, or unavailable, and do NOT bring up or pitch any other vehicle unless the shopper explicitly asks for alternatives.",
+    input.car.availability === "sold"
+      ? `IMPORTANT: This ${input.car.make} ${input.car.model} has just been SOLD and is no longer available. Do NOT try to sell it or talk it up. If the shopper asks about it, warmly tell them it just sold, then offer to show them something similar from inventory. Keep it brief and helpful.`
+      : "This M4 is CURRENTLY AVAILABLE for sale. NEVER say it is sold, reserved, gone, or unavailable, and do NOT bring up or pitch any other vehicle unless the shopper explicitly asks for alternatives.",
     "The shopper's words are a live speech-to-text transcript and may contain recognition errors (e.g. 'i4'↔'M4', misheard trims/numbers); interpret charitably in the context of selling this M4.",
     `Catalog: ${carFactSheet(input.car)}`
   ].join(" ");

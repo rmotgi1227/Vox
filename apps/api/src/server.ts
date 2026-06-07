@@ -23,6 +23,7 @@ import {
   ingestImageObject,
   listImages,
   looksLikeBookingRequest,
+  markCarSold,
   parseBookingDetails,
   readCatalog,
   saveUploadedImage,
@@ -288,6 +289,69 @@ app.post("/api/livekit/token", async (c) => {
 });
 
 app.get("/api/catalog", async (c) => c.json({ cars: await readCatalog() }));
+
+// Moss browser config — credentials + index names so the flagship @inferedge/moss
+// SDK can run loadIndex()/query() in-browser (client-first, sub-10ms).
+app.get("/api/moss/config", (c) => {
+  const projectId = process.env.MOSS_PROJECT_ID;
+  const projectKey = process.env.MOSS_PROJECT_KEY;
+  if (!projectId || !projectKey) {
+    return c.json({ error: "MOSS_PROJECT_ID / MOSS_PROJECT_KEY not set" }, 503);
+  }
+  return c.json({
+    projectId,
+    projectKey,
+    catalogIndex: process.env.MOSS_CATALOG_INDEX ?? null,
+    imagesIndex: process.env.MOSS_IMAGES_INDEX ?? null
+  });
+});
+
+// Mark a car sold. Persists availability=sold (the voice agent picks this up on
+// its next turn via the mtime-aware catalog read) and returns a best-effort
+// alternative for cross-sell. The sub-10ms "Moss found your next car" latency is
+// shown client-side via the in-browser index; this server alternative is a fallback.
+app.post("/api/specialist/sold", async (c) => {
+  const body = await c.req.json().catch(() => ({}));
+  const vin = typeof body?.vin === "string" ? body.vin : DEFAULT_VIN;
+  const car = await markCarSold(vin);
+  if (!car) return c.json({ error: "car not found" }, 404);
+  const cars = await readCatalog();
+  const alt = cars.find((x) => x.vin !== vin && x.availability === "available" && x.body === car.body)
+    ?? cars.find((x) => x.vin !== vin && x.availability === "available");
+  const alternative = alt
+    ? { vin: alt.vin, title: `${alt.year} ${alt.make} ${alt.model}`, price: alt.price != null ? String(alt.price) : undefined, body: alt.body }
+    : null;
+  return c.json({ car, alternative });
+});
+
+// Mint a short-lived Simli session token so the browser can render the talking-head
+// avatar directly (simli-client), without ever seeing SIMLI_API_KEY.
+app.post("/api/avatar/token", async (c) => {
+  const apiKey = process.env.SIMLI_API_KEY;
+  const faceId = process.env.SIMLI_FACE_ID;
+  if (!apiKey || !faceId) return c.json({ error: "Simli env not configured" }, 503);
+  try {
+    const resp = await fetch("https://api.simli.ai/compose/token", {
+      method: "POST",
+      headers: { "x-simli-api-key": apiKey, "Content-Type": "application/json" },
+      body: JSON.stringify({ faceId, handleSilence: true, maxSessionLength: 600, maxIdleTime: 30 })
+    });
+    const tokenBody = await resp.json().catch(() => ({}));
+    if (!resp.ok) return c.json({ error: "Simli token failed", status: resp.status, body: tokenBody }, 502);
+    let iceServers: unknown[] = [];
+    try {
+      const iceResp = await fetch("https://api.simli.ai/compose/ice", {
+        headers: { "x-simli-api-key": apiKey, "Content-Type": "application/json" }
+      });
+      if (iceResp.ok) iceServers = await iceResp.json();
+    } catch {
+      // fall through; browser will fall back to a public STUN server
+    }
+    return c.json({ sessionToken: (tokenBody as { session_token?: string }).session_token, faceId, iceServers });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : String(error) }, 502);
+  }
+});
 
 serve({ fetch: app.fetch, port }, () => {
   console.log(`Vox API listening on http://localhost:${port}`);
