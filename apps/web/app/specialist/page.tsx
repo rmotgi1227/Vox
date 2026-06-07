@@ -1225,7 +1225,7 @@ export default function SpecialistPage() {
             </div>
           </div>
           <audio ref={audioRef} />
-          <audio ref={avatarAudioRef} aria-hidden="true" />
+          <audio ref={avatarAudioRef} autoPlay aria-hidden="true" />
           <div ref={remoteAudioRef} aria-hidden="true" />
         </aside>
       </Card>
