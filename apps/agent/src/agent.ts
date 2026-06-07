@@ -470,16 +470,24 @@ class VoxSpecialistVoiceAgent extends voice.Agent {
             const hinted = planCanvas(message, resolvedImages, this.viewState);
             if (hinted.length > 0) finalActs = hinted;
           }
-          if (finalActs.length > 0) {
+          // generate (Nano Banana) is async — split it out and run on a lane.
+          const genActs = finalActs.filter((a) => a.op === "generate");
+          const syncActs = finalActs.filter((a) => a.op !== "generate");
+          if (syncActs.length > 0) {
             let nextView = this.viewState;
             const catalog = { images: resolvedImages, cars: [resolvedCar] };
-            for (const act of finalActs) nextView = applyAction(nextView, act, catalog);
+            for (const act of syncActs) nextView = applyAction(nextView, act, catalog);
             this.viewState = nextView;
             this.publishViewUpdate(nextView);
-            console.log(`Vox turn #${turnId} canvas: published view_update layout=${nextView.layout} items=${nextView.items.length} ops=[${finalActs.map((a) => a.op).join(",")}]`);
-          } else {
+            console.log(`Vox turn #${turnId} canvas: published view_update layout=${nextView.layout} items=${nextView.items.length} ops=[${syncActs.map((a) => a.op).join(",")}]`);
+          } else if (genActs.length === 0) {
             // Nothing to show this turn → return to the overview hero.
             this.revertToOverview(turnId, "[double]");
+          }
+          for (const g of genActs) {
+            if (g.op !== "generate") continue;
+            const baseUrl = resolveBaseImageUrl(g.baseRef, this.viewState, resolvedImages);
+            void this.runGeneration(g.prompt, baseUrl, resolvedCar.vin, turnId);
           }
         })
         .catch((err) => {

@@ -52,6 +52,8 @@ function carDoc(car: unknown): MossDoc {
 
 function imageDoc(image: unknown): MossDoc {
   const img = CarImageSchema.parse(image);
+  const boxLabels = (img.boxes ?? []).map((box) => box.label);
+  const zoomAliases = Object.keys(img.zoomTargets ?? {});
   return {
     id: img.id,
     text: [
@@ -61,6 +63,8 @@ function imageDoc(image: unknown): MossDoc {
       img.conditionNotes.length ? `Condition and evidence notes: ${img.conditionNotes.join(", ")}.` : "",
       img.searchTags.length ? `Search tags and aliases: ${img.searchTags.join(", ")}.` : "",
       `Shopper questions this image can answer: ${(img.likelyQuestions ?? []).join(", ")}.`,
+      boxLabels.length ? `Annotated regions: ${boxLabels.join(", ")}.` : "",
+      zoomAliases.length ? `Zoom targets and aliases: ${zoomAliases.join(", ")}.` : "",
       `Role: ${img.role}.`
     ].filter(Boolean).join(" "),
     metadata: {
@@ -73,6 +77,8 @@ function imageDoc(image: unknown): MossDoc {
       url: img.url,
       status: img.status,
       confidence: String(img.confidence),
+      box_labels: boxLabels.join(", "),
+      zoom_targets: zoomAliases.join(", "),
       available: img.status === "failed" ? "false" : "true"
     }
   };

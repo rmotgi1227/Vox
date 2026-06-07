@@ -822,10 +822,33 @@ button, input, textarea { font: inherit; }
   background: var(--surface-3);
   position: relative;
   display: flex;
-  align-items: flex-end;
-  justify-content: flex-start;
-  padding: 12px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
   box-sizing: border-box;
+}
+
+/* 3-dot "generating" loader, centered on the canvas */
+.canvas-gen-dots {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  gap: 10px;
+}
+.canvas-gen-dots span {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--ink-soft);
+  animation: vox-gen-bounce 1.1s ease-in-out infinite;
+}
+.canvas-gen-dots span:nth-child(2) { animation-delay: 0.18s; }
+.canvas-gen-dots span:nth-child(3) { animation-delay: 0.36s; }
+@keyframes vox-gen-bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.35; }
+  40% { transform: translateY(-10px); opacity: 1; }
 }
 
 .canvas-shimmer-inner {

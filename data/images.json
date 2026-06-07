@@ -66,78 +66,177 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Infotainment screen",
+        "label": "Infotainment navigation screen",
         "box": [
-          0.1,
-          0.05,
-          0.65,
-          0.45
+          0.07,
+          0.08,
+          0.62,
+          0.35
         ]
       },
       {
-        "label": "Center vents and controls",
+        "label": "Carbon-fiber dashboard trim",
         "box": [
-          0.3,
-          0.5,
-          0.42,
+          0,
+          0.38,
+          0.95,
+          0.18
+        ]
+      },
+      {
+        "label": "Center vents",
+        "box": [
+          0.1,
+          0.52,
+          0.65,
           0.28
+        ]
+      },
+      {
+        "label": "Hazard and lock buttons",
+        "box": [
+          0.48,
+          0.48,
+          0.12,
+          0.25
+        ]
+      },
+      {
+        "label": "Radio preset row",
+        "box": [
+          0.43,
+          0.75,
+          0.45,
+          0.12
         ]
       }
     ],
     "zoomTargets": {
+      "infotainment navigation screen": [
+        0.07,
+        0.08,
+        0.62,
+        0.35
+      ],
       "screen": [
-        0.1,
-        0.05,
-        0.65,
-        0.45
+        0.07,
+        0.08,
+        0.62,
+        0.35
       ],
       "infotainment": [
-        0.1,
-        0.05,
-        0.65,
-        0.45
+        0.07,
+        0.08,
+        0.62,
+        0.35
       ],
       "navigation": [
-        0.1,
-        0.05,
-        0.65,
-        0.45
+        0.07,
+        0.08,
+        0.62,
+        0.35
       ],
       "nav": [
-        0.1,
-        0.05,
-        0.65,
-        0.45
+        0.07,
+        0.08,
+        0.62,
+        0.35
       ],
       "display": [
-        0.1,
-        0.05,
-        0.65,
-        0.45
+        0.07,
+        0.08,
+        0.62,
+        0.35
       ],
-      "vents": [
-        0.3,
-        0.5,
-        0.42,
-        0.28
+      "carbon-fiber dashboard trim": [
+        0,
+        0.38,
+        0.95,
+        0.18
+      ],
+      "carbon dash": [
+        0,
+        0.38,
+        0.95,
+        0.18
+      ],
+      "carbon trim": [
+        0,
+        0.38,
+        0.95,
+        0.18
+      ],
+      "dashboard trim": [
+        0,
+        0.38,
+        0.95,
+        0.18
       ],
       "center vents": [
-        0.3,
-        0.5,
-        0.42,
+        0.1,
+        0.52,
+        0.65,
         0.28
+      ],
+      "vents": [
+        0.1,
+        0.52,
+        0.65,
+        0.28
+      ],
+      "air vents": [
+        0.1,
+        0.52,
+        0.65,
+        0.28
+      ],
+      "hazard and lock buttons": [
+        0.48,
+        0.48,
+        0.12,
+        0.25
+      ],
+      "hazard button": [
+        0.48,
+        0.48,
+        0.12,
+        0.25
+      ],
+      "lock button": [
+        0.48,
+        0.48,
+        0.12,
+        0.25
+      ],
+      "dash buttons": [
+        0.48,
+        0.48,
+        0.12,
+        0.25
+      ],
+      "radio preset row": [
+        0.43,
+        0.75,
+        0.45,
+        0.12
+      ],
+      "radio buttons": [
+        0.43,
+        0.75,
+        0.45,
+        0.12
+      ],
+      "preset buttons": [
+        0.43,
+        0.75,
+        0.45,
+        0.12
       ],
       "climate controls": [
-        0.3,
-        0.5,
-        0.42,
-        0.28
-      ],
-      "radio controls": [
-        0.3,
-        0.5,
-        0.42,
-        0.28
+        0.43,
+        0.75,
+        0.45,
+        0.12
       ]
     },
     "pairs": []
@@ -199,93 +298,111 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Primary detail",
+        "label": "Vehicle history paperwork",
         "box": [
-          0.2,
-          0.2,
-          0.6,
+          0.08,
+          0.05,
+          0.55,
           0.58
         ]
       },
       {
-        "label": "Keys and paperwork",
+        "label": "Two BMW key fobs",
         "box": [
-          0.12,
-          0.12,
-          0.76,
-          0.72
+          0.54,
+          0.43,
+          0.34,
+          0.28
         ]
       },
       {
-        "label": "Control button",
+        "label": "Dealer tags",
         "box": [
-          0.32,
-          0.32,
-          0.36,
-          0.28
+          0.53,
+          0.48,
+          0.34,
+          0.34
         ]
       }
     ],
     "zoomTargets": {
-      "detail": [
-        0.2,
-        0.2,
-        0.6,
+      "vehicle history paperwork": [
+        0.08,
+        0.05,
+        0.55,
         0.58
-      ],
-      "close-up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
-      ],
-      "close up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
-      ],
-      "keys": [
-        0.12,
-        0.12,
-        0.76,
-        0.72
-      ],
-      "key fobs": [
-        0.12,
-        0.12,
-        0.76,
-        0.72
       ],
       "paperwork": [
-        0.12,
-        0.12,
-        0.76,
-        0.72
+        0.08,
+        0.05,
+        0.55,
+        0.58
+      ],
+      "documents": [
+        0.08,
+        0.05,
+        0.55,
+        0.58
       ],
       "CARFAX": [
-        0.12,
-        0.12,
-        0.76,
-        0.72
+        0.08,
+        0.05,
+        0.55,
+        0.58
       ],
-      "button": [
-        0.32,
-        0.32,
-        0.36,
+      "history report": [
+        0.08,
+        0.05,
+        0.55,
+        0.58
+      ],
+      "two bmw key fobs": [
+        0.54,
+        0.43,
+        0.34,
         0.28
       ],
-      "control": [
-        0.32,
-        0.32,
-        0.36,
+      "keys": [
+        0.54,
+        0.43,
+        0.34,
         0.28
       ],
-      "switch": [
-        0.32,
-        0.32,
-        0.36,
+      "key fobs": [
+        0.54,
+        0.43,
+        0.34,
         0.28
+      ],
+      "spare key": [
+        0.54,
+        0.43,
+        0.34,
+        0.28
+      ],
+      "dealer tags": [
+        0.53,
+        0.48,
+        0.34,
+        0.34
+      ],
+      "dealer tag": [
+        0.53,
+        0.48,
+        0.34,
+        0.34
+      ],
+      "yellow tag": [
+        0.53,
+        0.48,
+        0.34,
+        0.34
+      ],
+      "listing tag": [
+        0.53,
+        0.48,
+        0.34,
+        0.34
       ]
     },
     "pairs": []
@@ -366,72 +483,138 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Front sport seats",
+        "label": "Driver M sport seat",
         "box": [
-          0.12,
-          0.2,
-          0.76,
-          0.62
+          0.05,
+          0.08,
+          0.45,
+          0.79
+        ]
+      },
+      {
+        "label": "Illuminated M4 seat badge",
+        "box": [
+          0.34,
+          0.17,
+          0.08,
+          0.06
         ]
       },
       {
         "label": "Center console controls",
         "box": [
-          0.3,
-          0.34,
-          0.34,
-          0.46
+          0.48,
+          0.38,
+          0.37,
+          0.38
+        ]
+      },
+      {
+        "label": "Door sill trim",
+        "box": [
+          0.07,
+          0.83,
+          0.33,
+          0.1
         ]
       }
     ],
     "zoomTargets": {
-      "front seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
+      "driver m sport seat": [
+        0.05,
+        0.08,
+        0.45,
+        0.79
       ],
-      "seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
+      "driver seat": [
+        0.05,
+        0.08,
+        0.45,
+        0.79
       ],
-      "sport seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
+      "front seat": [
+        0.05,
+        0.08,
+        0.45,
+        0.79
       ],
-      "bucket seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
+      "sport seat": [
+        0.05,
+        0.08,
+        0.45,
+        0.79
+      ],
+      "bucket seat": [
+        0.05,
+        0.08,
+        0.45,
+        0.79
+      ],
+      "illuminated m4 seat badge": [
+        0.34,
+        0.17,
+        0.08,
+        0.06
+      ],
+      "M4 badge": [
+        0.34,
+        0.17,
+        0.08,
+        0.06
+      ],
+      "seat badge": [
+        0.34,
+        0.17,
+        0.08,
+        0.06
+      ],
+      "center console controls": [
+        0.48,
+        0.38,
+        0.37,
+        0.38
       ],
       "center console": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
+        0.48,
+        0.38,
+        0.37,
+        0.38
       ],
       "gear selector": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
-      ],
-      "shifter": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
+        0.48,
+        0.38,
+        0.37,
+        0.38
       ],
       "iDrive": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
+        0.48,
+        0.38,
+        0.37,
+        0.38
+      ],
+      "shifter": [
+        0.48,
+        0.38,
+        0.37,
+        0.38
+      ],
+      "door sill trim": [
+        0.07,
+        0.83,
+        0.33,
+        0.1
+      ],
+      "door sill": [
+        0.07,
+        0.83,
+        0.33,
+        0.1
+      ],
+      "sill plate": [
+        0.07,
+        0.83,
+        0.33,
+        0.1
       ]
     },
     "pairs": []
@@ -505,97 +688,169 @@
       {
         "label": "Wheel and tire",
         "box": [
-          0.1,
-          0.08,
-          0.78,
-          0.84
+          0.17,
+          0.05,
+          0.68,
+          0.85
         ]
       },
       {
         "label": "Blue M brake caliper",
         "box": [
-          0.56,
-          0.25,
-          0.24,
-          0.35
+          0.22,
+          0.44,
+          0.18,
+          0.22
         ]
       },
       {
         "label": "Drilled brake rotor",
         "box": [
-          0.34,
-          0.26,
-          0.34,
-          0.42
+          0.43,
+          0.24,
+          0.25,
+          0.38
+        ]
+      },
+      {
+        "label": "Fender vent",
+        "box": [
+          0.02,
+          0.2,
+          0.12,
+          0.12
+        ]
+      },
+      {
+        "label": "Side marker and parking sensors",
+        "box": [
+          0.84,
+          0.25,
+          0.1,
+          0.38
         ]
       }
     ],
     "zoomTargets": {
+      "wheel and tire": [
+        0.17,
+        0.05,
+        0.68,
+        0.85
+      ],
       "wheel": [
-        0.1,
-        0.08,
-        0.78,
-        0.84
+        0.17,
+        0.05,
+        0.68,
+        0.85
       ],
       "rim": [
-        0.1,
-        0.08,
-        0.78,
-        0.84
+        0.17,
+        0.05,
+        0.68,
+        0.85
       ],
       "tire": [
-        0.1,
-        0.08,
-        0.78,
-        0.84
+        0.17,
+        0.05,
+        0.68,
+        0.85
       ],
       "tyre": [
-        0.1,
-        0.08,
-        0.78,
-        0.84
+        0.17,
+        0.05,
+        0.68,
+        0.85
       ],
-      "brake caliper": [
-        0.56,
-        0.25,
-        0.24,
-        0.35
+      "blue m brake caliper": [
+        0.22,
+        0.44,
+        0.18,
+        0.22
       ],
       "caliper": [
-        0.56,
-        0.25,
-        0.24,
-        0.35
+        0.22,
+        0.44,
+        0.18,
+        0.22
+      ],
+      "brake caliper": [
+        0.22,
+        0.44,
+        0.18,
+        0.22
       ],
       "blue caliper": [
-        0.56,
-        0.25,
-        0.24,
-        0.35
+        0.22,
+        0.44,
+        0.18,
+        0.22
       ],
       "brakes": [
-        0.56,
-        0.25,
+        0.22,
+        0.44,
+        0.18,
+        0.22
+      ],
+      "drilled brake rotor": [
+        0.43,
         0.24,
-        0.35
+        0.25,
+        0.38
       ],
       "rotor": [
-        0.34,
-        0.26,
-        0.34,
-        0.42
-      ],
-      "drilled rotor": [
-        0.34,
-        0.26,
-        0.34,
-        0.42
+        0.43,
+        0.24,
+        0.25,
+        0.38
       ],
       "brake rotor": [
-        0.34,
-        0.26,
-        0.34,
-        0.42
+        0.43,
+        0.24,
+        0.25,
+        0.38
+      ],
+      "drilled rotor": [
+        0.43,
+        0.24,
+        0.25,
+        0.38
+      ],
+      "fender vent": [
+        0.02,
+        0.2,
+        0.12,
+        0.12
+      ],
+      "side vent": [
+        0.02,
+        0.2,
+        0.12,
+        0.12
+      ],
+      "side marker and parking sensors": [
+        0.84,
+        0.25,
+        0.1,
+        0.38
+      ],
+      "side marker": [
+        0.84,
+        0.25,
+        0.1,
+        0.38
+      ],
+      "parking sensor": [
+        0.84,
+        0.25,
+        0.1,
+        0.38
+      ],
+      "front sensor": [
+        0.84,
+        0.25,
+        0.1,
+        0.38
       ]
     },
     "pairs": []
@@ -667,114 +922,159 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Front fascia",
-        "box": [
-          0.12,
-          0.25,
-          0.76,
-          0.48
-        ]
-      },
-      {
         "label": "Black kidney grille",
         "box": [
-          0.32,
-          0.36,
-          0.34,
-          0.24
-        ]
-      },
-      {
-        "label": "LED headlights",
-        "box": [
-          0.16,
-          0.32,
-          0.68,
+          0.08,
+          0.21,
+          0.25,
           0.2
         ]
       },
       {
-        "label": "Carbon-fiber front lip",
+        "label": "Driver-side LED headlight",
         "box": [
-          0.16,
-          0.66,
-          0.68,
-          0.18
+          0.3,
+          0.18,
+          0.52,
+          0.22
+        ]
+      },
+      {
+        "label": "Front parking sensor",
+        "box": [
+          0.57,
+          0.48,
+          0.05,
+          0.06
+        ]
+      },
+      {
+        "label": "Lower mesh intake",
+        "box": [
+          0.25,
+          0.62,
+          0.33,
+          0.26
+        ]
+      },
+      {
+        "label": "Carbon-fiber front splitter",
+        "box": [
+          0.05,
+          0.82,
+          0.65,
+          0.12
         ]
       }
     ],
     "zoomTargets": {
-      "front": [
-        0.12,
+      "black kidney grille": [
+        0.08,
+        0.21,
         0.25,
-        0.76,
-        0.48
-      ],
-      "front fascia": [
-        0.12,
-        0.25,
-        0.76,
-        0.48
-      ],
-      "front bumper": [
-        0.12,
-        0.25,
-        0.76,
-        0.48
+        0.2
       ],
       "grille": [
-        0.32,
-        0.36,
-        0.34,
-        0.24
+        0.08,
+        0.21,
+        0.25,
+        0.2
       ],
       "kidney grille": [
-        0.32,
-        0.36,
-        0.34,
-        0.24
+        0.08,
+        0.21,
+        0.25,
+        0.2
       ],
-      "black grille": [
-        0.32,
-        0.36,
-        0.34,
-        0.24
+      "driver-side led headlight": [
+        0.3,
+        0.18,
+        0.52,
+        0.22
+      ],
+      "headlight": [
+        0.3,
+        0.18,
+        0.52,
+        0.22
+      ],
+      "LED headlight": [
+        0.3,
+        0.18,
+        0.52,
+        0.22
       ],
       "headlights": [
-        0.16,
-        0.32,
-        0.68,
-        0.2
+        0.3,
+        0.18,
+        0.52,
+        0.22
       ],
-      "LED headlights": [
-        0.16,
-        0.32,
-        0.68,
-        0.2
+      "front parking sensor": [
+        0.57,
+        0.48,
+        0.05,
+        0.06
       ],
-      "lights": [
-        0.16,
-        0.32,
-        0.68,
-        0.2
+      "parking sensor": [
+        0.57,
+        0.48,
+        0.05,
+        0.06
+      ],
+      "front sensor": [
+        0.57,
+        0.48,
+        0.05,
+        0.06
+      ],
+      "lower mesh intake": [
+        0.25,
+        0.62,
+        0.33,
+        0.26
+      ],
+      "lower intake": [
+        0.25,
+        0.62,
+        0.33,
+        0.26
+      ],
+      "mesh intake": [
+        0.25,
+        0.62,
+        0.33,
+        0.26
+      ],
+      "front intake": [
+        0.25,
+        0.62,
+        0.33,
+        0.26
+      ],
+      "carbon-fiber front splitter": [
+        0.05,
+        0.82,
+        0.65,
+        0.12
       ],
       "front lip": [
-        0.16,
-        0.66,
-        0.68,
-        0.18
+        0.05,
+        0.82,
+        0.65,
+        0.12
       ],
       "splitter": [
-        0.16,
-        0.66,
-        0.68,
-        0.18
+        0.05,
+        0.82,
+        0.65,
+        0.12
       ],
       "carbon lip": [
-        0.16,
-        0.66,
-        0.68,
-        0.18
+        0.05,
+        0.82,
+        0.65,
+        0.12
       ]
     },
     "pairs": []
@@ -839,87 +1139,78 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Primary detail",
+        "label": "Harman Kardon speaker grille",
         "box": [
-          0.2,
-          0.2,
-          0.6,
-          0.58
+          0.08,
+          0.04,
+          0.75,
+          0.75
         ]
       },
       {
-        "label": "Harman Kardon speaker",
+        "label": "Harman Kardon badge",
         "box": [
-          0.16,
-          0.16,
-          0.68,
-          0.58
-        ]
-      },
-      {
-        "label": "Badge",
-        "box": [
-          0.26,
-          0.24,
-          0.48,
-          0.32
+          0.31,
+          0.59,
+          0.33,
+          0.1
         ]
       }
     ],
     "zoomTargets": {
-      "detail": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
-      ],
-      "close-up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
-      ],
-      "close up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
+      "harman kardon speaker grille": [
+        0.08,
+        0.04,
+        0.75,
+        0.75
       ],
       "speaker": [
-        0.16,
-        0.16,
-        0.68,
-        0.58
+        0.08,
+        0.04,
+        0.75,
+        0.75
       ],
-      "Harman Kardon": [
-        0.16,
-        0.16,
-        0.68,
-        0.58
+      "speaker grille": [
+        0.08,
+        0.04,
+        0.75,
+        0.75
       ],
       "audio": [
-        0.16,
-        0.16,
-        0.68,
-        0.58
+        0.08,
+        0.04,
+        0.75,
+        0.75
       ],
-      "badge": [
-        0.26,
-        0.24,
-        0.48,
-        0.32
+      "tweeter": [
+        0.08,
+        0.04,
+        0.75,
+        0.75
       ],
-      "M4 badge": [
-        0.26,
-        0.24,
-        0.48,
-        0.32
+      "harman kardon badge": [
+        0.31,
+        0.59,
+        0.33,
+        0.1
       ],
-      "BMW badge": [
-        0.26,
-        0.24,
-        0.48,
-        0.32
+      "Harman Kardon": [
+        0.31,
+        0.59,
+        0.33,
+        0.1
+      ],
+      "Kardon badge": [
+        0.31,
+        0.59,
+        0.33,
+        0.1
+      ],
+      "audio badge": [
+        0.31,
+        0.59,
+        0.33,
+        0.1
       ]
     },
     "pairs": []
@@ -986,60 +1277,105 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Primary detail",
+        "label": "Steering-column adjustment lever",
         "box": [
-          0.2,
-          0.2,
-          0.6,
-          0.58
+          0.41,
+          0.4,
+          0.17,
+          0.19
         ]
       },
       {
-        "label": "Control button",
+        "label": "Heated steering wheel button",
         "box": [
-          0.32,
-          0.32,
-          0.36,
-          0.28
+          0.39,
+          0.58,
+          0.15,
+          0.13
+        ]
+      },
+      {
+        "label": "Driver footwell",
+        "box": [
+          0.21,
+          0.62,
+          0.46,
+          0.29
         ]
       }
     ],
     "zoomTargets": {
-      "detail": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
+      "steering-column adjustment lever": [
+        0.41,
+        0.4,
+        0.17,
+        0.19
       ],
-      "close-up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
+      "steering column": [
+        0.41,
+        0.4,
+        0.17,
+        0.19
       ],
-      "close up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
+      "tilt wheel": [
+        0.41,
+        0.4,
+        0.17,
+        0.19
       ],
-      "button": [
-        0.32,
-        0.32,
-        0.36,
-        0.28
+      "wheel adjustment": [
+        0.41,
+        0.4,
+        0.17,
+        0.19
       ],
-      "control": [
-        0.32,
-        0.32,
-        0.36,
-        0.28
+      "heated steering wheel button": [
+        0.39,
+        0.58,
+        0.15,
+        0.13
       ],
-      "switch": [
-        0.32,
-        0.32,
-        0.36,
-        0.28
+      "heated steering wheel": [
+        0.39,
+        0.58,
+        0.15,
+        0.13
+      ],
+      "heated wheel": [
+        0.39,
+        0.58,
+        0.15,
+        0.13
+      ],
+      "heat button": [
+        0.39,
+        0.58,
+        0.15,
+        0.13
+      ],
+      "driver footwell": [
+        0.21,
+        0.62,
+        0.46,
+        0.29
+      ],
+      "footwell": [
+        0.21,
+        0.62,
+        0.46,
+        0.29
+      ],
+      "pedals": [
+        0.21,
+        0.62,
+        0.46,
+        0.29
+      ],
+      "floor mat": [
+        0.21,
+        0.62,
+        0.46,
+        0.29
       ]
     },
     "pairs": []
@@ -1101,58 +1437,97 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Primary detail",
+        "label": "Illuminated M4 seat badge",
         "box": [
-          0.2,
-          0.2,
-          0.6,
-          0.58
+          0.52,
+          0.24,
+          0.14,
+          0.09
         ]
       },
       {
-        "label": "Badge",
+        "label": "Upper shoulder bolster",
         "box": [
           0.26,
-          0.24,
+          0.1,
+          0.65,
+          0.46
+        ]
+      },
+      {
+        "label": "Perforated leather insert",
+        "box": [
+          0.36,
+          0.39,
           0.48,
           0.32
         ]
       }
     ],
     "zoomTargets": {
-      "detail": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
-      ],
-      "close-up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
-      ],
-      "close up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
-      ],
-      "badge": [
-        0.26,
+      "illuminated m4 seat badge": [
+        0.52,
         0.24,
-        0.48,
-        0.32
+        0.14,
+        0.09
       ],
       "M4 badge": [
-        0.26,
+        0.52,
         0.24,
+        0.14,
+        0.09
+      ],
+      "seat badge": [
+        0.52,
+        0.24,
+        0.14,
+        0.09
+      ],
+      "upper shoulder bolster": [
+        0.26,
+        0.1,
+        0.65,
+        0.46
+      ],
+      "bolster": [
+        0.26,
+        0.1,
+        0.65,
+        0.46
+      ],
+      "shoulder bolster": [
+        0.26,
+        0.1,
+        0.65,
+        0.46
+      ],
+      "sport seat": [
+        0.26,
+        0.1,
+        0.65,
+        0.46
+      ],
+      "perforated leather insert": [
+        0.36,
+        0.39,
         0.48,
         0.32
       ],
-      "BMW badge": [
-        0.26,
-        0.24,
+      "perforated leather": [
+        0.36,
+        0.39,
+        0.48,
+        0.32
+      ],
+      "seat insert": [
+        0.36,
+        0.39,
+        0.48,
+        0.32
+      ],
+      "leather": [
+        0.36,
+        0.39,
         0.48,
         0.32
       ]
@@ -1221,99 +1596,126 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Front sport seats",
+        "label": "Driver sport seat",
         "box": [
+          0.1,
           0.12,
+          0.48,
+          0.78
+        ]
+      },
+      {
+        "label": "Passenger sport seat",
+        "box": [
+          0.54,
+          0.14,
+          0.25,
+          0.38
+        ]
+      },
+      {
+        "label": "Center console",
+        "box": [
+          0.51,
+          0.47,
+          0.38,
+          0.33
+        ]
+      },
+      {
+        "label": "Dashboard stack",
+        "box": [
+          0.68,
           0.2,
-          0.76,
-          0.62
-        ]
-      },
-      {
-        "label": "Center console controls",
-        "box": [
-          0.3,
-          0.34,
-          0.34,
-          0.46
-        ]
-      },
-      {
-        "label": "Door panel",
-        "box": [
-          0.02,
-          0.18,
-          0.3,
-          0.62
+          0.28,
+          0.34
         ]
       }
     ],
     "zoomTargets": {
-      "front seats": [
+      "driver sport seat": [
+        0.1,
         0.12,
-        0.2,
-        0.76,
-        0.62
+        0.48,
+        0.78
       ],
-      "seats": [
+      "driver seat": [
+        0.1,
         0.12,
-        0.2,
-        0.76,
-        0.62
+        0.48,
+        0.78
       ],
-      "sport seats": [
+      "front seat": [
+        0.1,
         0.12,
-        0.2,
-        0.76,
-        0.62
+        0.48,
+        0.78
       ],
-      "bucket seats": [
+      "seat bolsters": [
+        0.1,
         0.12,
-        0.2,
-        0.76,
-        0.62
+        0.48,
+        0.78
+      ],
+      "passenger sport seat": [
+        0.54,
+        0.14,
+        0.25,
+        0.38
+      ],
+      "passenger seat": [
+        0.54,
+        0.14,
+        0.25,
+        0.38
+      ],
+      "front passenger seat": [
+        0.54,
+        0.14,
+        0.25,
+        0.38
       ],
       "center console": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
+        0.51,
+        0.47,
+        0.38,
+        0.33
       ],
       "gear selector": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
-      ],
-      "shifter": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
+        0.51,
+        0.47,
+        0.38,
+        0.33
       ],
       "iDrive": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
+        0.51,
+        0.47,
+        0.38,
+        0.33
       ],
-      "door panel": [
-        0.02,
-        0.18,
-        0.3,
-        0.62
+      "dashboard stack": [
+        0.68,
+        0.2,
+        0.28,
+        0.34
       ],
-      "door trim": [
-        0.02,
-        0.18,
-        0.3,
-        0.62
+      "dashboard": [
+        0.68,
+        0.2,
+        0.28,
+        0.34
       ],
-      "window switches": [
-        0.02,
-        0.18,
-        0.3,
-        0.62
+      "climate controls": [
+        0.68,
+        0.2,
+        0.28,
+        0.34
+      ],
+      "center stack": [
+        0.68,
+        0.2,
+        0.28,
+        0.34
       ]
     },
     "pairs": []
@@ -1395,114 +1797,180 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Front fascia",
+        "label": "Front three-quarter body",
         "box": [
-          0.12,
-          0.25,
-          0.76,
-          0.48
+          0.13,
+          0.17,
+          0.75,
+          0.62
         ]
       },
       {
         "label": "Black kidney grille",
         "box": [
-          0.32,
-          0.36,
-          0.34,
-          0.24
+          0.62,
+          0.45,
+          0.15,
+          0.11
         ]
       },
       {
         "label": "LED headlights",
         "box": [
-          0.16,
-          0.32,
-          0.68,
-          0.2
+          0.42,
+          0.42,
+          0.34,
+          0.12
         ]
       },
       {
         "label": "Carbon-fiber front lip",
         "box": [
-          0.16,
-          0.66,
-          0.68,
+          0.45,
+          0.64,
+          0.32,
+          0.09
+        ]
+      },
+      {
+        "label": "Front wheel and blue caliper",
+        "box": [
+          0.33,
+          0.56,
+          0.14,
           0.18
+        ]
+      },
+      {
+        "label": "Carbon mirror cap",
+        "box": [
+          0.41,
+          0.29,
+          0.08,
+          0.08
         ]
       }
     ],
     "zoomTargets": {
-      "front": [
-        0.12,
-        0.25,
-        0.76,
-        0.48
+      "front three-quarter body": [
+        0.13,
+        0.17,
+        0.75,
+        0.62
       ],
-      "front fascia": [
-        0.12,
-        0.25,
-        0.76,
-        0.48
+      "front view": [
+        0.13,
+        0.17,
+        0.75,
+        0.62
       ],
-      "front bumper": [
-        0.12,
-        0.25,
-        0.76,
-        0.48
+      "whole car": [
+        0.13,
+        0.17,
+        0.75,
+        0.62
+      ],
+      "front exterior": [
+        0.13,
+        0.17,
+        0.75,
+        0.62
+      ],
+      "black kidney grille": [
+        0.62,
+        0.45,
+        0.15,
+        0.11
       ],
       "grille": [
-        0.32,
-        0.36,
-        0.34,
-        0.24
+        0.62,
+        0.45,
+        0.15,
+        0.11
       ],
       "kidney grille": [
-        0.32,
-        0.36,
-        0.34,
-        0.24
+        0.62,
+        0.45,
+        0.15,
+        0.11
       ],
-      "black grille": [
-        0.32,
-        0.36,
+      "led headlights": [
+        0.42,
+        0.42,
         0.34,
-        0.24
+        0.12
       ],
       "headlights": [
-        0.16,
-        0.32,
-        0.68,
-        0.2
-      ],
-      "LED headlights": [
-        0.16,
-        0.32,
-        0.68,
-        0.2
+        0.42,
+        0.42,
+        0.34,
+        0.12
       ],
       "lights": [
-        0.16,
+        0.42,
+        0.42,
+        0.34,
+        0.12
+      ],
+      "carbon-fiber front lip": [
+        0.45,
+        0.64,
         0.32,
-        0.68,
-        0.2
+        0.09
       ],
       "front lip": [
-        0.16,
-        0.66,
-        0.68,
-        0.18
+        0.45,
+        0.64,
+        0.32,
+        0.09
       ],
       "splitter": [
-        0.16,
-        0.66,
-        0.68,
+        0.45,
+        0.64,
+        0.32,
+        0.09
+      ],
+      "front wheel and blue caliper": [
+        0.33,
+        0.56,
+        0.14,
         0.18
       ],
-      "carbon lip": [
-        0.16,
-        0.66,
-        0.68,
+      "wheel": [
+        0.33,
+        0.56,
+        0.14,
         0.18
+      ],
+      "caliper": [
+        0.33,
+        0.56,
+        0.14,
+        0.18
+      ],
+      "brakes": [
+        0.33,
+        0.56,
+        0.14,
+        0.18
+      ],
+      "carbon mirror cap": [
+        0.41,
+        0.29,
+        0.08,
+        0.08
+      ],
+      "mirror": [
+        0.41,
+        0.29,
+        0.08,
+        0.08
+      ],
+      "carbon mirror": [
+        0.41,
+        0.29,
+        0.08,
+        0.08
       ]
     },
     "pairs": []
@@ -1559,87 +2027,39 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Primary detail",
+        "label": "Start/stop ignition button",
         "box": [
-          0.2,
-          0.2,
-          0.6,
-          0.58
-        ]
-      },
-      {
-        "label": "Engine bay",
-        "box": [
-          0.12,
-          0.16,
-          0.76,
-          0.66
-        ]
-      },
-      {
-        "label": "Control button",
-        "box": [
-          0.32,
-          0.32,
-          0.36,
-          0.28
+          0.35,
+          0.31,
+          0.3,
+          0.42
         ]
       }
     ],
     "zoomTargets": {
-      "detail": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
+      "start/stop ignition button": [
+        0.35,
+        0.31,
+        0.3,
+        0.42
       ],
-      "close-up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
+      "start button": [
+        0.35,
+        0.31,
+        0.3,
+        0.42
       ],
-      "close up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
+      "ignition": [
+        0.35,
+        0.31,
+        0.3,
+        0.42
       ],
-      "engine": [
-        0.12,
-        0.16,
-        0.76,
-        0.66
-      ],
-      "engine bay": [
-        0.12,
-        0.16,
-        0.76,
-        0.66
-      ],
-      "hood open": [
-        0.12,
-        0.16,
-        0.76,
-        0.66
-      ],
-      "button": [
-        0.32,
-        0.32,
-        0.36,
-        0.28
-      ],
-      "control": [
-        0.32,
-        0.32,
-        0.36,
-        0.28
-      ],
-      "switch": [
-        0.32,
-        0.32,
-        0.36,
-        0.28
+      "auto start stop": [
+        0.35,
+        0.31,
+        0.3,
+        0.42
       ]
     },
     "pairs": []
@@ -1707,114 +2127,153 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Front fascia",
+        "label": "Hood and roundel area",
         "box": [
-          0.12,
-          0.25,
-          0.76,
-          0.48
+          0.1,
+          0.17,
+          0.82,
+          0.25
         ]
       },
       {
         "label": "Black kidney grille",
         "box": [
           0.32,
-          0.36,
-          0.34,
-          0.24
+          0.42,
+          0.38,
+          0.18
         ]
       },
       {
         "label": "LED headlights",
         "box": [
-          0.16,
-          0.32,
-          0.68,
+          0.1,
+          0.39,
+          0.78,
+          0.15
+        ]
+      },
+      {
+        "label": "Lower front intakes",
+        "box": [
+          0.15,
+          0.63,
+          0.72,
           0.2
         ]
       },
       {
-        "label": "Carbon-fiber front lip",
+        "label": "Carbon-fiber lower lip",
         "box": [
-          0.16,
-          0.66,
-          0.68,
-          0.18
+          0.2,
+          0.78,
+          0.6,
+          0.1
         ]
       }
     ],
     "zoomTargets": {
-      "front": [
-        0.12,
-        0.25,
-        0.76,
-        0.48
+      "hood and roundel area": [
+        0.1,
+        0.17,
+        0.82,
+        0.25
       ],
-      "front fascia": [
-        0.12,
-        0.25,
-        0.76,
-        0.48
+      "hood": [
+        0.1,
+        0.17,
+        0.82,
+        0.25
       ],
-      "front bumper": [
-        0.12,
-        0.25,
-        0.76,
-        0.48
+      "BMW roundel": [
+        0.1,
+        0.17,
+        0.82,
+        0.25
+      ],
+      "front badge": [
+        0.1,
+        0.17,
+        0.82,
+        0.25
+      ],
+      "black kidney grille": [
+        0.32,
+        0.42,
+        0.38,
+        0.18
       ],
       "grille": [
         0.32,
-        0.36,
-        0.34,
-        0.24
+        0.42,
+        0.38,
+        0.18
       ],
       "kidney grille": [
         0.32,
-        0.36,
-        0.34,
-        0.24
+        0.42,
+        0.38,
+        0.18
       ],
-      "black grille": [
-        0.32,
-        0.36,
-        0.34,
-        0.24
+      "led headlights": [
+        0.1,
+        0.39,
+        0.78,
+        0.15
       ],
       "headlights": [
-        0.16,
-        0.32,
-        0.68,
-        0.2
-      ],
-      "LED headlights": [
-        0.16,
-        0.32,
-        0.68,
-        0.2
+        0.1,
+        0.39,
+        0.78,
+        0.15
       ],
       "lights": [
-        0.16,
-        0.32,
-        0.68,
+        0.1,
+        0.39,
+        0.78,
+        0.15
+      ],
+      "lower front intakes": [
+        0.15,
+        0.63,
+        0.72,
         0.2
       ],
+      "front intakes": [
+        0.15,
+        0.63,
+        0.72,
+        0.2
+      ],
+      "lower intakes": [
+        0.15,
+        0.63,
+        0.72,
+        0.2
+      ],
+      "carbon-fiber lower lip": [
+        0.2,
+        0.78,
+        0.6,
+        0.1
+      ],
       "front lip": [
-        0.16,
-        0.66,
-        0.68,
-        0.18
+        0.2,
+        0.78,
+        0.6,
+        0.1
       ],
       "splitter": [
-        0.16,
-        0.66,
-        0.68,
-        0.18
+        0.2,
+        0.78,
+        0.6,
+        0.1
       ],
       "carbon lip": [
-        0.16,
-        0.66,
-        0.68,
-        0.18
+        0.2,
+        0.78,
+        0.6,
+        0.1
       ]
     },
     "pairs": []
@@ -2053,60 +2512,105 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Primary detail",
+        "label": "M drive mode button bank",
         "box": [
-          0.2,
-          0.2,
-          0.6,
-          0.58
+          0.08,
+          0.24,
+          0.23,
+          0.48
         ]
       },
       {
-        "label": "Control button",
+        "label": "Gear selector surround",
         "box": [
-          0.32,
-          0.32,
-          0.36,
-          0.28
+          0.38,
+          0.03,
+          0.52,
+          0.5
+        ]
+      },
+      {
+        "label": "Auto hold and parking buttons",
+        "box": [
+          0.44,
+          0.62,
+          0.3,
+          0.2
         ]
       }
     ],
     "zoomTargets": {
-      "detail": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
+      "m drive mode button bank": [
+        0.08,
+        0.24,
+        0.23,
+        0.48
       ],
-      "close-up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
+      "drive modes": [
+        0.08,
+        0.24,
+        0.23,
+        0.48
       ],
-      "close up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
+      "M buttons": [
+        0.08,
+        0.24,
+        0.23,
+        0.48
       ],
-      "button": [
-        0.32,
-        0.32,
-        0.36,
-        0.28
+      "button cluster": [
+        0.08,
+        0.24,
+        0.23,
+        0.48
       ],
-      "control": [
-        0.32,
-        0.32,
-        0.36,
-        0.28
+      "traction button": [
+        0.08,
+        0.24,
+        0.23,
+        0.48
       ],
-      "switch": [
-        0.32,
-        0.32,
-        0.36,
-        0.28
+      "gear selector surround": [
+        0.38,
+        0.03,
+        0.52,
+        0.5
+      ],
+      "gear selector": [
+        0.38,
+        0.03,
+        0.52,
+        0.5
+      ],
+      "shifter surround": [
+        0.38,
+        0.03,
+        0.52,
+        0.5
+      ],
+      "auto hold and parking buttons": [
+        0.44,
+        0.62,
+        0.3,
+        0.2
+      ],
+      "auto hold": [
+        0.44,
+        0.62,
+        0.3,
+        0.2
+      ],
+      "parking sensor button": [
+        0.44,
+        0.62,
+        0.3,
+        0.2
+      ],
+      "camera button": [
+        0.44,
+        0.62,
+        0.3,
+        0.2
       ]
     },
     "pairs": []
@@ -2173,99 +2677,114 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Front sport seats",
+        "label": "Front door panel",
         "box": [
-          0.12,
-          0.2,
-          0.76,
-          0.62
-        ]
-      },
-      {
-        "label": "Center console controls",
-        "box": [
-          0.3,
-          0.34,
-          0.34,
-          0.46
-        ]
-      },
-      {
-        "label": "Door panel",
-        "box": [
-          0.02,
+          0.03,
           0.18,
-          0.3,
-          0.62
+          0.92,
+          0.61
+        ]
+      },
+      {
+        "label": "Metallic door handle",
+        "box": [
+          0.32,
+          0.44,
+          0.18,
+          0.1
+        ]
+      },
+      {
+        "label": "Window and mirror switches",
+        "box": [
+          0.54,
+          0.55,
+          0.2,
+          0.08
+        ]
+      },
+      {
+        "label": "Door speaker area",
+        "box": [
+          0.81,
+          0.15,
+          0.13,
+          0.14
         ]
       }
     ],
     "zoomTargets": {
-      "front seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
-      ],
-      "seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
-      ],
-      "sport seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
-      ],
-      "bucket seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
-      ],
-      "center console": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
-      ],
-      "gear selector": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
-      ],
-      "shifter": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
-      ],
-      "iDrive": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
+      "front door panel": [
+        0.03,
+        0.18,
+        0.92,
+        0.61
       ],
       "door panel": [
-        0.02,
+        0.03,
         0.18,
-        0.3,
-        0.62
+        0.92,
+        0.61
       ],
       "door trim": [
-        0.02,
+        0.03,
         0.18,
-        0.3,
-        0.62
+        0.92,
+        0.61
+      ],
+      "metallic door handle": [
+        0.32,
+        0.44,
+        0.18,
+        0.1
+      ],
+      "door handle": [
+        0.32,
+        0.44,
+        0.18,
+        0.1
+      ],
+      "handle": [
+        0.32,
+        0.44,
+        0.18,
+        0.1
+      ],
+      "window and mirror switches": [
+        0.54,
+        0.55,
+        0.2,
+        0.08
       ],
       "window switches": [
-        0.02,
-        0.18,
-        0.3,
-        0.62
+        0.54,
+        0.55,
+        0.2,
+        0.08
+      ],
+      "mirror controls": [
+        0.54,
+        0.55,
+        0.2,
+        0.08
+      ],
+      "door speaker area": [
+        0.81,
+        0.15,
+        0.13,
+        0.14
+      ],
+      "speaker": [
+        0.81,
+        0.15,
+        0.13,
+        0.14
+      ],
+      "door speaker": [
+        0.81,
+        0.15,
+        0.13,
+        0.14
       ]
     },
     "pairs": []
@@ -2339,87 +2858,147 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Front fascia",
+        "label": "Driver-side profile",
         "box": [
+          0.04,
+          0.14,
+          0.9,
+          0.62
+        ]
+      },
+      {
+        "label": "Carbon mirror cap",
+        "box": [
+          0.58,
+          0.33,
           0.12,
-          0.25,
-          0.76,
-          0.48
+          0.12
         ]
       },
       {
-        "label": "Black kidney grille",
+        "label": "M side fender vent",
         "box": [
-          0.32,
-          0.36,
-          0.34,
-          0.24
+          0.42,
+          0.55,
+          0.12,
+          0.13
         ]
       },
       {
-        "label": "LED headlights",
+        "label": "Carbon roofline",
         "box": [
-          0.16,
-          0.32,
-          0.68,
-          0.2
+          0.23,
+          0.12,
+          0.55,
+          0.18
+        ]
+      },
+      {
+        "label": "Front wheel",
+        "box": [
+          0.03,
+          0.6,
+          0.2,
+          0.26
         ]
       }
     ],
     "zoomTargets": {
-      "front": [
+      "driver-side profile": [
+        0.04,
+        0.14,
+        0.9,
+        0.62
+      ],
+      "side profile": [
+        0.04,
+        0.14,
+        0.9,
+        0.62
+      ],
+      "driver side": [
+        0.04,
+        0.14,
+        0.9,
+        0.62
+      ],
+      "whole side": [
+        0.04,
+        0.14,
+        0.9,
+        0.62
+      ],
+      "carbon mirror cap": [
+        0.58,
+        0.33,
         0.12,
-        0.25,
-        0.76,
-        0.48
+        0.12
       ],
-      "front fascia": [
+      "mirror": [
+        0.58,
+        0.33,
         0.12,
-        0.25,
-        0.76,
-        0.48
+        0.12
       ],
-      "front bumper": [
+      "carbon mirror": [
+        0.58,
+        0.33,
         0.12,
-        0.25,
-        0.76,
-        0.48
+        0.12
       ],
-      "grille": [
-        0.32,
-        0.36,
-        0.34,
-        0.24
+      "m side fender vent": [
+        0.42,
+        0.55,
+        0.12,
+        0.13
       ],
-      "kidney grille": [
-        0.32,
-        0.36,
-        0.34,
-        0.24
+      "side vent": [
+        0.42,
+        0.55,
+        0.12,
+        0.13
       ],
-      "black grille": [
-        0.32,
-        0.36,
-        0.34,
-        0.24
+      "fender vent": [
+        0.42,
+        0.55,
+        0.12,
+        0.13
       ],
-      "headlights": [
-        0.16,
-        0.32,
-        0.68,
-        0.2
+      "carbon roofline": [
+        0.23,
+        0.12,
+        0.55,
+        0.18
       ],
-      "LED headlights": [
-        0.16,
-        0.32,
-        0.68,
-        0.2
+      "roof": [
+        0.23,
+        0.12,
+        0.55,
+        0.18
       ],
-      "lights": [
-        0.16,
-        0.32,
-        0.68,
-        0.2
+      "carbon roof": [
+        0.23,
+        0.12,
+        0.55,
+        0.18
+      ],
+      "roofline": [
+        0.23,
+        0.12,
+        0.55,
+        0.18
+      ],
+      "front wheel": [
+        0.03,
+        0.6,
+        0.2,
+        0.26
+      ],
+      "wheel": [
+        0.03,
+        0.6,
+        0.2,
+        0.26
       ]
     },
     "pairs": []
@@ -2487,33 +3066,120 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Primary detail",
+        "label": "Driver-side LED headlight",
         "box": [
-          0.2,
-          0.2,
-          0.6,
-          0.58
+          0.11,
+          0.06,
+          0.76,
+          0.24
+        ]
+      },
+      {
+        "label": "Front parking sensor",
+        "box": [
+          0.62,
+          0.46,
+          0.08,
+          0.08
+        ]
+      },
+      {
+        "label": "Lower mesh intake",
+        "box": [
+          0.22,
+          0.61,
+          0.45,
+          0.28
+        ]
+      },
+      {
+        "label": "Carbon-fiber splitter trim",
+        "box": [
+          0.15,
+          0.83,
+          0.57,
+          0.12
         ]
       }
     ],
     "zoomTargets": {
-      "detail": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
+      "driver-side led headlight": [
+        0.11,
+        0.06,
+        0.76,
+        0.24
       ],
-      "close-up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
+      "headlight": [
+        0.11,
+        0.06,
+        0.76,
+        0.24
       ],
-      "close up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
+      "LED headlight": [
+        0.11,
+        0.06,
+        0.76,
+        0.24
+      ],
+      "front parking sensor": [
+        0.62,
+        0.46,
+        0.08,
+        0.08
+      ],
+      "parking sensor": [
+        0.62,
+        0.46,
+        0.08,
+        0.08
+      ],
+      "front sensor": [
+        0.62,
+        0.46,
+        0.08,
+        0.08
+      ],
+      "lower mesh intake": [
+        0.22,
+        0.61,
+        0.45,
+        0.28
+      ],
+      "intake": [
+        0.22,
+        0.61,
+        0.45,
+        0.28
+      ],
+      "mesh intake": [
+        0.22,
+        0.61,
+        0.45,
+        0.28
+      ],
+      "carbon-fiber splitter trim": [
+        0.15,
+        0.83,
+        0.57,
+        0.12
+      ],
+      "splitter": [
+        0.15,
+        0.83,
+        0.57,
+        0.12
+      ],
+      "front lip": [
+        0.15,
+        0.83,
+        0.57,
+        0.12
+      ],
+      "carbon trim": [
+        0.15,
+        0.83,
+        0.57,
+        0.12
       ]
     },
     "pairs": []
@@ -2575,60 +3241,45 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Primary detail",
-        "box": [
-          0.2,
-          0.2,
-          0.6,
-          0.58
-        ]
-      },
-      {
         "label": "Carbon-fiber mirror cap",
         "box": [
-          0.16,
-          0.12,
-          0.68,
-          0.58
+          0.08,
+          0.05,
+          0.82,
+          0.72
         ]
       }
     ],
     "zoomTargets": {
-      "detail": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
-      ],
-      "close-up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
-      ],
-      "close up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
+      "carbon-fiber mirror cap": [
+        0.08,
+        0.05,
+        0.82,
+        0.72
       ],
       "mirror": [
-        0.16,
-        0.12,
-        0.68,
-        0.58
+        0.08,
+        0.05,
+        0.82,
+        0.72
       ],
       "mirror cap": [
-        0.16,
-        0.12,
-        0.68,
-        0.58
+        0.08,
+        0.05,
+        0.82,
+        0.72
       ],
       "carbon mirror": [
-        0.16,
-        0.12,
-        0.68,
-        0.58
+        0.08,
+        0.05,
+        0.82,
+        0.72
+      ],
+      "carbon weave": [
+        0.08,
+        0.05,
+        0.82,
+        0.72
       ]
     },
     "pairs": []
@@ -2691,58 +3342,139 @@
       {
         "label": "Rear seats",
         "box": [
-          0.14,
+          0.1,
           0.18,
-          0.72,
+          0.78,
           0.58
         ]
       },
       {
-        "label": "Rear climate vents",
+        "label": "Center pass-through armrest",
         "box": [
-          0.42,
+          0.4,
+          0.57,
+          0.2,
+          0.16
+        ]
+      },
+      {
+        "label": "Rear seat belts",
+        "box": [
+          0.08,
+          0.24,
+          0.8,
+          0.45
+        ]
+      },
+      {
+        "label": "Side speaker",
+        "box": [
+          0.75,
           0.58,
-          0.18,
-          0.18
+          0.14,
+          0.22
+        ]
+      },
+      {
+        "label": "Rear door panel",
+        "box": [
+          0.03,
+          0.12,
+          0.22,
+          0.3
         ]
       }
     ],
     "zoomTargets": {
       "rear seats": [
-        0.14,
+        0.1,
         0.18,
-        0.72,
+        0.78,
         0.58
       ],
       "back seats": [
-        0.14,
+        0.1,
         0.18,
-        0.72,
+        0.78,
         0.58
       ],
       "second row": [
-        0.14,
+        0.1,
         0.18,
-        0.72,
+        0.78,
         0.58
       ],
-      "rear vents": [
-        0.42,
-        0.58,
-        0.18,
-        0.18
+      "center pass-through armrest": [
+        0.4,
+        0.57,
+        0.2,
+        0.16
       ],
-      "rear climate": [
-        0.42,
-        0.58,
-        0.18,
-        0.18
+      "armrest": [
+        0.4,
+        0.57,
+        0.2,
+        0.16
       ],
-      "back vents": [
-        0.42,
+      "pass-through": [
+        0.4,
+        0.57,
+        0.2,
+        0.16
+      ],
+      "center armrest": [
+        0.4,
+        0.57,
+        0.2,
+        0.16
+      ],
+      "rear seat belts": [
+        0.08,
+        0.24,
+        0.8,
+        0.45
+      ],
+      "seat belts": [
+        0.08,
+        0.24,
+        0.8,
+        0.45
+      ],
+      "rear belts": [
+        0.08,
+        0.24,
+        0.8,
+        0.45
+      ],
+      "side speaker": [
+        0.75,
         0.58,
-        0.18,
-        0.18
+        0.14,
+        0.22
+      ],
+      "speaker": [
+        0.75,
+        0.58,
+        0.14,
+        0.22
+      ],
+      "rear speaker": [
+        0.75,
+        0.58,
+        0.14,
+        0.22
+      ],
+      "rear door panel": [
+        0.03,
+        0.12,
+        0.22,
+        0.3
+      ],
+      "side panel": [
+        0.03,
+        0.12,
+        0.22,
+        0.3
       ]
     },
     "pairs": []
@@ -2819,114 +3551,174 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Front fascia",
+        "label": "Front three-quarter body",
         "box": [
-          0.12,
-          0.25,
-          0.76,
-          0.48
+          0.13,
+          0.16,
+          0.74,
+          0.67
         ]
       },
       {
         "label": "Black kidney grille",
         "box": [
-          0.32,
-          0.36,
-          0.34,
-          0.24
+          0.59,
+          0.43,
+          0.18,
+          0.12
         ]
       },
       {
         "label": "LED headlights",
         "box": [
-          0.16,
-          0.32,
-          0.68,
-          0.2
+          0.38,
+          0.39,
+          0.37,
+          0.13
         ]
       },
       {
-        "label": "Carbon-fiber front lip",
+        "label": "Carbon-fiber front splitter",
+        "box": [
+          0.4,
+          0.64,
+          0.35,
+          0.09
+        ]
+      },
+      {
+        "label": "Front wheel and blue caliper",
         "box": [
           0.16,
-          0.66,
-          0.68,
-          0.18
+          0.55,
+          0.2,
+          0.25
+        ]
+      },
+      {
+        "label": "M4 fender badge",
+        "box": [
+          0.32,
+          0.53,
+          0.06,
+          0.07
         ]
       }
     ],
     "zoomTargets": {
-      "front": [
-        0.12,
-        0.25,
-        0.76,
-        0.48
+      "front three-quarter body": [
+        0.13,
+        0.16,
+        0.74,
+        0.67
       ],
-      "front fascia": [
-        0.12,
-        0.25,
-        0.76,
-        0.48
+      "front view": [
+        0.13,
+        0.16,
+        0.74,
+        0.67
       ],
-      "front bumper": [
-        0.12,
-        0.25,
-        0.76,
-        0.48
+      "whole car": [
+        0.13,
+        0.16,
+        0.74,
+        0.67
+      ],
+      "front exterior": [
+        0.13,
+        0.16,
+        0.74,
+        0.67
+      ],
+      "black kidney grille": [
+        0.59,
+        0.43,
+        0.18,
+        0.12
       ],
       "grille": [
-        0.32,
-        0.36,
-        0.34,
-        0.24
+        0.59,
+        0.43,
+        0.18,
+        0.12
       ],
       "kidney grille": [
-        0.32,
-        0.36,
-        0.34,
-        0.24
+        0.59,
+        0.43,
+        0.18,
+        0.12
       ],
-      "black grille": [
-        0.32,
-        0.36,
-        0.34,
-        0.24
+      "led headlights": [
+        0.38,
+        0.39,
+        0.37,
+        0.13
       ],
       "headlights": [
-        0.16,
-        0.32,
-        0.68,
-        0.2
-      ],
-      "LED headlights": [
-        0.16,
-        0.32,
-        0.68,
-        0.2
+        0.38,
+        0.39,
+        0.37,
+        0.13
       ],
       "lights": [
-        0.16,
-        0.32,
-        0.68,
-        0.2
+        0.38,
+        0.39,
+        0.37,
+        0.13
+      ],
+      "carbon-fiber front splitter": [
+        0.4,
+        0.64,
+        0.35,
+        0.09
+      ],
+      "front splitter": [
+        0.4,
+        0.64,
+        0.35,
+        0.09
       ],
       "front lip": [
-        0.16,
-        0.66,
-        0.68,
-        0.18
+        0.4,
+        0.64,
+        0.35,
+        0.09
       ],
-      "splitter": [
+      "front wheel and blue caliper": [
         0.16,
-        0.66,
-        0.68,
-        0.18
+        0.55,
+        0.2,
+        0.25
       ],
-      "carbon lip": [
+      "wheel": [
         0.16,
-        0.66,
-        0.68,
-        0.18
+        0.55,
+        0.2,
+        0.25
+      ],
+      "caliper": [
+        0.16,
+        0.55,
+        0.2,
+        0.25
+      ],
+      "m4 fender badge": [
+        0.32,
+        0.53,
+        0.06,
+        0.07
+      ],
+      "M4 badge": [
+        0.32,
+        0.53,
+        0.06,
+        0.07
+      ],
+      "side badge": [
+        0.32,
+        0.53,
+        0.06,
+        0.07
       ]
     },
     "pairs": []
@@ -3000,114 +3792,168 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Front fascia",
+        "label": "Passenger-side front body",
         "box": [
-          0.12,
-          0.25,
-          0.76,
-          0.48
+          0.1,
+          0.15,
+          0.78,
+          0.7
         ]
       },
       {
         "label": "Black kidney grille",
         "box": [
-          0.32,
-          0.36,
-          0.34,
-          0.24
+          0.16,
+          0.44,
+          0.25,
+          0.14
         ]
       },
       {
         "label": "LED headlights",
         "box": [
-          0.16,
-          0.32,
-          0.68,
-          0.2
+          0.24,
+          0.37,
+          0.38,
+          0.13
         ]
       },
       {
         "label": "Carbon-fiber front lip",
         "box": [
-          0.16,
+          0.12,
           0.66,
-          0.68,
-          0.18
+          0.34,
+          0.11
+        ]
+      },
+      {
+        "label": "Front wheel and blue caliper",
+        "box": [
+          0.67,
+          0.56,
+          0.22,
+          0.27
+        ]
+      },
+      {
+        "label": "Carbon mirror cap",
+        "box": [
+          0.72,
+          0.32,
+          0.1,
+          0.08
         ]
       }
     ],
     "zoomTargets": {
-      "front": [
-        0.12,
-        0.25,
-        0.76,
-        0.48
+      "passenger-side front body": [
+        0.1,
+        0.15,
+        0.78,
+        0.7
       ],
-      "front fascia": [
-        0.12,
-        0.25,
-        0.76,
-        0.48
+      "front view": [
+        0.1,
+        0.15,
+        0.78,
+        0.7
       ],
-      "front bumper": [
-        0.12,
+      "passenger side": [
+        0.1,
+        0.15,
+        0.78,
+        0.7
+      ],
+      "whole car": [
+        0.1,
+        0.15,
+        0.78,
+        0.7
+      ],
+      "black kidney grille": [
+        0.16,
+        0.44,
         0.25,
-        0.76,
-        0.48
+        0.14
       ],
       "grille": [
-        0.32,
-        0.36,
-        0.34,
-        0.24
+        0.16,
+        0.44,
+        0.25,
+        0.14
       ],
       "kidney grille": [
-        0.32,
-        0.36,
-        0.34,
-        0.24
+        0.16,
+        0.44,
+        0.25,
+        0.14
       ],
-      "black grille": [
-        0.32,
-        0.36,
-        0.34,
-        0.24
+      "led headlights": [
+        0.24,
+        0.37,
+        0.38,
+        0.13
       ],
       "headlights": [
-        0.16,
-        0.32,
-        0.68,
-        0.2
+        0.24,
+        0.37,
+        0.38,
+        0.13
       ],
-      "LED headlights": [
-        0.16,
-        0.32,
-        0.68,
-        0.2
-      ],
-      "lights": [
-        0.16,
-        0.32,
-        0.68,
-        0.2
+      "carbon-fiber front lip": [
+        0.12,
+        0.66,
+        0.34,
+        0.11
       ],
       "front lip": [
-        0.16,
+        0.12,
         0.66,
-        0.68,
-        0.18
+        0.34,
+        0.11
       ],
       "splitter": [
-        0.16,
+        0.12,
         0.66,
-        0.68,
-        0.18
+        0.34,
+        0.11
       ],
-      "carbon lip": [
-        0.16,
-        0.66,
-        0.68,
-        0.18
+      "front wheel and blue caliper": [
+        0.67,
+        0.56,
+        0.22,
+        0.27
+      ],
+      "wheel": [
+        0.67,
+        0.56,
+        0.22,
+        0.27
+      ],
+      "caliper": [
+        0.67,
+        0.56,
+        0.22,
+        0.27
+      ],
+      "carbon mirror cap": [
+        0.72,
+        0.32,
+        0.1,
+        0.08
+      ],
+      "mirror": [
+        0.72,
+        0.32,
+        0.1,
+        0.08
+      ],
+      "carbon mirror": [
+        0.72,
+        0.32,
+        0.1,
+        0.08
       ]
     },
     "pairs": []
@@ -3182,99 +4028,126 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Front sport seats",
-        "box": [
-          0.12,
-          0.2,
-          0.76,
-          0.62
-        ]
-      },
-      {
         "label": "M steering wheel",
         "box": [
-          0.08,
-          0.18,
-          0.28,
-          0.32
+          0.05,
+          0.2,
+          0.38,
+          0.42
         ]
       },
       {
-        "label": "Center console controls",
+        "label": "Analog gauge cluster",
         "box": [
+          0.29,
+          0.23,
+          0.24,
+          0.2
+        ]
+      },
+      {
+        "label": "Infotainment screen",
+        "box": [
+          0.58,
+          0.2,
+          0.2,
+          0.13
+        ]
+      },
+      {
+        "label": "Center console",
+        "box": [
+          0.53,
+          0.53,
           0.3,
-          0.34,
-          0.34,
-          0.46
+          0.35
         ]
       }
     ],
     "zoomTargets": {
-      "front seats": [
-        0.12,
+      "m steering wheel": [
+        0.05,
         0.2,
-        0.76,
-        0.62
-      ],
-      "seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
-      ],
-      "sport seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
-      ],
-      "bucket seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
+        0.38,
+        0.42
       ],
       "steering wheel": [
-        0.08,
-        0.18,
-        0.28,
-        0.32
+        0.05,
+        0.2,
+        0.38,
+        0.42
       ],
-      "wheel controls": [
-        0.08,
-        0.18,
-        0.28,
-        0.32
+      "M wheel": [
+        0.05,
+        0.2,
+        0.38,
+        0.42
       ],
-      "M steering wheel": [
-        0.08,
-        0.18,
-        0.28,
-        0.32
+      "analog gauge cluster": [
+        0.29,
+        0.23,
+        0.24,
+        0.2
+      ],
+      "gauge cluster": [
+        0.29,
+        0.23,
+        0.24,
+        0.2
+      ],
+      "gauges": [
+        0.29,
+        0.23,
+        0.24,
+        0.2
+      ],
+      "instrument cluster": [
+        0.29,
+        0.23,
+        0.24,
+        0.2
+      ],
+      "infotainment screen": [
+        0.58,
+        0.2,
+        0.2,
+        0.13
+      ],
+      "screen": [
+        0.58,
+        0.2,
+        0.2,
+        0.13
+      ],
+      "infotainment": [
+        0.58,
+        0.2,
+        0.2,
+        0.13
+      ],
+      "navigation": [
+        0.58,
+        0.2,
+        0.2,
+        0.13
       ],
       "center console": [
+        0.53,
+        0.53,
         0.3,
-        0.34,
-        0.34,
-        0.46
+        0.35
       ],
       "gear selector": [
+        0.53,
+        0.53,
         0.3,
-        0.34,
-        0.34,
-        0.46
-      ],
-      "shifter": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
+        0.35
       ],
       "iDrive": [
+        0.53,
+        0.53,
         0.3,
-        0.34,
-        0.34,
-        0.46
+        0.35
       ]
     },
     "pairs": []
@@ -3338,60 +4211,72 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Primary detail",
+        "label": "Fixed carbon-fiber roof",
         "box": [
-          0.2,
-          0.2,
-          0.6,
-          0.58
+          0.08,
+          0.02,
+          0.78,
+          0.55
         ]
       },
       {
-        "label": "Carbon-fiber roof",
+        "label": "Windshield sensor area",
         "box": [
-          0.12,
-          0.1,
-          0.76,
-          0.5
+          0.52,
+          0.55,
+          0.24,
+          0.24
         ]
       }
     ],
     "zoomTargets": {
-      "detail": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
-      ],
-      "close-up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
-      ],
-      "close up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
+      "fixed carbon-fiber roof": [
+        0.08,
+        0.02,
+        0.78,
+        0.55
       ],
       "roof": [
-        0.12,
-        0.1,
-        0.76,
-        0.5
+        0.08,
+        0.02,
+        0.78,
+        0.55
       ],
       "carbon roof": [
-        0.12,
-        0.1,
-        0.76,
-        0.5
+        0.08,
+        0.02,
+        0.78,
+        0.55
       ],
       "carbon-fiber roof": [
-        0.12,
-        0.1,
-        0.76,
-        0.5
+        0.08,
+        0.02,
+        0.78,
+        0.55
+      ],
+      "windshield sensor area": [
+        0.52,
+        0.55,
+        0.24,
+        0.24
+      ],
+      "windshield sensor": [
+        0.52,
+        0.55,
+        0.24,
+        0.24
+      ],
+      "rain sensor": [
+        0.52,
+        0.55,
+        0.24,
+        0.24
+      ],
+      "camera sensor": [
+        0.52,
+        0.55,
+        0.24,
+        0.24
       ]
     },
     "pairs": []
@@ -3460,95 +4345,101 @@
         "box": [
           0.1,
           0.08,
-          0.78,
-          0.84
+          0.82,
+          0.82
         ]
       },
       {
         "label": "Blue M brake caliper",
         "box": [
-          0.56,
-          0.25,
-          0.24,
-          0.35
+          0.62,
+          0.45,
+          0.13,
+          0.18
         ]
       },
       {
         "label": "Drilled brake rotor",
         "box": [
-          0.34,
-          0.26,
-          0.34,
-          0.42
+          0.4,
+          0.25,
+          0.32,
+          0.38
         ]
       }
     ],
     "zoomTargets": {
+      "wheel and tire": [
+        0.1,
+        0.08,
+        0.82,
+        0.82
+      ],
       "wheel": [
         0.1,
         0.08,
-        0.78,
-        0.84
+        0.82,
+        0.82
       ],
       "rim": [
         0.1,
         0.08,
-        0.78,
-        0.84
+        0.82,
+        0.82
       ],
       "tire": [
         0.1,
         0.08,
-        0.78,
-        0.84
+        0.82,
+        0.82
       ],
-      "tyre": [
-        0.1,
-        0.08,
-        0.78,
-        0.84
-      ],
-      "brake caliper": [
-        0.56,
-        0.25,
-        0.24,
-        0.35
+      "blue m brake caliper": [
+        0.62,
+        0.45,
+        0.13,
+        0.18
       ],
       "caliper": [
-        0.56,
-        0.25,
-        0.24,
-        0.35
+        0.62,
+        0.45,
+        0.13,
+        0.18
+      ],
+      "brake caliper": [
+        0.62,
+        0.45,
+        0.13,
+        0.18
       ],
       "blue caliper": [
-        0.56,
-        0.25,
-        0.24,
-        0.35
+        0.62,
+        0.45,
+        0.13,
+        0.18
       ],
-      "brakes": [
-        0.56,
+      "drilled brake rotor": [
+        0.4,
         0.25,
-        0.24,
-        0.35
+        0.32,
+        0.38
       ],
       "rotor": [
-        0.34,
-        0.26,
-        0.34,
-        0.42
-      ],
-      "drilled rotor": [
-        0.34,
-        0.26,
-        0.34,
-        0.42
+        0.4,
+        0.25,
+        0.32,
+        0.38
       ],
       "brake rotor": [
-        0.34,
-        0.26,
-        0.34,
-        0.42
+        0.4,
+        0.25,
+        0.32,
+        0.38
+      ],
+      "drilled rotor": [
+        0.4,
+        0.25,
+        0.32,
+        0.38
       ]
     },
     "pairs": []
@@ -3619,114 +4510,162 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Front fascia",
+        "label": "Front three-quarter body",
         "box": [
-          0.12,
-          0.25,
-          0.76,
-          0.48
+          0.1,
+          0.13,
+          0.78,
+          0.68
         ]
       },
       {
         "label": "Black kidney grille",
         "box": [
-          0.32,
-          0.36,
-          0.34,
-          0.24
+          0.16,
+          0.44,
+          0.2,
+          0.12
         ]
       },
       {
         "label": "LED headlights",
         "box": [
-          0.16,
+          0.24,
+          0.37,
           0.32,
-          0.68,
-          0.2
+          0.13
         ]
       },
       {
-        "label": "Carbon-fiber front lip",
+        "label": "Front wheel and blue caliper",
         "box": [
-          0.16,
-          0.66,
-          0.68,
-          0.18
+          0.58,
+          0.55,
+          0.21,
+          0.25
+        ]
+      },
+      {
+        "label": "Carbon mirror cap",
+        "box": [
+          0.73,
+          0.31,
+          0.1,
+          0.08
+        ]
+      },
+      {
+        "label": "Fixed carbon-fiber roof",
+        "box": [
+          0.36,
+          0.17,
+          0.37,
+          0.11
         ]
       }
     ],
     "zoomTargets": {
-      "front": [
-        0.12,
-        0.25,
-        0.76,
-        0.48
+      "front three-quarter body": [
+        0.1,
+        0.13,
+        0.78,
+        0.68
       ],
-      "front fascia": [
-        0.12,
-        0.25,
-        0.76,
-        0.48
+      "front view": [
+        0.1,
+        0.13,
+        0.78,
+        0.68
       ],
-      "front bumper": [
-        0.12,
-        0.25,
-        0.76,
-        0.48
+      "whole car": [
+        0.1,
+        0.13,
+        0.78,
+        0.68
+      ],
+      "black kidney grille": [
+        0.16,
+        0.44,
+        0.2,
+        0.12
       ],
       "grille": [
-        0.32,
-        0.36,
-        0.34,
-        0.24
+        0.16,
+        0.44,
+        0.2,
+        0.12
       ],
       "kidney grille": [
-        0.32,
-        0.36,
-        0.34,
-        0.24
+        0.16,
+        0.44,
+        0.2,
+        0.12
       ],
-      "black grille": [
+      "led headlights": [
+        0.24,
+        0.37,
         0.32,
-        0.36,
-        0.34,
-        0.24
+        0.13
       ],
       "headlights": [
-        0.16,
+        0.24,
+        0.37,
         0.32,
-        0.68,
-        0.2
+        0.13
       ],
-      "LED headlights": [
-        0.16,
-        0.32,
-        0.68,
-        0.2
+      "front wheel and blue caliper": [
+        0.58,
+        0.55,
+        0.21,
+        0.25
       ],
-      "lights": [
-        0.16,
-        0.32,
-        0.68,
-        0.2
+      "wheel": [
+        0.58,
+        0.55,
+        0.21,
+        0.25
       ],
-      "front lip": [
-        0.16,
-        0.66,
-        0.68,
-        0.18
+      "caliper": [
+        0.58,
+        0.55,
+        0.21,
+        0.25
       ],
-      "splitter": [
-        0.16,
-        0.66,
-        0.68,
-        0.18
+      "carbon mirror cap": [
+        0.73,
+        0.31,
+        0.1,
+        0.08
       ],
-      "carbon lip": [
-        0.16,
-        0.66,
-        0.68,
-        0.18
+      "mirror": [
+        0.73,
+        0.31,
+        0.1,
+        0.08
+      ],
+      "carbon mirror": [
+        0.73,
+        0.31,
+        0.1,
+        0.08
+      ],
+      "fixed carbon-fiber roof": [
+        0.36,
+        0.17,
+        0.37,
+        0.11
+      ],
+      "roof": [
+        0.36,
+        0.17,
+        0.37,
+        0.11
+      ],
+      "carbon roof": [
+        0.36,
+        0.17,
+        0.37,
+        0.11
       ]
     },
     "pairs": []
@@ -3797,126 +4736,126 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Front sport seats",
+        "label": "Both front sport seats",
         "box": [
-          0.12,
+          0.06,
+          0.42,
+          0.84,
+          0.44
+        ]
+      },
+      {
+        "label": "Dashboard and screen",
+        "box": [
+          0.5,
           0.2,
-          0.76,
-          0.62
+          0.34,
+          0.2
+        ]
+      },
+      {
+        "label": "Center console",
+        "box": [
+          0.35,
+          0.44,
+          0.36,
+          0.28
         ]
       },
       {
         "label": "M steering wheel",
         "box": [
-          0.08,
-          0.18,
-          0.28,
-          0.32
-        ]
-      },
-      {
-        "label": "Center console controls",
-        "box": [
-          0.3,
-          0.34,
-          0.34,
-          0.46
-        ]
-      },
-      {
-        "label": "Door panel",
-        "box": [
-          0.02,
-          0.18,
-          0.3,
-          0.62
+          0.13,
+          0.24,
+          0.22,
+          0.28
         ]
       }
     ],
     "zoomTargets": {
+      "both front sport seats": [
+        0.06,
+        0.42,
+        0.84,
+        0.44
+      ],
       "front seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
+        0.06,
+        0.42,
+        0.84,
+        0.44
       ],
       "seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
+        0.06,
+        0.42,
+        0.84,
+        0.44
       ],
       "sport seats": [
-        0.12,
+        0.06,
+        0.42,
+        0.84,
+        0.44
+      ],
+      "dashboard and screen": [
+        0.5,
         0.2,
-        0.76,
-        0.62
+        0.34,
+        0.2
       ],
-      "bucket seats": [
-        0.12,
+      "dashboard": [
+        0.5,
         0.2,
-        0.76,
-        0.62
+        0.34,
+        0.2
       ],
-      "steering wheel": [
-        0.08,
-        0.18,
-        0.28,
-        0.32
+      "screen": [
+        0.5,
+        0.2,
+        0.34,
+        0.2
       ],
-      "wheel controls": [
-        0.08,
-        0.18,
-        0.28,
-        0.32
-      ],
-      "M steering wheel": [
-        0.08,
-        0.18,
-        0.28,
-        0.32
+      "infotainment": [
+        0.5,
+        0.2,
+        0.34,
+        0.2
       ],
       "center console": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
+        0.35,
+        0.44,
+        0.36,
+        0.28
       ],
       "gear selector": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
-      ],
-      "shifter": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
+        0.35,
+        0.44,
+        0.36,
+        0.28
       ],
       "iDrive": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
+        0.35,
+        0.44,
+        0.36,
+        0.28
       ],
-      "door panel": [
-        0.02,
-        0.18,
-        0.3,
-        0.62
+      "m steering wheel": [
+        0.13,
+        0.24,
+        0.22,
+        0.28
       ],
-      "door trim": [
-        0.02,
-        0.18,
-        0.3,
-        0.62
+      "steering wheel": [
+        0.13,
+        0.24,
+        0.22,
+        0.28
       ],
-      "window switches": [
-        0.02,
-        0.18,
-        0.3,
-        0.62
+      "M wheel": [
+        0.13,
+        0.24,
+        0.22,
+        0.28
       ]
     },
     "pairs": []
@@ -3982,99 +4921,93 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Front sport seats",
+        "label": "Driver seat cushion",
         "box": [
-          0.12,
-          0.2,
-          0.76,
-          0.62
-        ]
-      },
-      {
-        "label": "M steering wheel",
-        "box": [
-          0.08,
           0.18,
-          0.28,
-          0.32
+          0.27,
+          0.7,
+          0.52
         ]
       },
       {
-        "label": "Center console controls",
+        "label": "Seat adjustment controls",
         "box": [
-          0.3,
-          0.34,
-          0.34,
-          0.46
+          0.66,
+          0.72,
+          0.2,
+          0.12
+        ]
+      },
+      {
+        "label": "Lower seat bolster",
+        "box": [
+          0.22,
+          0.18,
+          0.32,
+          0.38
         ]
       }
     ],
     "zoomTargets": {
-      "front seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
-      ],
-      "seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
-      ],
-      "sport seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
-      ],
-      "bucket seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
-      ],
-      "steering wheel": [
-        0.08,
+      "driver seat cushion": [
         0.18,
-        0.28,
-        0.32
+        0.27,
+        0.7,
+        0.52
       ],
-      "wheel controls": [
-        0.08,
+      "driver seat": [
         0.18,
-        0.28,
-        0.32
+        0.27,
+        0.7,
+        0.52
       ],
-      "M steering wheel": [
-        0.08,
+      "seat cushion": [
         0.18,
-        0.28,
-        0.32
+        0.27,
+        0.7,
+        0.52
       ],
-      "center console": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
+      "leather": [
+        0.18,
+        0.27,
+        0.7,
+        0.52
       ],
-      "gear selector": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
+      "seat adjustment controls": [
+        0.66,
+        0.72,
+        0.2,
+        0.12
       ],
-      "shifter": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
+      "seat controls": [
+        0.66,
+        0.72,
+        0.2,
+        0.12
       ],
-      "iDrive": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
+      "power seat controls": [
+        0.66,
+        0.72,
+        0.2,
+        0.12
+      ],
+      "lower seat bolster": [
+        0.22,
+        0.18,
+        0.32,
+        0.38
+      ],
+      "seat bolster": [
+        0.22,
+        0.18,
+        0.32,
+        0.38
+      ],
+      "bolster": [
+        0.22,
+        0.18,
+        0.32,
+        0.38
       ]
     },
     "pairs": []
@@ -4144,97 +5077,112 @@
       {
         "label": "Wheel and tire",
         "box": [
-          0.1,
           0.08,
-          0.78,
-          0.84
+          0.12,
+          0.86,
+          0.83
         ]
       },
       {
         "label": "Blue M brake caliper",
         "box": [
-          0.56,
-          0.25,
-          0.24,
-          0.35
+          0.63,
+          0.45,
+          0.16,
+          0.21
         ]
       },
       {
         "label": "Drilled brake rotor",
         "box": [
-          0.34,
-          0.26,
-          0.34,
-          0.42
+          0.39,
+          0.3,
+          0.33,
+          0.35
+        ]
+      },
+      {
+        "label": "Parking sensor",
+        "box": [
+          0.07,
+          0.51,
+          0.07,
+          0.07
         ]
       }
     ],
     "zoomTargets": {
-      "wheel": [
-        0.1,
+      "wheel and tire": [
         0.08,
-        0.78,
-        0.84
+        0.12,
+        0.86,
+        0.83
+      ],
+      "wheel": [
+        0.08,
+        0.12,
+        0.86,
+        0.83
       ],
       "rim": [
-        0.1,
         0.08,
-        0.78,
-        0.84
+        0.12,
+        0.86,
+        0.83
       ],
       "tire": [
-        0.1,
         0.08,
-        0.78,
-        0.84
+        0.12,
+        0.86,
+        0.83
       ],
-      "tyre": [
-        0.1,
-        0.08,
-        0.78,
-        0.84
-      ],
-      "brake caliper": [
-        0.56,
-        0.25,
-        0.24,
-        0.35
+      "blue m brake caliper": [
+        0.63,
+        0.45,
+        0.16,
+        0.21
       ],
       "caliper": [
-        0.56,
-        0.25,
-        0.24,
-        0.35
+        0.63,
+        0.45,
+        0.16,
+        0.21
       ],
-      "blue caliper": [
-        0.56,
-        0.25,
-        0.24,
-        0.35
+      "brake caliper": [
+        0.63,
+        0.45,
+        0.16,
+        0.21
       ],
-      "brakes": [
-        0.56,
-        0.25,
-        0.24,
+      "drilled brake rotor": [
+        0.39,
+        0.3,
+        0.33,
         0.35
       ],
       "rotor": [
-        0.34,
-        0.26,
-        0.34,
-        0.42
-      ],
-      "drilled rotor": [
-        0.34,
-        0.26,
-        0.34,
-        0.42
+        0.39,
+        0.3,
+        0.33,
+        0.35
       ],
       "brake rotor": [
-        0.34,
-        0.26,
-        0.34,
-        0.42
+        0.39,
+        0.3,
+        0.33,
+        0.35
+      ],
+      "parking sensor": [
+        0.07,
+        0.51,
+        0.07,
+        0.07
+      ],
+      "front sensor": [
+        0.07,
+        0.51,
+        0.07,
+        0.07
       ]
     },
     "pairs": []
@@ -4301,126 +5249,108 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Front sport seats",
-        "box": [
-          0.12,
-          0.2,
-          0.76,
-          0.62
-        ]
-      },
-      {
         "label": "M steering wheel",
         "box": [
-          0.08,
-          0.18,
+          0.06,
+          0.2,
           0.28,
-          0.32
+          0.35
         ]
       },
       {
-        "label": "Center console controls",
+        "label": "Driver M sport seat",
         "box": [
-          0.3,
-          0.34,
-          0.34,
-          0.46
-        ]
-      },
-      {
-        "label": "Door panel",
-        "box": [
-          0.02,
+          0.4,
           0.18,
+          0.48,
+          0.68
+        ]
+      },
+      {
+        "label": "M4 seat badge",
+        "box": [
+          0.74,
+          0.31,
+          0.1,
+          0.06
+        ]
+      },
+      {
+        "label": "Center console",
+        "box": [
           0.3,
-          0.62
+          0.42,
+          0.3,
+          0.28
         ]
       }
     ],
     "zoomTargets": {
-      "front seats": [
-        0.12,
+      "m steering wheel": [
+        0.06,
         0.2,
-        0.76,
-        0.62
-      ],
-      "seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
-      ],
-      "sport seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
-      ],
-      "bucket seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
+        0.28,
+        0.35
       ],
       "steering wheel": [
-        0.08,
-        0.18,
+        0.06,
+        0.2,
         0.28,
-        0.32
+        0.35
       ],
-      "wheel controls": [
-        0.08,
-        0.18,
+      "M wheel": [
+        0.06,
+        0.2,
         0.28,
-        0.32
+        0.35
       ],
-      "M steering wheel": [
-        0.08,
+      "driver m sport seat": [
+        0.4,
         0.18,
-        0.28,
-        0.32
+        0.48,
+        0.68
+      ],
+      "driver seat": [
+        0.4,
+        0.18,
+        0.48,
+        0.68
+      ],
+      "sport seat": [
+        0.4,
+        0.18,
+        0.48,
+        0.68
+      ],
+      "m4 seat badge": [
+        0.74,
+        0.31,
+        0.1,
+        0.06
+      ],
+      "seat badge": [
+        0.74,
+        0.31,
+        0.1,
+        0.06
+      ],
+      "M4 badge": [
+        0.74,
+        0.31,
+        0.1,
+        0.06
       ],
       "center console": [
         0.3,
-        0.34,
-        0.34,
-        0.46
+        0.42,
+        0.3,
+        0.28
       ],
       "gear selector": [
         0.3,
-        0.34,
-        0.34,
-        0.46
-      ],
-      "shifter": [
+        0.42,
         0.3,
-        0.34,
-        0.34,
-        0.46
-      ],
-      "iDrive": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
-      ],
-      "door panel": [
-        0.02,
-        0.18,
-        0.3,
-        0.62
-      ],
-      "door trim": [
-        0.02,
-        0.18,
-        0.3,
-        0.62
-      ],
-      "window switches": [
-        0.02,
-        0.18,
-        0.3,
-        0.62
+        0.28
       ]
     },
     "pairs": []
@@ -4491,126 +5421,135 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Front sport seats",
-        "box": [
-          0.12,
-          0.2,
-          0.76,
-          0.62
-        ]
-      },
-      {
         "label": "M steering wheel",
         "box": [
-          0.08,
+          0.05,
+          0.17,
+          0.3,
+          0.35
+        ]
+      },
+      {
+        "label": "Gauge cluster",
+        "box": [
           0.18,
+          0.16,
+          0.22,
+          0.16
+        ]
+      },
+      {
+        "label": "Driver sport seat",
+        "box": [
+          0.42,
+          0.16,
+          0.48,
+          0.67
+        ]
+      },
+      {
+        "label": "M4 seat badge",
+        "box": [
+          0.78,
+          0.38,
+          0.09,
+          0.06
+        ]
+      },
+      {
+        "label": "Center console",
+        "box": [
+          0.32,
+          0.44,
           0.28,
-          0.32
-        ]
-      },
-      {
-        "label": "Center console controls",
-        "box": [
-          0.3,
-          0.34,
-          0.34,
-          0.46
-        ]
-      },
-      {
-        "label": "Door panel",
-        "box": [
-          0.02,
-          0.18,
-          0.3,
-          0.62
+          0.3
         ]
       }
     ],
     "zoomTargets": {
-      "front seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
-      ],
-      "seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
-      ],
-      "sport seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
-      ],
-      "bucket seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
+      "m steering wheel": [
+        0.05,
+        0.17,
+        0.3,
+        0.35
       ],
       "steering wheel": [
-        0.08,
-        0.18,
-        0.28,
-        0.32
+        0.05,
+        0.17,
+        0.3,
+        0.35
       ],
-      "wheel controls": [
-        0.08,
+      "gauge cluster": [
         0.18,
-        0.28,
-        0.32
+        0.16,
+        0.22,
+        0.16
       ],
-      "M steering wheel": [
-        0.08,
+      "gauges": [
         0.18,
-        0.28,
-        0.32
+        0.16,
+        0.22,
+        0.16
+      ],
+      "instrument cluster": [
+        0.18,
+        0.16,
+        0.22,
+        0.16
+      ],
+      "driver sport seat": [
+        0.42,
+        0.16,
+        0.48,
+        0.67
+      ],
+      "driver seat": [
+        0.42,
+        0.16,
+        0.48,
+        0.67
+      ],
+      "sport seat": [
+        0.42,
+        0.16,
+        0.48,
+        0.67
+      ],
+      "m4 seat badge": [
+        0.78,
+        0.38,
+        0.09,
+        0.06
+      ],
+      "seat badge": [
+        0.78,
+        0.38,
+        0.09,
+        0.06
+      ],
+      "M4 badge": [
+        0.78,
+        0.38,
+        0.09,
+        0.06
       ],
       "center console": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
-      ],
-      "gear selector": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
-      ],
-      "shifter": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
+        0.32,
+        0.44,
+        0.28,
+        0.3
       ],
       "iDrive": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
+        0.32,
+        0.44,
+        0.28,
+        0.3
       ],
-      "door panel": [
-        0.02,
-        0.18,
-        0.3,
-        0.62
-      ],
-      "door trim": [
-        0.02,
-        0.18,
-        0.3,
-        0.62
-      ],
-      "window switches": [
-        0.02,
-        0.18,
-        0.3,
-        0.62
+      "shifter": [
+        0.32,
+        0.44,
+        0.28,
+        0.3
       ]
     },
     "pairs": []
@@ -4669,87 +5608,81 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Primary detail",
+        "label": "Window switches",
         "box": [
-          0.2,
-          0.2,
-          0.6,
-          0.58
+          0.1,
+          0.24,
+          0.48,
+          0.38
         ]
       },
       {
-        "label": "Carbon-fiber mirror cap",
+        "label": "Mirror adjustment controls",
         "box": [
+          0.55,
           0.16,
-          0.12,
-          0.68,
-          0.58
+          0.32,
+          0.32
         ]
       },
       {
-        "label": "Control button",
+        "label": "Door trim strip",
         "box": [
-          0.32,
-          0.32,
-          0.36,
-          0.28
+          0.04,
+          0.05,
+          0.8,
+          0.12
         ]
       }
     ],
     "zoomTargets": {
-      "detail": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
+      "window switches": [
+        0.1,
+        0.24,
+        0.48,
+        0.38
       ],
-      "close-up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
+      "power windows": [
+        0.1,
+        0.24,
+        0.48,
+        0.38
       ],
-      "close up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
-      ],
-      "mirror": [
+      "mirror adjustment controls": [
+        0.55,
         0.16,
-        0.12,
-        0.68,
-        0.58
+        0.32,
+        0.32
       ],
-      "mirror cap": [
+      "mirror controls": [
+        0.55,
         0.16,
-        0.12,
-        0.68,
-        0.58
+        0.32,
+        0.32
       ],
-      "carbon mirror": [
+      "mirror switch": [
+        0.55,
         0.16,
-        0.12,
-        0.68,
-        0.58
+        0.32,
+        0.32
       ],
-      "button": [
-        0.32,
-        0.32,
-        0.36,
-        0.28
+      "door trim strip": [
+        0.04,
+        0.05,
+        0.8,
+        0.12
       ],
-      "control": [
-        0.32,
-        0.32,
-        0.36,
-        0.28
+      "door trim": [
+        0.04,
+        0.05,
+        0.8,
+        0.12
       ],
-      "switch": [
-        0.32,
-        0.32,
-        0.36,
-        0.28
+      "chrome strip": [
+        0.04,
+        0.05,
+        0.8,
+        0.12
       ]
     },
     "pairs": []
@@ -4816,60 +5749,120 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Primary detail",
+        "label": "Carbon-fiber rear spoiler",
         "box": [
-          0.2,
-          0.2,
-          0.6,
-          0.58
+          0.03,
+          0.09,
+          0.88,
+          0.29
         ]
       },
       {
-        "label": "Badge",
+        "label": "M4 decklid badge",
         "box": [
-          0.26,
-          0.24,
+          0.54,
+          0.46,
+          0.18,
+          0.12
+        ]
+      },
+      {
+        "label": "BMW roundel",
+        "box": [
+          0.44,
           0.48,
-          0.32
+          0.12,
+          0.12
+        ]
+      },
+      {
+        "label": "Taillight corner",
+        "box": [
+          0.78,
+          0.42,
+          0.18,
+          0.25
         ]
       }
     ],
     "zoomTargets": {
-      "detail": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
+      "carbon-fiber rear spoiler": [
+        0.03,
+        0.09,
+        0.88,
+        0.29
       ],
-      "close-up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
+      "rear spoiler": [
+        0.03,
+        0.09,
+        0.88,
+        0.29
       ],
-      "close up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
+      "spoiler": [
+        0.03,
+        0.09,
+        0.88,
+        0.29
       ],
-      "badge": [
-        0.26,
-        0.24,
-        0.48,
-        0.32
+      "carbon spoiler": [
+        0.03,
+        0.09,
+        0.88,
+        0.29
+      ],
+      "m4 decklid badge": [
+        0.54,
+        0.46,
+        0.18,
+        0.12
       ],
       "M4 badge": [
-        0.26,
-        0.24,
+        0.54,
+        0.46,
+        0.18,
+        0.12
+      ],
+      "rear badge": [
+        0.54,
+        0.46,
+        0.18,
+        0.12
+      ],
+      "bmw roundel": [
+        0.44,
         0.48,
-        0.32
+        0.12,
+        0.12
       ],
       "BMW badge": [
-        0.26,
-        0.24,
+        0.44,
         0.48,
-        0.32
+        0.12,
+        0.12
+      ],
+      "roundel": [
+        0.44,
+        0.48,
+        0.12,
+        0.12
+      ],
+      "taillight corner": [
+        0.78,
+        0.42,
+        0.18,
+        0.25
+      ],
+      "taillight": [
+        0.78,
+        0.42,
+        0.18,
+        0.25
+      ],
+      "tail light": [
+        0.78,
+        0.42,
+        0.18,
+        0.25
       ]
     },
     "pairs": []
@@ -4937,114 +5930,135 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Front fascia",
+        "label": "Hood and roundel area",
         "box": [
-          0.12,
-          0.25,
-          0.76,
-          0.48
+          0.17,
+          0.15,
+          0.66,
+          0.26
         ]
       },
       {
         "label": "Black kidney grille",
         "box": [
-          0.32,
-          0.36,
-          0.34,
-          0.24
+          0.3,
+          0.41,
+          0.4,
+          0.2
         ]
       },
       {
         "label": "LED headlights",
         "box": [
-          0.16,
-          0.32,
+          0.15,
+          0.38,
+          0.7,
+          0.17
+        ]
+      },
+      {
+        "label": "Lower front intakes",
+        "box": [
+          0.17,
+          0.65,
           0.68,
-          0.2
+          0.18
         ]
       },
       {
         "label": "Carbon-fiber front lip",
         "box": [
-          0.16,
-          0.66,
-          0.68,
-          0.18
+          0.2,
+          0.78,
+          0.6,
+          0.1
         ]
       }
     ],
     "zoomTargets": {
-      "front": [
-        0.12,
-        0.25,
-        0.76,
-        0.48
+      "hood and roundel area": [
+        0.17,
+        0.15,
+        0.66,
+        0.26
       ],
-      "front fascia": [
-        0.12,
-        0.25,
-        0.76,
-        0.48
+      "hood": [
+        0.17,
+        0.15,
+        0.66,
+        0.26
       ],
-      "front bumper": [
-        0.12,
-        0.25,
-        0.76,
-        0.48
+      "BMW roundel": [
+        0.17,
+        0.15,
+        0.66,
+        0.26
+      ],
+      "black kidney grille": [
+        0.3,
+        0.41,
+        0.4,
+        0.2
       ],
       "grille": [
-        0.32,
-        0.36,
-        0.34,
-        0.24
+        0.3,
+        0.41,
+        0.4,
+        0.2
       ],
       "kidney grille": [
-        0.32,
-        0.36,
-        0.34,
-        0.24
+        0.3,
+        0.41,
+        0.4,
+        0.2
       ],
-      "black grille": [
-        0.32,
-        0.36,
-        0.34,
-        0.24
+      "led headlights": [
+        0.15,
+        0.38,
+        0.7,
+        0.17
       ],
       "headlights": [
-        0.16,
-        0.32,
-        0.68,
-        0.2
+        0.15,
+        0.38,
+        0.7,
+        0.17
       ],
-      "LED headlights": [
-        0.16,
-        0.32,
+      "lower front intakes": [
+        0.17,
+        0.65,
         0.68,
-        0.2
+        0.18
       ],
-      "lights": [
-        0.16,
-        0.32,
+      "intakes": [
+        0.17,
+        0.65,
         0.68,
-        0.2
+        0.18
+      ],
+      "lower intakes": [
+        0.17,
+        0.65,
+        0.68,
+        0.18
+      ],
+      "carbon-fiber front lip": [
+        0.2,
+        0.78,
+        0.6,
+        0.1
       ],
       "front lip": [
-        0.16,
-        0.66,
-        0.68,
-        0.18
+        0.2,
+        0.78,
+        0.6,
+        0.1
       ],
       "splitter": [
-        0.16,
-        0.66,
-        0.68,
-        0.18
-      ],
-      "carbon lip": [
-        0.16,
-        0.66,
-        0.68,
-        0.18
+        0.2,
+        0.78,
+        0.6,
+        0.1
       ]
     },
     "pairs": []
@@ -5112,114 +6126,159 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Rear fascia",
+        "label": "Trunk lid and spoiler",
         "box": [
-          0.12,
-          0.28,
-          0.76,
-          0.5
-        ]
-      },
-      {
-        "label": "Carbon-fiber rear spoiler",
-        "box": [
-          0.28,
-          0.24,
-          0.44,
-          0.16
+          0.14,
+          0.22,
+          0.72,
+          0.18
         ]
       },
       {
         "label": "LED taillights",
         "box": [
-          0.15,
+          0.08,
           0.36,
+          0.82,
+          0.2
+        ]
+      },
+      {
+        "label": "M4 badge and BMW roundel",
+        "box": [
+          0.42,
+          0.34,
+          0.27,
+          0.12
+        ]
+      },
+      {
+        "label": "Rear parking sensors",
+        "box": [
+          0.16,
+          0.65,
           0.7,
-          0.18
+          0.06
         ]
       },
       {
         "label": "Quad exhaust area",
         "box": [
           0.25,
-          0.7,
+          0.77,
           0.5,
-          0.18
+          0.1
         ]
       }
     ],
     "zoomTargets": {
-      "rear": [
-        0.12,
-        0.28,
-        0.76,
-        0.5
+      "trunk lid and spoiler": [
+        0.14,
+        0.22,
+        0.72,
+        0.18
       ],
-      "back": [
-        0.12,
-        0.28,
-        0.76,
-        0.5
-      ],
-      "rear bumper": [
-        0.12,
-        0.28,
-        0.76,
-        0.5
+      "trunk lid": [
+        0.14,
+        0.22,
+        0.72,
+        0.18
       ],
       "rear spoiler": [
-        0.28,
-        0.24,
-        0.44,
-        0.16
+        0.14,
+        0.22,
+        0.72,
+        0.18
       ],
       "spoiler": [
-        0.28,
-        0.24,
-        0.44,
-        0.16
+        0.14,
+        0.22,
+        0.72,
+        0.18
       ],
-      "carbon spoiler": [
-        0.28,
-        0.24,
-        0.44,
-        0.16
+      "led taillights": [
+        0.08,
+        0.36,
+        0.82,
+        0.2
       ],
       "taillights": [
-        0.15,
+        0.08,
         0.36,
-        0.7,
-        0.18
+        0.82,
+        0.2
       ],
       "tail lights": [
-        0.15,
+        0.08,
         0.36,
-        0.7,
-        0.18
+        0.82,
+        0.2
       ],
-      "rear lights": [
-        0.15,
-        0.36,
+      "m4 badge and bmw roundel": [
+        0.42,
+        0.34,
+        0.27,
+        0.12
+      ],
+      "M4 badge": [
+        0.42,
+        0.34,
+        0.27,
+        0.12
+      ],
+      "BMW roundel": [
+        0.42,
+        0.34,
+        0.27,
+        0.12
+      ],
+      "rear badge": [
+        0.42,
+        0.34,
+        0.27,
+        0.12
+      ],
+      "rear parking sensors": [
+        0.16,
+        0.65,
         0.7,
-        0.18
+        0.06
+      ],
+      "parking sensors": [
+        0.16,
+        0.65,
+        0.7,
+        0.06
+      ],
+      "rear sensors": [
+        0.16,
+        0.65,
+        0.7,
+        0.06
+      ],
+      "quad exhaust area": [
+        0.25,
+        0.77,
+        0.5,
+        0.1
       ],
       "exhaust": [
         0.25,
-        0.7,
+        0.77,
         0.5,
-        0.18
+        0.1
       ],
       "quad exhaust": [
         0.25,
-        0.7,
+        0.77,
         0.5,
-        0.18
+        0.1
       ],
       "tailpipes": [
         0.25,
-        0.7,
+        0.77,
         0.5,
-        0.18
+        0.1
       ]
     },
     "pairs": []
@@ -5297,114 +6356,183 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Front fascia",
+        "label": "Front three-quarter body",
         "box": [
-          0.12,
-          0.25,
-          0.76,
-          0.48
+          0.1,
+          0.14,
+          0.78,
+          0.67
         ]
       },
       {
         "label": "Black kidney grille",
         "box": [
-          0.32,
-          0.36,
-          0.34,
-          0.24
+          0.22,
+          0.43,
+          0.2,
+          0.12
         ]
       },
       {
         "label": "LED headlights",
         "box": [
-          0.16,
           0.32,
-          0.68,
-          0.2
+          0.36,
+          0.3,
+          0.12
         ]
       },
       {
         "label": "Carbon-fiber front lip",
         "box": [
+          0.19,
+          0.63,
+          0.35,
+          0.11
+        ]
+      },
+      {
+        "label": "Front wheel and blue caliper",
+        "box": [
+          0.58,
+          0.55,
+          0.2,
+          0.24
+        ]
+      },
+      {
+        "label": "Fixed carbon-fiber roof",
+        "box": [
+          0.39,
           0.16,
+          0.33,
+          0.11
+        ]
+      },
+      {
+        "label": "Carbon mirror cap",
+        "box": [
           0.66,
-          0.68,
-          0.18
+          0.31,
+          0.09,
+          0.08
         ]
       }
     ],
     "zoomTargets": {
-      "front": [
-        0.12,
-        0.25,
-        0.76,
-        0.48
+      "front three-quarter body": [
+        0.1,
+        0.14,
+        0.78,
+        0.67
       ],
-      "front fascia": [
-        0.12,
-        0.25,
-        0.76,
-        0.48
+      "front view": [
+        0.1,
+        0.14,
+        0.78,
+        0.67
       ],
-      "front bumper": [
-        0.12,
-        0.25,
-        0.76,
-        0.48
+      "whole car": [
+        0.1,
+        0.14,
+        0.78,
+        0.67
+      ],
+      "black kidney grille": [
+        0.22,
+        0.43,
+        0.2,
+        0.12
       ],
       "grille": [
-        0.32,
-        0.36,
-        0.34,
-        0.24
+        0.22,
+        0.43,
+        0.2,
+        0.12
       ],
-      "kidney grille": [
+      "led headlights": [
         0.32,
         0.36,
-        0.34,
-        0.24
-      ],
-      "black grille": [
-        0.32,
-        0.36,
-        0.34,
-        0.24
+        0.3,
+        0.12
       ],
       "headlights": [
-        0.16,
         0.32,
-        0.68,
-        0.2
+        0.36,
+        0.3,
+        0.12
       ],
-      "LED headlights": [
-        0.16,
-        0.32,
-        0.68,
-        0.2
-      ],
-      "lights": [
-        0.16,
-        0.32,
-        0.68,
-        0.2
+      "carbon-fiber front lip": [
+        0.19,
+        0.63,
+        0.35,
+        0.11
       ],
       "front lip": [
-        0.16,
-        0.66,
-        0.68,
-        0.18
+        0.19,
+        0.63,
+        0.35,
+        0.11
       ],
       "splitter": [
-        0.16,
-        0.66,
-        0.68,
-        0.18
+        0.19,
+        0.63,
+        0.35,
+        0.11
       ],
-      "carbon lip": [
+      "front wheel and blue caliper": [
+        0.58,
+        0.55,
+        0.2,
+        0.24
+      ],
+      "wheel": [
+        0.58,
+        0.55,
+        0.2,
+        0.24
+      ],
+      "caliper": [
+        0.58,
+        0.55,
+        0.2,
+        0.24
+      ],
+      "fixed carbon-fiber roof": [
+        0.39,
         0.16,
+        0.33,
+        0.11
+      ],
+      "roof": [
+        0.39,
+        0.16,
+        0.33,
+        0.11
+      ],
+      "carbon roof": [
+        0.39,
+        0.16,
+        0.33,
+        0.11
+      ],
+      "carbon mirror cap": [
         0.66,
-        0.68,
-        0.18
+        0.31,
+        0.09,
+        0.08
+      ],
+      "mirror": [
+        0.66,
+        0.31,
+        0.09,
+        0.08
+      ],
+      "carbon mirror": [
+        0.66,
+        0.31,
+        0.09,
+        0.08
       ]
     },
     "pairs": []
@@ -5470,99 +6598,108 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Front sport seats",
+        "label": "Front door panel",
         "box": [
-          0.12,
-          0.2,
-          0.76,
-          0.62
-        ]
-      },
-      {
-        "label": "Center console controls",
-        "box": [
-          0.3,
-          0.34,
-          0.34,
-          0.46
-        ]
-      },
-      {
-        "label": "Door panel",
-        "box": [
-          0.02,
+          0.03,
           0.18,
-          0.3,
-          0.62
+          0.92,
+          0.61
+        ]
+      },
+      {
+        "label": "Metallic door handle",
+        "box": [
+          0.32,
+          0.44,
+          0.18,
+          0.1
+        ]
+      },
+      {
+        "label": "Lower door pocket",
+        "box": [
+          0.36,
+          0.68,
+          0.45,
+          0.14
+        ]
+      },
+      {
+        "label": "Door speaker area",
+        "box": [
+          0.81,
+          0.15,
+          0.13,
+          0.14
         ]
       }
     ],
     "zoomTargets": {
-      "front seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
-      ],
-      "seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
-      ],
-      "sport seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
-      ],
-      "bucket seats": [
-        0.12,
-        0.2,
-        0.76,
-        0.62
-      ],
-      "center console": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
-      ],
-      "gear selector": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
-      ],
-      "shifter": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
-      ],
-      "iDrive": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
+      "front door panel": [
+        0.03,
+        0.18,
+        0.92,
+        0.61
       ],
       "door panel": [
-        0.02,
+        0.03,
         0.18,
-        0.3,
-        0.62
+        0.92,
+        0.61
       ],
       "door trim": [
-        0.02,
+        0.03,
         0.18,
-        0.3,
-        0.62
+        0.92,
+        0.61
       ],
-      "window switches": [
-        0.02,
+      "metallic door handle": [
+        0.32,
+        0.44,
         0.18,
-        0.3,
-        0.62
+        0.1
+      ],
+      "door handle": [
+        0.32,
+        0.44,
+        0.18,
+        0.1
+      ],
+      "lower door pocket": [
+        0.36,
+        0.68,
+        0.45,
+        0.14
+      ],
+      "storage pocket": [
+        0.36,
+        0.68,
+        0.45,
+        0.14
+      ],
+      "door pocket": [
+        0.36,
+        0.68,
+        0.45,
+        0.14
+      ],
+      "door speaker area": [
+        0.81,
+        0.15,
+        0.13,
+        0.14
+      ],
+      "speaker": [
+        0.81,
+        0.15,
+        0.13,
+        0.14
+      ],
+      "door speaker": [
+        0.81,
+        0.15,
+        0.13,
+        0.14
       ]
     },
     "pairs": []
@@ -5621,33 +6758,93 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Primary detail",
+        "label": "Head-up display projection area",
         "box": [
+          0.32,
+          0.37,
           0.2,
-          0.2,
-          0.6,
-          0.58
+          0.2
+        ]
+      },
+      {
+        "label": "Stitched dashboard top",
+        "box": [
+          0.05,
+          0.5,
+          0.85,
+          0.28
+        ]
+      },
+      {
+        "label": "Windshield glass",
+        "box": [
+          0.02,
+          0.02,
+          0.9,
+          0.56
         ]
       }
     ],
     "zoomTargets": {
-      "detail": [
+      "head-up display projection area": [
+        0.32,
+        0.37,
         0.2,
-        0.2,
-        0.6,
-        0.58
+        0.2
       ],
-      "close-up": [
+      "HUD": [
+        0.32,
+        0.37,
         0.2,
-        0.2,
-        0.6,
-        0.58
+        0.2
       ],
-      "close up": [
+      "head-up display": [
+        0.32,
+        0.37,
         0.2,
+        0.2
+      ],
+      "projection area": [
+        0.32,
+        0.37,
         0.2,
-        0.6,
-        0.58
+        0.2
+      ],
+      "stitched dashboard top": [
+        0.05,
+        0.5,
+        0.85,
+        0.28
+      ],
+      "stitched dash": [
+        0.05,
+        0.5,
+        0.85,
+        0.28
+      ],
+      "dashboard": [
+        0.05,
+        0.5,
+        0.85,
+        0.28
+      ],
+      "windshield glass": [
+        0.02,
+        0.02,
+        0.9,
+        0.56
+      ],
+      "windshield": [
+        0.02,
+        0.02,
+        0.9,
+        0.56
+      ],
+      "glass": [
+        0.02,
+        0.02,
+        0.9,
+        0.56
       ]
     },
     "pairs": []
@@ -5719,10 +6916,10 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Rear fascia",
+        "label": "Rear quarter body",
         "box": [
-          0.12,
-          0.28,
+          0.09,
+          0.23,
           0.76,
           0.5
         ]
@@ -5730,103 +6927,151 @@
       {
         "label": "Carbon-fiber rear spoiler",
         "box": [
-          0.28,
-          0.24,
-          0.44,
-          0.16
+          0.22,
+          0.38,
+          0.35,
+          0.08
         ]
       },
       {
-        "label": "LED taillights",
-        "box": [
-          0.15,
-          0.36,
-          0.7,
-          0.18
-        ]
-      },
-      {
-        "label": "Quad exhaust area",
+        "label": "Passenger-side taillight",
         "box": [
           0.25,
-          0.7,
-          0.5,
-          0.18
+          0.43,
+          0.35,
+          0.14
+        ]
+      },
+      {
+        "label": "Rear wheel",
+        "box": [
+          0.56,
+          0.57,
+          0.2,
+          0.25
+        ]
+      },
+      {
+        "label": "Fuel door",
+        "box": [
+          0.74,
+          0.35,
+          0.08,
+          0.08
+        ]
+      },
+      {
+        "label": "Carbon roofline",
+        "box": [
+          0.43,
+          0.19,
+          0.33,
+          0.1
         ]
       }
     ],
     "zoomTargets": {
-      "rear": [
-        0.12,
-        0.28,
+      "rear quarter body": [
+        0.09,
+        0.23,
         0.76,
         0.5
       ],
-      "back": [
-        0.12,
-        0.28,
+      "rear quarter": [
+        0.09,
+        0.23,
         0.76,
         0.5
       ],
-      "rear bumper": [
-        0.12,
-        0.28,
+      "rear view": [
+        0.09,
+        0.23,
         0.76,
         0.5
       ],
-      "rear spoiler": [
-        0.28,
-        0.24,
-        0.44,
-        0.16
+      "side profile": [
+        0.09,
+        0.23,
+        0.76,
+        0.5
+      ],
+      "carbon-fiber rear spoiler": [
+        0.22,
+        0.38,
+        0.35,
+        0.08
       ],
       "spoiler": [
-        0.28,
-        0.24,
-        0.44,
-        0.16
+        0.22,
+        0.38,
+        0.35,
+        0.08
       ],
-      "carbon spoiler": [
-        0.28,
-        0.24,
-        0.44,
-        0.16
+      "rear spoiler": [
+        0.22,
+        0.38,
+        0.35,
+        0.08
       ],
-      "taillights": [
-        0.15,
-        0.36,
-        0.7,
-        0.18
-      ],
-      "tail lights": [
-        0.15,
-        0.36,
-        0.7,
-        0.18
-      ],
-      "rear lights": [
-        0.15,
-        0.36,
-        0.7,
-        0.18
-      ],
-      "exhaust": [
+      "passenger-side taillight": [
         0.25,
-        0.7,
-        0.5,
-        0.18
+        0.43,
+        0.35,
+        0.14
       ],
-      "quad exhaust": [
+      "taillight": [
         0.25,
-        0.7,
-        0.5,
-        0.18
+        0.43,
+        0.35,
+        0.14
       ],
-      "tailpipes": [
+      "tail light": [
         0.25,
-        0.7,
-        0.5,
-        0.18
+        0.43,
+        0.35,
+        0.14
+      ],
+      "rear wheel": [
+        0.56,
+        0.57,
+        0.2,
+        0.25
+      ],
+      "wheel": [
+        0.56,
+        0.57,
+        0.2,
+        0.25
+      ],
+      "fuel door": [
+        0.74,
+        0.35,
+        0.08,
+        0.08
+      ],
+      "gas cap": [
+        0.74,
+        0.35,
+        0.08,
+        0.08
+      ],
+      "carbon roofline": [
+        0.43,
+        0.19,
+        0.33,
+        0.1
+      ],
+      "roof": [
+        0.43,
+        0.19,
+        0.33,
+        0.1
+      ],
+      "carbon roof": [
+        0.43,
+        0.19,
+        0.33,
+        0.1
       ]
     },
     "pairs": []
@@ -5894,60 +7139,114 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Primary detail",
+        "label": "BMW M Power engine cover",
         "box": [
-          0.2,
-          0.2,
-          0.6,
-          0.58
+          0.35,
+          0.33,
+          0.32,
+          0.3
         ]
       },
       {
-        "label": "Engine bay",
+        "label": "Carbon-fiber strut brace",
         "box": [
-          0.12,
-          0.16,
-          0.76,
-          0.66
+          0.17,
+          0.26,
+          0.6,
+          0.18
+        ]
+      },
+      {
+        "label": "Fluid reservoir area",
+        "box": [
+          0.08,
+          0.31,
+          0.17,
+          0.18
+        ]
+      },
+      {
+        "label": "Hood underside",
+        "box": [
+          0.02,
+          0.02,
+          0.9,
+          0.23
         ]
       }
     ],
     "zoomTargets": {
-      "detail": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
-      ],
-      "close-up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
-      ],
-      "close up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
+      "bmw m power engine cover": [
+        0.35,
+        0.33,
+        0.32,
+        0.3
       ],
       "engine": [
-        0.12,
-        0.16,
-        0.76,
-        0.66
+        0.35,
+        0.33,
+        0.32,
+        0.3
       ],
-      "engine bay": [
-        0.12,
-        0.16,
-        0.76,
-        0.66
+      "engine cover": [
+        0.35,
+        0.33,
+        0.32,
+        0.3
+      ],
+      "M Power": [
+        0.35,
+        0.33,
+        0.32,
+        0.3
+      ],
+      "carbon-fiber strut brace": [
+        0.17,
+        0.26,
+        0.6,
+        0.18
+      ],
+      "strut brace": [
+        0.17,
+        0.26,
+        0.6,
+        0.18
+      ],
+      "carbon brace": [
+        0.17,
+        0.26,
+        0.6,
+        0.18
+      ],
+      "fluid reservoir area": [
+        0.08,
+        0.31,
+        0.17,
+        0.18
+      ],
+      "fluid reservoirs": [
+        0.08,
+        0.31,
+        0.17,
+        0.18
+      ],
+      "reservoir": [
+        0.08,
+        0.31,
+        0.17,
+        0.18
+      ],
+      "hood underside": [
+        0.02,
+        0.02,
+        0.9,
+        0.23
       ],
       "hood open": [
-        0.12,
-        0.16,
-        0.76,
-        0.66
+        0.02,
+        0.02,
+        0.9,
+        0.23
       ]
     },
     "pairs": []
@@ -6019,87 +7318,141 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Front fascia",
+        "label": "Driver-side body profile",
         "box": [
+          0.02,
+          0.18,
+          0.92,
+          0.62
+        ]
+      },
+      {
+        "label": "Fixed carbon-fiber roof",
+        "box": [
+          0.2,
+          0.18,
+          0.45,
+          0.12
+        ]
+      },
+      {
+        "label": "Carbon mirror cap",
+        "box": [
+          0.58,
+          0.35,
           0.12,
-          0.25,
-          0.76,
-          0.48
+          0.11
         ]
       },
       {
-        "label": "Black kidney grille",
+        "label": "M side fender vent",
         "box": [
-          0.32,
-          0.36,
-          0.34,
-          0.24
+          0.41,
+          0.57,
+          0.13,
+          0.14
         ]
       },
       {
-        "label": "LED headlights",
+        "label": "Front wheel and blue caliper",
         "box": [
-          0.16,
-          0.32,
-          0.68,
-          0.2
+          0.79,
+          0.63,
+          0.18,
+          0.27
         ]
       }
     ],
     "zoomTargets": {
-      "front": [
+      "driver-side body profile": [
+        0.02,
+        0.18,
+        0.92,
+        0.62
+      ],
+      "side profile": [
+        0.02,
+        0.18,
+        0.92,
+        0.62
+      ],
+      "driver side": [
+        0.02,
+        0.18,
+        0.92,
+        0.62
+      ],
+      "fixed carbon-fiber roof": [
+        0.2,
+        0.18,
+        0.45,
+        0.12
+      ],
+      "roof": [
+        0.2,
+        0.18,
+        0.45,
+        0.12
+      ],
+      "carbon roof": [
+        0.2,
+        0.18,
+        0.45,
+        0.12
+      ],
+      "carbon mirror cap": [
+        0.58,
+        0.35,
         0.12,
-        0.25,
-        0.76,
-        0.48
+        0.11
       ],
-      "front fascia": [
+      "mirror": [
+        0.58,
+        0.35,
         0.12,
-        0.25,
-        0.76,
-        0.48
+        0.11
       ],
-      "front bumper": [
+      "carbon mirror": [
+        0.58,
+        0.35,
         0.12,
-        0.25,
-        0.76,
-        0.48
+        0.11
       ],
-      "grille": [
-        0.32,
-        0.36,
-        0.34,
-        0.24
+      "m side fender vent": [
+        0.41,
+        0.57,
+        0.13,
+        0.14
       ],
-      "kidney grille": [
-        0.32,
-        0.36,
-        0.34,
-        0.24
+      "side vent": [
+        0.41,
+        0.57,
+        0.13,
+        0.14
       ],
-      "black grille": [
-        0.32,
-        0.36,
-        0.34,
-        0.24
+      "fender vent": [
+        0.41,
+        0.57,
+        0.13,
+        0.14
       ],
-      "headlights": [
-        0.16,
-        0.32,
-        0.68,
-        0.2
+      "front wheel and blue caliper": [
+        0.79,
+        0.63,
+        0.18,
+        0.27
       ],
-      "LED headlights": [
-        0.16,
-        0.32,
-        0.68,
-        0.2
+      "wheel": [
+        0.79,
+        0.63,
+        0.18,
+        0.27
       ],
-      "lights": [
-        0.16,
-        0.32,
-        0.68,
-        0.2
+      "caliper": [
+        0.79,
+        0.63,
+        0.18,
+        0.27
       ]
     },
     "pairs": []
@@ -6363,97 +7716,91 @@
       {
         "label": "Wheel and tire",
         "box": [
-          0.1,
+          0.13,
           0.08,
-          0.78,
-          0.84
+          0.8,
+          0.85
         ]
       },
       {
         "label": "Blue M brake caliper",
         "box": [
-          0.56,
-          0.25,
-          0.24,
-          0.35
+          0.23,
+          0.54,
+          0.17,
+          0.19
         ]
       },
       {
         "label": "Drilled brake rotor",
         "box": [
-          0.34,
+          0.43,
           0.26,
-          0.34,
-          0.42
+          0.29,
+          0.39
         ]
       }
     ],
     "zoomTargets": {
-      "wheel": [
-        0.1,
+      "wheel and tire": [
+        0.13,
         0.08,
-        0.78,
-        0.84
+        0.8,
+        0.85
+      ],
+      "wheel": [
+        0.13,
+        0.08,
+        0.8,
+        0.85
       ],
       "rim": [
-        0.1,
+        0.13,
         0.08,
-        0.78,
-        0.84
+        0.8,
+        0.85
       ],
       "tire": [
-        0.1,
+        0.13,
         0.08,
-        0.78,
-        0.84
+        0.8,
+        0.85
       ],
-      "tyre": [
-        0.1,
-        0.08,
-        0.78,
-        0.84
-      ],
-      "brake caliper": [
-        0.56,
-        0.25,
-        0.24,
-        0.35
+      "blue m brake caliper": [
+        0.23,
+        0.54,
+        0.17,
+        0.19
       ],
       "caliper": [
-        0.56,
-        0.25,
-        0.24,
-        0.35
+        0.23,
+        0.54,
+        0.17,
+        0.19
       ],
-      "blue caliper": [
-        0.56,
-        0.25,
-        0.24,
-        0.35
+      "brake caliper": [
+        0.23,
+        0.54,
+        0.17,
+        0.19
       ],
-      "brakes": [
-        0.56,
-        0.25,
-        0.24,
-        0.35
+      "drilled brake rotor": [
+        0.43,
+        0.26,
+        0.29,
+        0.39
       ],
       "rotor": [
-        0.34,
+        0.43,
         0.26,
-        0.34,
-        0.42
-      ],
-      "drilled rotor": [
-        0.34,
-        0.26,
-        0.34,
-        0.42
+        0.29,
+        0.39
       ],
       "brake rotor": [
-        0.34,
+        0.43,
         0.26,
-        0.34,
-        0.42
+        0.29,
+        0.39
       ]
     },
     "pairs": []
@@ -6524,114 +7871,141 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Rear fascia",
+        "label": "Rear quarter body",
         "box": [
-          0.12,
-          0.28,
+          0.08,
+          0.22,
           0.76,
-          0.5
+          0.55
+        ]
+      },
+      {
+        "label": "Driver-side taillight",
+        "box": [
+          0.58,
+          0.42,
+          0.22,
+          0.15
         ]
       },
       {
         "label": "Carbon-fiber rear spoiler",
         "box": [
-          0.28,
-          0.24,
+          0.62,
+          0.32,
+          0.21,
+          0.08
+        ]
+      },
+      {
+        "label": "Rear wheel",
+        "box": [
+          0.2,
+          0.57,
+          0.18,
+          0.24
+        ]
+      },
+      {
+        "label": "M side fender vent",
+        "box": [
+          0.11,
           0.44,
-          0.16
-        ]
-      },
-      {
-        "label": "LED taillights",
-        "box": [
-          0.15,
-          0.36,
-          0.7,
-          0.18
-        ]
-      },
-      {
-        "label": "Quad exhaust area",
-        "box": [
-          0.25,
-          0.7,
-          0.5,
-          0.18
+          0.08,
+          0.1
         ]
       }
     ],
     "zoomTargets": {
-      "rear": [
-        0.12,
-        0.28,
+      "rear quarter body": [
+        0.08,
+        0.22,
         0.76,
-        0.5
+        0.55
       ],
-      "back": [
-        0.12,
-        0.28,
+      "rear quarter": [
+        0.08,
+        0.22,
         0.76,
-        0.5
+        0.55
       ],
-      "rear bumper": [
-        0.12,
-        0.28,
+      "rear view": [
+        0.08,
+        0.22,
         0.76,
-        0.5
+        0.55
       ],
-      "rear spoiler": [
-        0.28,
-        0.24,
-        0.44,
-        0.16
+      "side profile": [
+        0.08,
+        0.22,
+        0.76,
+        0.55
+      ],
+      "driver-side taillight": [
+        0.58,
+        0.42,
+        0.22,
+        0.15
+      ],
+      "taillight": [
+        0.58,
+        0.42,
+        0.22,
+        0.15
+      ],
+      "tail light": [
+        0.58,
+        0.42,
+        0.22,
+        0.15
+      ],
+      "carbon-fiber rear spoiler": [
+        0.62,
+        0.32,
+        0.21,
+        0.08
       ],
       "spoiler": [
-        0.28,
-        0.24,
+        0.62,
+        0.32,
+        0.21,
+        0.08
+      ],
+      "rear spoiler": [
+        0.62,
+        0.32,
+        0.21,
+        0.08
+      ],
+      "rear wheel": [
+        0.2,
+        0.57,
+        0.18,
+        0.24
+      ],
+      "wheel": [
+        0.2,
+        0.57,
+        0.18,
+        0.24
+      ],
+      "m side fender vent": [
+        0.11,
         0.44,
-        0.16
+        0.08,
+        0.1
       ],
-      "carbon spoiler": [
-        0.28,
-        0.24,
+      "side vent": [
+        0.11,
         0.44,
-        0.16
+        0.08,
+        0.1
       ],
-      "taillights": [
-        0.15,
-        0.36,
-        0.7,
-        0.18
-      ],
-      "tail lights": [
-        0.15,
-        0.36,
-        0.7,
-        0.18
-      ],
-      "rear lights": [
-        0.15,
-        0.36,
-        0.7,
-        0.18
-      ],
-      "exhaust": [
-        0.25,
-        0.7,
-        0.5,
-        0.18
-      ],
-      "quad exhaust": [
-        0.25,
-        0.7,
-        0.5,
-        0.18
-      ],
-      "tailpipes": [
-        0.25,
-        0.7,
-        0.5,
-        0.18
+      "fender vent": [
+        0.11,
+        0.44,
+        0.08,
+        0.1
       ]
     },
     "pairs": []
@@ -6690,60 +8064,72 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Primary detail",
+        "label": "Lower dash control button",
         "box": [
+          0.36,
           0.2,
-          0.2,
-          0.6,
-          0.58
+          0.34,
+          0.22
         ]
       },
       {
-        "label": "Control button",
+        "label": "Driver footwell",
         "box": [
-          0.32,
-          0.32,
-          0.36,
-          0.28
+          0.26,
+          0.52,
+          0.52,
+          0.42
         ]
       }
     ],
     "zoomTargets": {
-      "detail": [
+      "lower dash control button": [
+        0.36,
         0.2,
-        0.2,
-        0.6,
-        0.58
-      ],
-      "close-up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
-      ],
-      "close up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
+        0.34,
+        0.22
       ],
       "button": [
-        0.32,
-        0.32,
         0.36,
-        0.28
+        0.2,
+        0.34,
+        0.22
       ],
-      "control": [
-        0.32,
-        0.32,
+      "control button": [
         0.36,
-        0.28
+        0.2,
+        0.34,
+        0.22
       ],
-      "switch": [
-        0.32,
-        0.32,
+      "green indicator": [
         0.36,
-        0.28
+        0.2,
+        0.34,
+        0.22
+      ],
+      "driver footwell": [
+        0.26,
+        0.52,
+        0.52,
+        0.42
+      ],
+      "footwell": [
+        0.26,
+        0.52,
+        0.52,
+        0.42
+      ],
+      "pedals": [
+        0.26,
+        0.52,
+        0.52,
+        0.42
+      ],
+      "floor mat": [
+        0.26,
+        0.52,
+        0.52,
+        0.42
       ]
     },
     "pairs": []
@@ -6803,60 +8189,87 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Primary detail",
+        "label": "BMW hood roundel",
         "box": [
-          0.2,
-          0.2,
-          0.6,
-          0.58
+          0.4,
+          0.23,
+          0.12,
+          0.12
         ]
       },
       {
-        "label": "Badge",
+        "label": "Black kidney grille",
         "box": [
-          0.26,
-          0.24,
-          0.48,
-          0.32
+          0.18,
+          0.56,
+          0.7,
+          0.36
+        ]
+      },
+      {
+        "label": "White hood edge",
+        "box": [
+          0.02,
+          0.02,
+          0.9,
+          0.43
         ]
       }
     ],
     "zoomTargets": {
-      "detail": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
+      "bmw hood roundel": [
+        0.4,
+        0.23,
+        0.12,
+        0.12
       ],
-      "close-up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
+      "BMW roundel": [
+        0.4,
+        0.23,
+        0.12,
+        0.12
       ],
-      "close up": [
-        0.2,
-        0.2,
-        0.6,
-        0.58
+      "front badge": [
+        0.4,
+        0.23,
+        0.12,
+        0.12
       ],
-      "badge": [
-        0.26,
-        0.24,
-        0.48,
-        0.32
+      "black kidney grille": [
+        0.18,
+        0.56,
+        0.7,
+        0.36
       ],
-      "M4 badge": [
-        0.26,
-        0.24,
-        0.48,
-        0.32
+      "grille": [
+        0.18,
+        0.56,
+        0.7,
+        0.36
       ],
-      "BMW badge": [
-        0.26,
-        0.24,
-        0.48,
-        0.32
+      "kidney grille": [
+        0.18,
+        0.56,
+        0.7,
+        0.36
+      ],
+      "white hood edge": [
+        0.02,
+        0.02,
+        0.9,
+        0.43
+      ],
+      "hood": [
+        0.02,
+        0.02,
+        0.9,
+        0.43
+      ],
+      "hood edge": [
+        0.02,
+        0.02,
+        0.9,
+        0.43
       ]
     },
     "pairs": []
@@ -6927,99 +8340,135 @@
     "status": "processed",
     "boxes": [
       {
-        "label": "Front sport seats",
+        "label": "Center armrest",
+        "box": [
+          0.34,
+          0.41,
+          0.43,
+          0.25
+        ]
+      },
+      {
+        "label": "Manual parking brake",
+        "box": [
+          0.18,
+          0.49,
+          0.2,
+          0.15
+        ]
+      },
+      {
+        "label": "iDrive controller",
         "box": [
           0.12,
-          0.2,
-          0.76,
-          0.62
+          0.28,
+          0.16,
+          0.16
         ]
       },
       {
-        "label": "Center console controls",
+        "label": "Passenger sport seat",
         "box": [
+          0.55,
+          0.16,
           0.3,
-          0.34,
-          0.34,
-          0.46
+          0.52
         ]
       },
       {
-        "label": "Door panel",
+        "label": "Rear seat edge",
         "box": [
-          0.02,
-          0.18,
-          0.3,
-          0.62
+          0.78,
+          0.45,
+          0.16,
+          0.2
         ]
       }
     ],
     "zoomTargets": {
-      "front seats": [
-        0.12,
+      "center armrest": [
+        0.34,
+        0.41,
+        0.43,
+        0.25
+      ],
+      "armrest": [
+        0.34,
+        0.41,
+        0.43,
+        0.25
+      ],
+      "manual parking brake": [
+        0.18,
+        0.49,
         0.2,
-        0.76,
-        0.62
+        0.15
       ],
-      "seats": [
-        0.12,
+      "parking brake": [
+        0.18,
+        0.49,
         0.2,
-        0.76,
-        0.62
+        0.15
       ],
-      "sport seats": [
-        0.12,
+      "handbrake": [
+        0.18,
+        0.49,
         0.2,
-        0.76,
-        0.62
+        0.15
       ],
-      "bucket seats": [
+      "idrive controller": [
         0.12,
-        0.2,
-        0.76,
-        0.62
-      ],
-      "center console": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
-      ],
-      "gear selector": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
-      ],
-      "shifter": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
+        0.28,
+        0.16,
+        0.16
       ],
       "iDrive": [
-        0.3,
-        0.34,
-        0.34,
-        0.46
+        0.12,
+        0.28,
+        0.16,
+        0.16
       ],
-      "door panel": [
-        0.02,
-        0.18,
-        0.3,
-        0.62
+      "controller": [
+        0.12,
+        0.28,
+        0.16,
+        0.16
       ],
-      "door trim": [
-        0.02,
-        0.18,
+      "passenger sport seat": [
+        0.55,
+        0.16,
         0.3,
-        0.62
+        0.52
       ],
-      "window switches": [
-        0.02,
-        0.18,
+      "passenger seat": [
+        0.55,
+        0.16,
         0.3,
-        0.62
+        0.52
+      ],
+      "front seat": [
+        0.55,
+        0.16,
+        0.3,
+        0.52
+      ],
+      "rear seat edge": [
+        0.78,
+        0.45,
+        0.16,
+        0.2
+      ],
+      "rear seat": [
+        0.78,
+        0.45,
+        0.16,
+        0.2
+      ],
+      "back seat": [
+        0.78,
+        0.45,
+        0.16,
+        0.2
       ]
     },
     "pairs": []

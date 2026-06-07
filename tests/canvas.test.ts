@@ -766,11 +766,11 @@ describe("ViewStateSchema", () => {
 // ── Existing CarImageSchema still parses images.json unchanged ────────────────
 
 describe("backward compatibility: CarImageSchema", () => {
-  it("parses existing images.json (46 images) without changes", () => {
+  it("parses existing images.json without changes", () => {
     const images = CarImageSchema.array().parse(
       JSON.parse(readFileSync("data/images.json", "utf8"))
     );
-    expect(images).toHaveLength(46);
+    expect(images.filter((img) => img.vin === "BMW-M4")).toHaveLength(46);
     // New optional fields default safely
     expect(images.every((img) => Array.isArray(img.boxes))).toBe(true);
     expect(images.every((img) => typeof img.zoomTargets === "object")).toBe(true);

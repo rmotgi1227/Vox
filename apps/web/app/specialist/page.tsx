@@ -236,6 +236,20 @@ export default function SpecialistPage() {
     [state, selectedImageId]
   );
 
+  // True while a Nano Banana visualization is rendering (canvas shows the 3-dot
+  // loader). We pause the mic during this so the shopper waits for the image
+  // instead of talking over the ~15-20s generation.
+  const isGenerating = useMemo(
+    () => viewState.items.some((it) => it.kind === "generated" && it.status === "pending"),
+    [viewState]
+  );
+
+  // Pause / resume the mic around generation.
+  useEffect(() => {
+    if (voiceState !== "connected") return;
+    void roomRef.current?.localParticipant.setMicrophoneEnabled(!isGenerating).catch(() => {});
+  }, [isGenerating, voiceState]);
+
   // -------------------------------------------------------------------------
   // Phase-1 dev harness — ?canvas=demo
   // Cycles through hardcoded ViewStates so every layout can be seen without

@@ -106,11 +106,20 @@ function ImageTile({
   );
 }
 
-/** Shimmer tile for generated items with status "pending" or "failed". */
-function ShimmerTile({ label }: { label?: string }) {
+/** Generating/failed tile for generated items — a clean 3-dot loader. */
+function ShimmerTile({ label, failed = false }: { label?: string; failed?: boolean }) {
   return (
     <div className="canvas-shimmer">
-      <div className="canvas-shimmer-inner" />
+      {!failed && <div className="canvas-shimmer-inner" />}
+      {failed ? (
+        <ImageIcon size={30} aria-hidden="true" />
+      ) : (
+        <div className="canvas-gen-dots" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
+      )}
       {label && <span className="canvas-shimmer-label">{label}</span>}
     </div>
   );
@@ -296,7 +305,8 @@ export function Canvas({ viewState, images, imageBusy = false }: CanvasProps) {
       return (
         <ShimmerTile
           key={index}
-          label={item.status === "pending" ? "Generating…" : "Generation failed"}
+          failed={item.status === "failed"}
+          label={item.status === "pending" ? "Generating your view…" : "Couldn't generate that"}
         />
       );
     }
@@ -342,7 +352,12 @@ export function Canvas({ viewState, images, imageBusy = false }: CanvasProps) {
     const zoomStyle = isZoomed ? zoomTransform(zoomedRegion!) : undefined;
 
     if (item.kind === "generated" && (item.status === "pending" || item.status === "failed")) {
-      return <ShimmerTile label={item.status === "pending" ? "Generating…" : undefined} />;
+      return (
+        <ShimmerTile
+          failed={item.status === "failed"}
+          label={item.status === "pending" ? "Generating your view…" : "Couldn't generate that"}
+        />
+      );
     }
 
     if (!resolved) {
