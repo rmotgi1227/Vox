@@ -571,18 +571,13 @@ export default defineAgent({
     const profile = resolveModelProfile(profileId ?? DEFAULT_MODEL_PROFILE_ID);
     console.log(`Vox profile: ${profile.id} (llm=${profile.llmModel}, tts=${profile.ttsModel})`);
 
-    // Cartesia TTS via LiveKit Inference. `speed` is the main pacing lever —
-    // "fast" gives the brighter, more energetic cadence a salesman has, and also
-    // shortens time-to-first-word. Overridable via CARTESIA_SPEED
-    // ("slow" | "normal" | "fast"); drop to "normal" if the faster pace ever
-    // clips clarity. Keep modelOptions to documented Cartesia fields only — an
-    // unsupported option can silently drop the Inference stream (see STT note).
-    const cartesiaSpeed = (process.env.CARTESIA_SPEED as "slow" | "normal" | "fast" | undefined) ?? "fast";
-    const ttsOption = new inference.TTS({
-      model: `cartesia/${profile.ttsModel}`,
-      voice: CARTESIA_VOICE,
-      modelOptions: { speed: cartesiaSpeed }
-    });
+    // Cartesia TTS via LiveKit Inference — copied verbatim from the avatar branch
+    // (hackathon-snapshot) where the Simli lip-sync flow worked cleanly. Uses the
+    // plain "cartesia/<model>:<voiceId>" string form with NO modelOptions: the
+    // earlier `modelOptions: { speed: "fast" }` produced audio that came out
+    // garbled once piped through Simli's resampler. Default Cartesia pacing is
+    // what Simli expects.
+    const ttsString = `cartesia/${profile.ttsModel}:${CARTESIA_VOICE}`;
 
     const specialist = new VoxSpecialistVoiceAgent(ctx, profile.llmModel, isReturning, brainMode);
 
@@ -620,7 +615,7 @@ export default defineAgent({
     const session = new voice.AgentSession({
       stt: sttOption,
       llm: new voice.testing.FakeLLM(),
-      tts: ttsOption,
+      tts: ttsString,
       userAwayTimeout: null,
       turnHandling: {
         // "stt" uses Deepgram's end-of-speech signal then applies our minDelay.
