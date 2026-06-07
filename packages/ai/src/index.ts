@@ -2293,41 +2293,51 @@ export async function generateVisualization(input: {
     parts.push({ inline_data: { mime_type: mime, data: bytes.toString("base64") } });
   }
 
-  const controller = new AbortController();
-  const timeoutHandle = setTimeout(() => controller.abort(), input.timeoutMs ?? 60_000);
-  try {
-    const resp = await fetch(`${GEMINI_IMAGE_URL}/${model}:generateContent`, {
-      method: "POST",
-      headers: { "x-goog-api-key": key, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts }],
-        generationConfig: { responseModalities: ["TEXT", "IMAGE"] }
-      }),
-      signal: controller.signal
-    });
-    if (!resp.ok) {
-      throw new Error(`Gemini image error ${resp.status}: ${await resp.text().catch(() => "")}`);
-    }
-    const json = (await resp.json()) as {
-      candidates?: Array<{
-        content?: { parts?: Array<{ inlineData?: { data?: string }; inline_data?: { data?: string } }> };
-      }>;
-    };
-    const rparts = json.candidates?.[0]?.content?.parts ?? [];
-    const imgPart = rparts.find((p) => p.inlineData?.data ?? p.inline_data?.data);
-    const data = imgPart?.inlineData?.data ?? imgPart?.inline_data?.data;
-    if (!data) throw new Error("Gemini returned no image data.");
+  // Gemini image models occasionally return a TEXT-only response (no image part)
+  // for an edit request — retry a couple times so a transient miss never breaks
+  // the demo. HTTP/auth errors throw immediately (no point retrying those).
+  const maxAttempts = 3;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const controller = new AbortController();
+    const timeoutHandle = setTimeout(() => controller.abort(), input.timeoutMs ?? 60_000);
+    try {
+      const resp = await fetch(`${GEMINI_IMAGE_URL}/${model}:generateContent`, {
+        method: "POST",
+        headers: { "x-goog-api-key": key, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts }],
+          generationConfig: { responseModalities: ["TEXT", "IMAGE"] }
+        }),
+        signal: controller.signal
+      });
+      if (!resp.ok) {
+        throw new Error(`Gemini image error ${resp.status}: ${await resp.text().catch(() => "")}`);
+      }
+      const json = (await resp.json()) as {
+        candidates?: Array<{
+          content?: { parts?: Array<{ inlineData?: { data?: string }; inline_data?: { data?: string } }> };
+        }>;
+      };
+      const rparts = json.candidates?.[0]?.content?.parts ?? [];
+      const imgPart = rparts.find((p) => p.inlineData?.data ?? p.inline_data?.data);
+      const data = imgPart?.inlineData?.data ?? imgPart?.inline_data?.data;
+      if (!data) {
+        console.warn(`generateVisualization: no image data (text-only), retry ${attempt}/${maxAttempts}`);
+        continue;
+      }
 
-    const vin = input.vin ?? DEFAULT_VIN;
-    const id = `gen_${randomUUID().replaceAll("-", "").slice(0, 12)}`;
-    const dir = path.join(uploadRoot, vin);
-    await mkdir(dir, { recursive: true });
-    const relUrl = `/uploads/cars/${vin}/${id}.png`;
-    await writeFile(path.join(root, "public", relUrl.replace(/^\//, "")), Buffer.from(data, "base64"));
-    return { id, url: relUrl };
-  } finally {
-    clearTimeout(timeoutHandle);
+      const vin = input.vin ?? DEFAULT_VIN;
+      const id = `gen_${randomUUID().replaceAll("-", "").slice(0, 12)}`;
+      const dir = path.join(uploadRoot, vin);
+      await mkdir(dir, { recursive: true });
+      const relUrl = `/uploads/cars/${vin}/${id}.png`;
+      await writeFile(path.join(root, "public", relUrl.replace(/^\//, "")), Buffer.from(data, "base64"));
+      return { id, url: relUrl };
+    } finally {
+      clearTimeout(timeoutHandle);
+    }
   }
+  throw new Error(`Gemini returned no image data after ${maxAttempts} attempts.`);
 }
 
 // ── Two-call architecture: speech and canvas as INDEPENDENT Cerebras calls ────
