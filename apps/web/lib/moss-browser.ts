@@ -40,14 +40,11 @@ let mossPromise: Promise<BrowserMoss | null> | undefined;
 
 // Idempotent: kicks off (and caches) the one-time index + model downloads.
 export function loadBrowserMoss(): Promise<BrowserMoss | null> {
-  if (!mossPromise) {
-    mossPromise = build().catch((err) => {
-      mossPromise = undefined; // allow retry on next call
-      console.warn("[moss] browser search failed to load:", err);
-      return null;
-    });
-  }
-  return mossPromise;
+  // @moss-dev/moss is the current Moss SDK but it's Node-only (imports node:fs),
+  // so it can't run in the browser. Moss queries (cross-sell, mark-sold
+  // replacement) run server-side instead; this returns null so callers use the
+  // server path. Kept as a stub so we can re-enable a browser build later.
+  return Promise.resolve(null);
 }
 
 async function build(): Promise<BrowserMoss | null> {
