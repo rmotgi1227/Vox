@@ -7,20 +7,15 @@ import { cors } from "hono/cors";
 import { AccessToken } from "livekit-server-sdk";
 import { RoomAgentDispatch } from "@livekit/protocol";
 import { RoomConfiguration } from "@livekit/protocol";
-import { orchestrateSpecialistTurn } from "@vox/agent-core";
-import type { AiProvider, CatalogStore } from "@vox/agent-core";
+import { rankImagesForQuestion } from "@vox/agent-core";
 import {
   DEFAULT_VIN,
   SpecialistImageRequestSchema,
   LiveKitTokenRequestSchema,
-  SpecialistMessageRequestSchema,
-  SpecialistTurnSchema
+  SpecialistMessageRequestSchema
 } from "@vox/core";
 import {
   chooseMiniMaxSpecialistImage,
-  generateMiniMaxFastTurn,
-  generateMiniMaxReply,
-  generateMiniMaxSpecialistPlan,
   getCar,
   ingestImageObject,
   listImages,
@@ -53,42 +48,6 @@ app.use("*", cors({
   allowHeaders: ["Content-Type", "Authorization"]
 }));
 
-const catalog: CatalogStore = {
-  getCar,
-  listImages
-};
-
-const ai: AiProvider = {
-  async searchMoss(query, vin) {
-    return searchMossProvider(query, vin);
-  },
-  async planTurn(input) {
-    return generateMiniMaxSpecialistPlan(input);
-  },
-  async generateReply(input) {
-    const selected = input.selectedImage
-      ? [
-          `Selected image: ${input.selectedImage.role}; ${input.selectedImage.caption}`,
-          input.selectedImage.viewpoint ? `Viewpoint: ${input.selectedImage.viewpoint}` : "",
-          `Features visible: ${input.selectedImage.visibleFeatures.join(", ")}`,
-          input.selectedImage.conditionNotes.length ? `Evidence notes: ${input.selectedImage.conditionNotes.join(", ")}` : "",
-          input.selectedImage.searchTags.length ? `Search tags: ${input.selectedImage.searchTags.join(", ")}` : ""
-        ].filter(Boolean).join(". ")
-      : "No selected image.";
-    const context = [
-      `${input.car.year} ${input.car.make} ${input.car.model} ${input.car.trim}`,
-      `Features: ${input.car.features.join(", ")}`,
-      `Description: ${input.car.description}`,
-      selected,
-      `Retrieved context: ${input.mossResults.map((r) => `${r.label}: ${r.text}`).join(" | ")}`
-    ].join("\n");
-    return generateMiniMaxReply({
-      system: "You are Vox, a direct BMW sales specialist. Answer in one short sentence, max 22 words. Use only provided catalog and image context. If the selected image answers the visual question, describe what it shows. Do not mention retrieval or sources.",
-      user: `CONTEXT:\n${context}\n\nSHOPPER: ${input.message}`
-    });
-  }
-};
-
 void warmMossIndexes().catch((error) => {
   console.warn(`Moss warmup failed: ${error instanceof Error ? error.message : String(error)}`);
 });
@@ -106,26 +65,56 @@ app.get("/api/specialist/state", async (c) => {
 app.post("/api/specialist/message", async (c) => {
   const parsed = SpecialistMessageRequestSchema.safeParse(await c.req.json());
   if (!parsed.success) return c.json({ error: "invalid request", issues: parsed.error.issues }, 400);
-  if (parsed.data.deferImage) {
-    const car = await getCar(parsed.data.vin);
-    if (!car) return c.json({ error: "car not found" }, 404);
-    const images = await listImages(parsed.data.vin);
-    const currentImage = images.find((image) => image.id === parsed.data.currentImageId);
-    const fast = await generateMiniMaxFastTurn({ car, message: parsed.data.message, currentImage });
-    const audio = parsed.data.includeAudio ? await synthesizeSpeech(fast.reply).catch(() => ({})) : {};
-    return c.json({
-      reply: fast.reply,
-      needsImage: fast.needsImage,
-      desiredVisualTarget: fast.desiredVisualTarget ?? null,
-      action: { type: "keep_current_image" },
-      sources: [{ type: "catalog", id: car.vin, label: `${car.year} ${car.make} ${car.model}` }],
-      ...audio
+  const car = await getCar(parsed.data.vin);
+  if (!car) return c.json({ error: "car not found" }, 404);
+  const images = await listImages(parsed.data.vin);
+
+  const ranked = rankImagesForQuestion(parsed.data.message, images);
+  const heuristicWinner = ranked[0]?.image;
+  const candidates = ranked.length > 0
+    ? ranked.slice(0, 8).map((item) => item.image)
+    : images.filter((image) => image.status === "processed").slice(0, 10);
+
+  let selectedImage = heuristicWinner;
+  let reply: string;
+  let actionReason: string | undefined;
+
+  try {
+    const plan = await chooseMiniMaxSpecialistImage({
+      car,
+      images: candidates,
+      message: parsed.data.message,
+      currentImageId: parsed.data.currentImageId,
+      desiredVisualTarget: parsed.data.message,
+      mossResults: []
     });
+    reply = plan.reply;
+    actionReason = plan.actionReason;
+    selectedImage = plan.selectedImageId
+      ? images.find((image) => image.id === plan.selectedImageId) ?? heuristicWinner
+      : heuristicWinner;
+  } catch (error) {
+    console.warn(`Planner failed: ${error instanceof Error ? error.message : String(error)}`);
+    reply = heuristicWinner
+      ? `Here is the ${heuristicWinner.role.replaceAll("_", " ")} view.`
+      : "Let me think about that.";
   }
-  const turn = await orchestrateSpecialistTurn({ catalog, ai }, parsed.data);
-  const audio = parsed.data.includeAudio ? await synthesizeSpeech(turn.reply).catch(() => ({})) : {};
-  SpecialistTurnSchema.parse(turn);
-  return c.json({ ...turn, ...audio });
+
+  const audio = parsed.data.includeAudio ? await synthesizeSpeech(reply).catch(() => ({})) : {};
+  const shouldShowImage = !!selectedImage && selectedImage.id !== parsed.data.currentImageId;
+
+  return c.json({
+    reply,
+    selectedImageId: selectedImage?.id,
+    action: shouldShowImage
+      ? { type: "show_image", imageId: selectedImage!.id, reason: actionReason || selectedImage!.caption }
+      : { type: "keep_current_image" },
+    sources: [
+      { type: "catalog", id: car.vin, label: `${car.year} ${car.make} ${car.model}` },
+      ...(selectedImage ? [{ type: "image", id: selectedImage.id, label: selectedImage.caption }] : [])
+    ],
+    ...audio
+  });
 });
 
 app.post("/api/specialist/image", async (c) => {
@@ -137,20 +126,50 @@ app.post("/api/specialist/image", async (c) => {
     listImages(parsed.data.vin),
     searchMossProvider(parsed.data.desiredVisualTarget || parsed.data.message, parsed.data.vin)
   ]);
-  const plan = await chooseMiniMaxSpecialistImage({
-    car,
-    images,
-    message: parsed.data.message,
-    currentImageId: parsed.data.currentImageId,
-    desiredVisualTarget: parsed.data.desiredVisualTarget,
-    mossResults
-  });
-  const selectedImage = plan.selectedImageId ? images.find((image) => image.id === plan.selectedImageId) : undefined;
+
+  const ranked = rankImagesForQuestion(parsed.data.message, images, mossResults);
+  const heuristicWinner = ranked[0]?.image;
+  const topScore = ranked[0]?.score ?? 0;
+  const runnerUp = ranked[1]?.score ?? 0;
+  const heuristicConfident = heuristicWinner && topScore >= 12 && topScore >= runnerUp + 6;
+
+  let selectedImage: typeof heuristicWinner | undefined;
+  let reply: string | undefined;
+  let actionReason: string | undefined;
+
+  if (heuristicConfident) {
+    selectedImage = heuristicWinner;
+    actionReason = "Heuristic match";
+  } else {
+    const candidates = ranked.length > 0
+      ? ranked.slice(0, 8).map((item) => item.image)
+      : images.filter((image) => image.status === "processed").slice(0, 12);
+    try {
+      const plan = await chooseMiniMaxSpecialistImage({
+        car,
+        images: candidates,
+        message: parsed.data.message,
+        currentImageId: parsed.data.currentImageId,
+        desiredVisualTarget: parsed.data.desiredVisualTarget,
+        mossResults
+      });
+      reply = plan.reply;
+      actionReason = plan.actionReason;
+      selectedImage = plan.selectedImageId
+        ? images.find((image) => image.id === plan.selectedImageId)
+        : undefined;
+      if (!selectedImage) selectedImage = heuristicWinner;
+    } catch (error) {
+      console.warn(`MiniMax image planner failed: ${error instanceof Error ? error.message : String(error)}`);
+      selectedImage = heuristicWinner;
+    }
+  }
+
   return c.json({
-    reply: plan.reply,
+    reply,
     selectedImageId: selectedImage?.id,
     action: selectedImage && selectedImage.id !== parsed.data.currentImageId
-      ? { type: "show_image", imageId: selectedImage.id, reason: plan.actionReason || selectedImage.caption }
+      ? { type: "show_image", imageId: selectedImage.id, reason: actionReason || selectedImage.caption }
       : { type: "keep_current_image" },
     sources: [
       { type: "catalog", id: car.vin, label: `${car.year} ${car.make} ${car.model}` },

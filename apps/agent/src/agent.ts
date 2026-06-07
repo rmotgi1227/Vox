@@ -1,12 +1,9 @@
 import { existsSync } from "node:fs";
-import { writeFile } from "node:fs/promises";
-import os from "node:os";
 import path from "node:path";
 import { ReadableStream } from "node:stream/web";
 import { fileURLToPath } from "node:url";
 import { config } from "dotenv";
 import {
-  audioFramesFromFile,
   cli,
   defineAgent,
   llm,
@@ -14,9 +11,9 @@ import {
   ServerOptions,
   voice
 } from "@livekit/agents";
-import type { AudioFrame } from "@livekit/rtc-node";
-import { DEFAULT_VIN, type SpecialistTurn } from "@vox/core";
-import { chooseMiniMaxSpecialistImage, generateMiniMaxFastTurn, getCar, listImages, searchMoss, synthesizeSpeech } from "@vox/ai";
+import { DEFAULT_VIN, type Car, type CarImage } from "@vox/core";
+import { rankImagesForQuestion } from "@vox/agent-core";
+import { getCar, listImages, streamMiniMaxChat } from "@vox/ai";
 
 config({ path: findRootEnv(process.cwd()) });
 
@@ -32,14 +29,21 @@ function findRootEnv(start: string): string {
 }
 
 const encoder = new TextEncoder();
+const FALLBACK_REPLY = "One sec, let me bring that up for you.";
+const CARTESIA_VOICE = process.env.CARTESIA_VOICE_ID || "db6b0ed5-d5d3-463d-ae85-518a07d3c2b4";
+const TTS_MODEL_STRING = `cartesia/${process.env.CARTESIA_TTS_MODEL || "sonic-3"}:${CARTESIA_VOICE}` as const;
 
-async function publishSpecialistData(ctx: JobContext, data: Record<string, unknown>) {
+function publishSpecialistDataAsync(ctx: JobContext, data: Record<string, unknown>) {
   const localParticipant = ctx.room.localParticipant;
   if (!localParticipant) return;
-  await localParticipant.publishData(encoder.encode(JSON.stringify(data)), {
-    reliable: true,
-    topic: "vox.specialist.turn"
-  });
+  void localParticipant
+    .publishData(encoder.encode(JSON.stringify(data)), {
+      reliable: true,
+      topic: "vox.specialist.turn"
+    })
+    .catch((error) => {
+      console.warn(`publishSpecialistData failed: ${error instanceof Error ? error.message : String(error)}`);
+    });
 }
 
 function latestUserText(chatCtx: llm.ChatContext): string {
@@ -60,116 +64,133 @@ function textStream(text: string): ReadableStream<string> {
   });
 }
 
-async function collectText(stream: ReadableStream<string>): Promise<string> {
-  const reader = stream.getReader();
-  let out = "";
-  try {
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      out += value;
-    }
-    return out;
-  } finally {
-    reader.releaseLock();
-  }
-}
+function buildVoicePrompt(input: {
+  car: Car;
+  image: CarImage | undefined;
+  message: string;
+}): { system: string; user: string } {
+  const { car, image, message } = input;
+  const imageContext = image
+    ? [
+        `You are currently showing the customer this view: ${image.caption}`,
+        image.visibleFeatures.length ? `Visible in the photo: ${image.visibleFeatures.join(", ")}.` : "",
+        image.conditionNotes?.length ? `Notes: ${image.conditionNotes.join(", ")}.` : ""
+      ].filter(Boolean).join(" ")
+    : "No specific photo is up right now.";
 
-async function createSpeechAudioStream(text: string): Promise<ReadableStream<AudioFrame> | null> {
-  if (!text.trim()) return null;
-  const audio = await synthesizeSpeech(text);
-  if (!audio.audioBase64) return null;
-  console.log(`Vox TTS provider: ${audio.provider ?? "unknown"}`);
-  const filePath = path.join(os.tmpdir(), `vox-tts-${Date.now()}-${Math.random().toString(16).slice(2)}.mp3`);
-  await writeFile(filePath, Buffer.from(audio.audioBase64, "base64"));
-  return audioFramesFromFile(filePath, { sampleRate: 44100, numChannels: 1, format: "mp3" });
+  const system = [
+    `You are Vox, a sharp BMW ${car.make} ${car.model} sales specialist standing next to the car with the customer.`,
+    "Reply in one or two short, natural spoken sentences — under ~30 words total. Conversational, not a pitch.",
+    "Speak as if the customer is right in front of the car: say things like 'right here' or 'check this out', never 'in the image' or 'in this photo'.",
+    "Do not use markdown, bullets, headers, asterisks, or emojis — your text is read aloud.",
+    "Use only the catalog and the photo notes provided below. Never invent specs, packages, prices, mileage, options, or features not stated.",
+    `Catalog: ${car.year} ${car.make} ${car.model} ${car.trim}, ${car.body}, ${car.color}. Features: ${car.features.join(", ")}. Description: ${car.description}`,
+    imageContext
+  ].join(" ");
+
+  return { system, user: message };
 }
 
 class VoxSpecialistVoiceAgent extends voice.Agent {
   private currentImageId: string | undefined;
   private lastHandled = "";
   private lastHandledAt = 0;
+  private turnCounter = 0;
 
   constructor(private readonly ctx: JobContext) {
     super({
-      instructions: "You are Vox, a concise BMW M4 specialist. Use the shared specialist orchestrator for every answer."
+      instructions: "You are Vox, a concise BMW M4 specialist who answers using the shared catalog and the on-screen image."
     });
+  }
+
+  setInitialImage(id: string | undefined) {
+    this.currentImageId = id;
   }
 
   override async llmNode(chatCtx: llm.ChatContext): Promise<ReadableStream<string> | null> {
     const message = latestUserText(chatCtx);
-    if (!message) return textStream("I did not catch that. Please ask again.");
-    const turn = await this.handleShopperMessage(message);
-    return textStream(turn?.reply ?? "");
-  }
+    if (!message) return textStream("I didn't catch that — could you say it again?");
 
-  async handleShopperMessage(message: string): Promise<SpecialistTurn | undefined> {
     const normalized = message.toLowerCase().replace(/\s+/g, " ").trim();
     const now = Date.now();
-    if (normalized === this.lastHandled && now - this.lastHandledAt < 4_000) return undefined;
+    if (normalized === this.lastHandled && now - this.lastHandledAt < 1_200) {
+      return textStream("");
+    }
     this.lastHandled = normalized;
     this.lastHandledAt = now;
-    console.log(`Vox specialist turn: ${message}`);
-    const [car, images] = await Promise.all([getCar(DEFAULT_VIN), listImages(DEFAULT_VIN)]);
-    if (!car) return undefined;
-    const currentImage = images.find((image) => image.id === this.currentImageId);
-    const fast = await generateMiniMaxFastTurn({ car, message, currentImage });
-    const turn: SpecialistTurn = {
-      reply: fast.reply,
-      selectedImageId: this.currentImageId,
-      action: { type: "keep_current_image" },
-      sources: [{ type: "catalog", id: car.vin, label: `${car.year} ${car.make} ${car.model}` }]
-    };
+    const turnId = ++this.turnCounter;
+    console.log(`Vox turn #${turnId}: ${message}`);
 
-    await publishSpecialistData(this.ctx, {
-      type: "specialist_turn",
-      vin: DEFAULT_VIN,
-      transcript: message,
-      reply: turn.reply,
-      action: turn.action,
-      sources: turn.sources
-    });
-    if (fast.needsImage) {
-      void this.chooseAndPublishImage(message, fast.desiredVisualTarget).catch((error) => {
-        console.warn(`Image planner failed: ${error instanceof Error ? error.message : String(error)}`);
-      });
+    try {
+      const [car, images] = await Promise.all([getCar(DEFAULT_VIN), listImages(DEFAULT_VIN)]);
+      if (!car) return textStream("I can't find this vehicle right now.");
+
+      const ranked = rankImagesForQuestion(message, images);
+      const heuristicWinner = ranked[0]?.image;
+      const topScore = ranked[0]?.score ?? 0;
+
+      const imageForReply = topScore >= 6 ? heuristicWinner : images.find((image) => image.id === this.currentImageId);
+
+      if (heuristicWinner && topScore >= 6 && heuristicWinner.id !== this.currentImageId) {
+        this.currentImageId = heuristicWinner.id;
+        publishSpecialistDataAsync(this.ctx, {
+          type: "specialist_turn",
+          vin: DEFAULT_VIN,
+          transcript: message,
+          selectedImageId: heuristicWinner.id,
+          action: { type: "show_image", imageId: heuristicWinner.id, reason: heuristicWinner.caption },
+          sources: [
+            { type: "catalog", id: car.vin, label: `${car.year} ${car.make} ${car.model}` },
+            { type: "image", id: heuristicWinner.id, label: heuristicWinner.caption }
+          ]
+        });
+      } else {
+        publishSpecialistDataAsync(this.ctx, {
+          type: "specialist_turn",
+          vin: DEFAULT_VIN,
+          transcript: message
+        });
+      }
+
+      const { system, user } = buildVoicePrompt({ car, image: imageForReply, message });
+      const rawStream = await streamMiniMaxChat({ system, user, maxTokens: 160, timeoutMs: 12_000 });
+      const tokenStream = rawStream as unknown as ReadableStream<string>;
+      return this.teeAndPublishReply(tokenStream);
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      console.warn(`llmNode failed: ${detail}`);
+      publishSpecialistDataAsync(this.ctx, { type: "agent_status", status: "Error", error: detail });
+      return textStream(FALLBACK_REPLY);
     }
-    return turn;
   }
 
-  private async chooseAndPublishImage(message: string, desiredVisualTarget?: string | null) {
-    const [car, images, mossResults] = await Promise.all([
-      getCar(DEFAULT_VIN),
-      listImages(DEFAULT_VIN),
-      searchMoss(desiredVisualTarget || message, DEFAULT_VIN)
-    ]);
-    if (!car) return;
-    const plan = await chooseMiniMaxSpecialistImage({
-      car,
-      images,
-      message,
-      currentImageId: this.currentImageId,
-      desiredVisualTarget,
-      mossResults
+  private teeAndPublishReply(tokenStream: ReadableStream<string>): ReadableStream<string> {
+    const [speakStream, captureStream] = tokenStream.tee();
+    void this.captureReplyText(captureStream).catch((err) => {
+      console.warn(`reply capture failed: ${err instanceof Error ? err.message : String(err)}`);
     });
-    const selectedImage = plan.selectedImageId ? images.find((image) => image.id === plan.selectedImageId) : undefined;
-    if (!selectedImage) return;
-    this.currentImageId = selectedImage.id;
-    await publishSpecialistData(this.ctx, {
+    return speakStream;
+  }
+
+  private async captureReplyText(stream: ReadableStream<string>): Promise<void> {
+    const reader = stream.getReader();
+    let buffer = "";
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        if (value) buffer += value;
+      }
+    } finally {
+      reader.releaseLock();
+    }
+    const reply = buffer.replace(/\s+/g, " ").trim();
+    if (!reply) return;
+    publishSpecialistDataAsync(this.ctx, {
       type: "specialist_turn",
       vin: DEFAULT_VIN,
-      selectedImageId: selectedImage.id,
-      action: { type: "show_image", imageId: selectedImage.id, reason: plan.actionReason || selectedImage.caption },
-      sources: [
-        { type: "catalog", id: car.vin, label: `${car.year} ${car.make} ${car.model}` },
-        { type: "image", id: selectedImage.id, label: selectedImage.caption }
-      ]
+      reply
     });
-  }
-
-  override async ttsNode(text: ReadableStream<string>): Promise<ReadableStream<AudioFrame> | null> {
-    const reply = await collectText(text);
-    return createSpeechAudioStream(reply);
   }
 }
 
@@ -179,58 +200,74 @@ export default defineAgent({
     console.log("Vox specialist LiveKit agent connected");
     const specialist = new VoxSpecialistVoiceAgent(ctx);
 
+    void listImages(DEFAULT_VIN)
+      .then((images) => specialist.setInitialImage(images[0]?.id))
+      .catch((error) => console.warn(`Could not seed initial image: ${error instanceof Error ? error.message : String(error)}`));
+
     const session = new voice.AgentSession({
       stt: "deepgram/nova-3:en",
+      llm: new voice.testing.FakeLLM(),
+      tts: TTS_MODEL_STRING,
       userAwayTimeout: null,
       turnHandling: {
         turnDetection: "stt",
         endpointing: {
           mode: "fixed",
-          minDelay: 950,
-          maxDelay: 2400
+          minDelay: 200,
+          maxDelay: 1200
         },
         interruption: {
           enabled: true,
-          minDuration: 950,
-          minWords: 3,
+          minDuration: 400,
+          minWords: 2,
           discardAudioIfUninterruptible: false,
-          falseInterruptionTimeout: 2200
+          falseInterruptionTimeout: 1500
         },
         preemptiveGeneration: {
-          enabled: false
+          enabled: true,
+          maxSpeechDuration: 8000,
+          maxRetries: 2
         }
       }
     });
     session.on(voice.AgentSessionEventTypes.UserInputTranscribed, (event) => {
-      console.log(`LiveKit STT ${event.isFinal ? "final" : "partial"}: ${event.transcript}`);
+      console.log(`STT ${event.isFinal ? "final" : "partial"}: ${event.transcript}`);
       if (!event.transcript.trim()) return;
-      void publishSpecialistData(ctx, {
+      publishSpecialistDataAsync(ctx, {
         type: "agent_status",
-        status: event.isFinal ? "Thinking" : "Hearing",
+        status: event.isFinal ? "thinking" : "hearing",
         transcript: event.transcript,
         isFinal: event.isFinal
-      }).catch((error) => console.warn(`Could not publish transcript event: ${error instanceof Error ? error.message : String(error)}`));
+      });
     });
     session.on(voice.AgentSessionEventTypes.AgentStateChanged, (event) => {
-      console.log(`LiveKit agent state: ${event.oldState} -> ${event.newState}`);
-      void publishSpecialistData(ctx, {
+      console.log(`agent state: ${event.oldState} -> ${event.newState}`);
+      publishSpecialistDataAsync(ctx, {
         type: "agent_status",
         status: event.newState
-      }).catch((error) => console.warn(`Could not publish state event: ${error instanceof Error ? error.message : String(error)}`));
+      });
     });
     session.on(voice.AgentSessionEventTypes.Error, (event) => {
       const message = String((event as { error?: unknown }).error ?? "LiveKit agent error");
       console.warn(message);
-      void publishSpecialistData(ctx, {
+      publishSpecialistDataAsync(ctx, {
         type: "agent_status",
-        status: "Error",
+        status: "error",
         error: message
-      }).catch((error) => console.warn(`Could not publish error event: ${error instanceof Error ? error.message : String(error)}`));
+      });
     });
-    await session.start({
-      agent: specialist,
-      room: ctx.room
-    });
+    try {
+      await session.start({ agent: specialist, room: ctx.room });
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      console.error(`Failed to start AgentSession: ${detail}`);
+      publishSpecialistDataAsync(ctx, {
+        type: "agent_status",
+        status: "error",
+        error: `Agent session failed to start: ${detail}`
+      });
+      throw error;
+    }
   }
 });
 

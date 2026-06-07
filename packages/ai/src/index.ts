@@ -12,6 +12,14 @@ const imagesPath = path.join(root, "data", "images.json");
 const uploadRoot = path.join(root, "public", "uploads", "cars");
 const mossCachePath = path.join(root, ".moss-cache");
 
+let catalogCache: Promise<Car[]> | undefined;
+let imagesCache: Promise<CarImage[]> | undefined;
+
+function invalidateDataCaches(): void {
+  catalogCache = undefined;
+  imagesCache = undefined;
+}
+
 export type MossSearchResult = {
   id: string;
   label: string;
@@ -76,17 +84,32 @@ function findRepoRoot(start: string): string {
 }
 
 export async function readCatalog(): Promise<Car[]> {
-  const raw = JSON.parse(await readFile(catalogPath, "utf8"));
-  return CarSchema.array().parse(raw);
+  if (!catalogCache) {
+    catalogCache = readFile(catalogPath, "utf8")
+      .then((raw) => CarSchema.array().parse(JSON.parse(raw)))
+      .catch((error) => {
+        catalogCache = undefined;
+        throw error;
+      });
+  }
+  return catalogCache;
 }
 
 export async function readImages(): Promise<CarImage[]> {
-  const raw = JSON.parse(await readFile(imagesPath, "utf8"));
-  return CarImageSchema.array().parse(raw);
+  if (!imagesCache) {
+    imagesCache = readFile(imagesPath, "utf8")
+      .then((raw) => CarImageSchema.array().parse(JSON.parse(raw)))
+      .catch((error) => {
+        imagesCache = undefined;
+        throw error;
+      });
+  }
+  return imagesCache;
 }
 
 export async function writeImages(images: CarImage[]): Promise<void> {
   await writeFile(imagesPath, JSON.stringify(CarImageSchema.array().parse(images), null, 2) + "\n");
+  invalidateDataCaches();
 }
 
 export async function getCar(vin = DEFAULT_VIN): Promise<Car | undefined> {
@@ -261,18 +284,13 @@ export async function generateMiniMaxFastTurn(input: {
   }
   const parsed = MiniMaxFastTurnSchema.parse(await callMiniMaxJson({
     system: [
-      "You are Vox, a concise BMW M4 sales specialist.",
-      "Respond immediately to the shopper in one short natural sentence, ideally under 14 words.",
-      "Also decide whether a visual/image update is needed, but do not choose an image id.",
-      "For visual requests, reply like you are pulling up the requested view; do not answer detailed visual facts before the image is selected.",
-      "For greetings or casual chat, needsImage must be false and do not introduce random vehicle facts.",
-      "For requests to see, inspect, identify, correct, or compare a part/view/feature, needsImage is true.",
-      "Use automotive shopper language: stick usually means the gear selector, shifter, shift lever, or center-console transmission selector.",
-      "When the shopper corrects the current view or says they want the whole/entire/full car, target a wide exterior overview.",
-      "When unsure whether the shopper is asking for a visual, set needsImage true and reply that you are pulling up the right view.",
-      "If needsImage is true, desiredVisualTarget is a natural-language description of the ideal image to show.",
-      "Use only provided car facts. Never invent numeric specs, packages, or features that are absent from the provided data.",
-      "Do not claim a 360-degree view, panoramic view, or exact capacity unless provided.",
+      "You are Vox, a concise BMW M4 visual specialist.",
+      "Decide needsImage and reply in JSON. Reply is one short natural sentence, under 12 words.",
+      "When needsImage is true, the reply is ONLY a brief acknowledgement like 'Pulling that up.' or 'Here is that view.' — never make any claim about visible features, presence/absence, condition, or measurements; the next step provides the real answer.",
+      "needsImage is true when the shopper asks about, names, or wants to see/inspect any part, area, view, or feature of the car (interior, wheels, trunk, dashboard, roof, shifter, etc.), or asks a yes/no question about a visible feature.",
+      "needsImage is false ONLY for pure greetings, social chat, or questions clearly unrelated to anything visible.",
+      "Shopper jargon: 'stick' = gear selector/shifter; 'whole/entire/full car' = wide exterior overview.",
+      "When needsImage is true, desiredVisualTarget is a short natural-language description of the ideal image.",
       "Return strict JSON only with keys reply, needsImage, desiredVisualTarget."
     ].join(" "),
     user: JSON.stringify({
@@ -294,8 +312,8 @@ export async function generateMiniMaxFastTurn(input: {
         visibleFeatures: input.currentImage.visibleFeatures
       } : null
     }),
-    maxTokens: 150,
-    timeoutMs: 8_000
+    maxTokens: 80,
+    timeoutMs: 6_000
   }));
   return {
     reply: compactReply(parsed.reply),
@@ -330,13 +348,23 @@ export async function chooseMiniMaxSpecialistImage(input: {
   }));
   const parsed = MiniMaxSpecialistPlanSchema.parse(await callMiniMaxJson({
     system: [
-      "You are Vox, a BMW visual browsing agent.",
+      "You are Vox, a friendly car salesperson walking a shopper through this BMW in person.",
       "Choose the best image id for the shopper's desired visual target by reasoning over IMAGE_OPTIONS.",
+      "If the shopper is only greeting, chatting, or asking a non-visual fact with no useful supporting photo, selectedImageId must be null.",
+      "For yes/no questions about visible physical vehicle features, choose the best supporting image if one exists.",
       "Do not use literal substring matching; infer the relevant vehicle view or part semantically.",
       "Use automotive shopper language: for example, stick usually means gear selector, shifter, shift lever, or center-console transmission selector.",
       "Prefer the most specific image whose description directly names the requested part or view.",
+      "For yes/no feature questions, do not answer yes if the selected image description says the feature is absent.",
+      "Decision examples: a greeting like 'hey how are you' returns selectedImageId null; 'show me the stick' chooses the gear selector/shifter image; a visible feature question should choose supporting evidence if available.",
+      "If the selected image text says a requested feature is not present, the reply must start with no/not present rather than yes.",
       "Only return an id from IMAGE_OPTIONS, or null if there is no useful visual match.",
-      "The reply should be one short salesperson sentence about the image selected.",
+      // Persona for the spoken reply:
+      "Talk like a friend showing them the car, not a brochure. Relaxed, warm, get to the point.",
+      "Mostly just answer the question directly. Only sometimes open with a quick acknowledgement like 'Yeah, good question' or 'Oh nice' — do not start every reply that way; vary it and often skip it.",
+      "Point them to what's on screen when it helps ('you can see it here on the left'), and add one concrete spec only if it is present in the car data or image description.",
+      "Keep it short and natural: usually one or two sentences, like talking to a buddy.",
+      "Never oversell, never hype, never stack adjectives or push the sale. If you don't know an exact number or measurement, just say so casually instead of inventing it.",
       "Return strict JSON only with keys reply, selectedImageId, actionReason."
     ].join(" "),
     user: JSON.stringify({
@@ -437,9 +465,14 @@ export async function generateMiniMaxSpecialistPlan(input: {
     system: [
       "You are Vox, a BMW visual browsing agent.",
       "Choose the best image id for the desired visual target by reasoning over IMAGE_OPTIONS.",
+      "If the shopper is only greeting, chatting, or asking a non-visual fact with no useful supporting photo, selectedImageId must be null.",
+      "For yes/no questions about visible physical vehicle features, choose the best supporting image if one exists.",
       "Do not use literal substring matching; infer the relevant vehicle view or part semantically.",
       "Use automotive shopper language: for example, stick usually means gear selector, shifter, shift lever, or center-console transmission selector.",
       "Prefer the most specific image whose description directly names the requested part or view.",
+      "For yes/no feature questions, do not answer yes if the selected image description says the feature is absent.",
+      "Decision examples: a greeting like 'hey how are you' returns selectedImageId null; 'show me the stick' chooses the gear selector/shifter image; a visible feature question should choose supporting evidence if available.",
+      "If the selected image text says a requested feature is not present, the reply must start with no/not present rather than yes.",
       "Only return an id from IMAGE_OPTIONS, or null if there is no useful visual match.",
       "If the chosen image cannot prove an exact fact, say that briefly instead of guessing.",
       "Reply like a salesperson: direct, natural, one short sentence, ideally under 22 words.",
@@ -530,7 +563,7 @@ export async function synthesizeCartesiaSpeech(text: string): Promise<SpeechSynt
         sample_rate: 44100,
         bit_rate: 128000
       },
-      generation_config: { volume: 1, speed: 1.08 }
+      generation_config: { volume: 1, speed: 1.25 }
     }),
     signal: AbortSignal.timeout(12_000)
   });
@@ -732,13 +765,100 @@ function tryParseJson(text: string): unknown | undefined {
 }
 
 function compactReply(text: string): string {
-  const clean = text.replace(/\s+/g, " ").trim();
-  const sentences = clean.match(/[^.!?]+[.!?]+|[^.!?]+$/g) ?? [clean];
-  const first = sentences[0]?.trim() ?? clean;
-  const short = first.split(/\s+/).length <= 3 && sentences[1]
-    ? `${first} ${sentences[1].trim()}`.trim()
-    : first;
-  const words = short.split(" ");
-  const capped = words.length > 18 ? `${words.slice(0, 18).join(" ").replace(/[,.!?;:]+$/, "")}.` : short;
-  return capped.length > 140 ? `${capped.slice(0, 137).trim()}...` : capped;
+  return text.replace(/\s+/g, " ").trim();
+}
+
+export async function streamMiniMaxChat(input: {
+  system: string;
+  user: string;
+  maxTokens?: number;
+  timeoutMs?: number;
+}): Promise<ReadableStream<string>> {
+  const key = process.env.MINIMAX_API_KEY;
+  if (!key) throw new Error("MINIMAX_API_KEY is required for streamMiniMaxChat.");
+  const controller = new AbortController();
+  const timeoutHandle = setTimeout(() => controller.abort(), input.timeoutMs ?? 15_000);
+  const resp = await fetch("https://api.minimax.io/v1/text/chatcompletion_v2", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${key}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: process.env.MINIMAX_MODEL || "MiniMax-Text-01",
+      messages: [
+        { role: "system", content: input.system },
+        { role: "user", content: input.user }
+      ],
+      max_tokens: input.maxTokens ?? 220,
+      temperature: 0.3,
+      stream: true
+    }),
+    signal: controller.signal
+  });
+  if (!resp.ok || !resp.body) {
+    clearTimeout(timeoutHandle);
+    throw new Error(`MiniMax stream error ${resp.status}: ${await resp.text().catch(() => "")}`);
+  }
+
+  const decoder = new TextDecoder();
+  const reader = resp.body.getReader();
+  let buffer = "";
+
+  return new ReadableStream<string>({
+    async pull(controllerOut) {
+      try {
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) {
+            clearTimeout(timeoutHandle);
+            controllerOut.close();
+            return;
+          }
+          buffer += decoder.decode(value, { stream: true });
+          let newlineIdx: number;
+          let enqueued = false;
+          while ((newlineIdx = buffer.indexOf("\n")) >= 0) {
+            const line = buffer.slice(0, newlineIdx).trim();
+            buffer = buffer.slice(newlineIdx + 1);
+            if (!line.startsWith("data:")) continue;
+            const payload = line.slice(5).trim();
+            if (!payload || payload === "[DONE]") continue;
+            try {
+              const json = JSON.parse(payload) as {
+                choices?: Array<{ delta?: { content?: string }; finish_reason?: string | null }>;
+                base_resp?: { status_code?: number; status_msg?: string };
+              };
+              if (json.base_resp?.status_code) {
+                clearTimeout(timeoutHandle);
+                controllerOut.error(new Error(`MiniMax stream ${json.base_resp.status_code}: ${json.base_resp.status_msg ?? ""}`));
+                return;
+              }
+              const delta = json.choices?.[0]?.delta?.content;
+              if (delta) {
+                controllerOut.enqueue(delta);
+                enqueued = true;
+              }
+              if (json.choices?.[0]?.finish_reason) {
+                clearTimeout(timeoutHandle);
+                controllerOut.close();
+                return;
+              }
+            } catch {
+              // ignore malformed SSE chunks
+            }
+          }
+          if (enqueued) return;
+        }
+      } catch (error) {
+        clearTimeout(timeoutHandle);
+        controllerOut.error(error);
+      }
+    },
+    cancel(reason) {
+      clearTimeout(timeoutHandle);
+      controller.abort();
+      void reader.cancel(reason).catch(() => {});
+    }
+  });
 }
