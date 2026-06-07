@@ -1,4 +1,4 @@
-import type { CarImage, SpecialistState, SpecialistTurn } from "@vox/core";
+import type { CarImage, ConversationTurn, ModelProfileId, SpecialistState, SpecialistTurn } from "@vox/core";
 
 export const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8787";
 
@@ -14,6 +14,7 @@ export async function sendSpecialistMessage(input: {
   currentImageId?: string;
   includeAudio?: boolean;
   deferImage?: boolean;
+  history?: ConversationTurn[];
 }): Promise<SpecialistTurn & { audioBase64?: string; provider?: string; needsImage?: boolean; desiredVisualTarget?: string | null }> {
   const res = await fetch(`${API_BASE}/api/specialist/message`, {
     method: "POST",
@@ -39,7 +40,7 @@ export async function selectSpecialistImage(input: {
   return res.json();
 }
 
-export async function getLiveKitToken(input: { roomName: string; identity: string }): Promise<{ token: string; url: string; roomName: string }> {
+export async function getLiveKitToken(input: { roomName: string; identity: string; profileId?: ModelProfileId }): Promise<{ token: string; url: string; roomName: string }> {
   const res = await fetch(`${API_BASE}/api/livekit/token`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

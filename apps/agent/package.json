@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@livekit/agents": "^1.0.0",
+    "@livekit/agents-plugin-deepgram": "^1.4.5",
+    "@livekit/noise-cancellation-node": "^0.1.9",
     "@vox/agent-core": "*",
     "@vox/ai": "*",
     "@vox/core": "*",

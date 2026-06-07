@@ -7,7 +7,7 @@ import { cors } from "hono/cors";
 import { AccessToken } from "livekit-server-sdk";
 import { RoomAgentDispatch } from "@livekit/protocol";
 import { RoomConfiguration } from "@livekit/protocol";
-import { rankImagesForQuestion } from "@vox/agent-core";
+import { rankImagesForQuestion, selectOverviewImage } from "@vox/agent-core";
 import {
   DEFAULT_VIN,
   SpecialistImageRequestSchema,
@@ -16,6 +16,7 @@ import {
 } from "@vox/core";
 import {
   chooseMiniMaxSpecialistImage,
+  planSpecialistTurn,
   getCar,
   ingestImageObject,
   listImages,
@@ -59,7 +60,8 @@ app.get("/api/specialist/state", async (c) => {
   const car = await getCar(vin);
   if (!car) return c.json({ error: "car not found" }, 404);
   const images = await listImages(vin);
-  return c.json({ car, images, selectedImageId: images[0]?.id });
+  const overview = selectOverviewImage(images);
+  return c.json({ car, images, selectedImageId: overview?.id ?? images[0]?.id });
 });
 
 app.post("/api/specialist/message", async (c) => {
@@ -69,35 +71,37 @@ app.post("/api/specialist/message", async (c) => {
   if (!car) return c.json({ error: "car not found" }, 404);
   const images = await listImages(parsed.data.vin);
 
+  // The keyword heuristic ONLY narrows which images the planner gets to choose
+  // from — it never forces the final selection. The planner's needsImage /
+  // selectedImageId decision is authoritative.
   const ranked = rankImagesForQuestion(parsed.data.message, images);
-  const heuristicWinner = ranked[0]?.image;
   const candidates = ranked.length > 0
     ? ranked.slice(0, 8).map((item) => item.image)
     : images.filter((image) => image.status === "processed").slice(0, 10);
 
-  let selectedImage = heuristicWinner;
+  let selectedImage: (typeof images)[number] | undefined;
   let reply: string;
-  let actionReason: string | undefined;
+  let intent: string | undefined;
+  let askedClarifyingQuestion = false;
 
   try {
-    const plan = await chooseMiniMaxSpecialistImage({
+    const plan = await planSpecialistTurn({
       car,
       images: candidates,
       message: parsed.data.message,
       currentImageId: parsed.data.currentImageId,
-      desiredVisualTarget: parsed.data.message,
-      mossResults: []
+      history: parsed.data.history
     });
     reply = plan.reply;
-    actionReason = plan.actionReason;
-    selectedImage = plan.selectedImageId
-      ? images.find((image) => image.id === plan.selectedImageId) ?? heuristicWinner
-      : heuristicWinner;
+    intent = plan.intent;
+    askedClarifyingQuestion = plan.askedClarifyingQuestion;
+    // Authoritative: only show an image when the planner asked for one.
+    if (plan.needsImage && plan.selectedImageId) {
+      selectedImage = images.find((image) => image.id === plan.selectedImageId);
+    }
   } catch (error) {
     console.warn(`Planner failed: ${error instanceof Error ? error.message : String(error)}`);
-    reply = heuristicWinner
-      ? `Here is the ${heuristicWinner.role.replaceAll("_", " ")} view.`
-      : "Let me think about that.";
+    reply = "Sorry, I lost my train of thought there — can you say that again?";
   }
 
   const audio = parsed.data.includeAudio ? await synthesizeSpeech(reply).catch(() => ({})) : {};
@@ -106,8 +110,10 @@ app.post("/api/specialist/message", async (c) => {
   return c.json({
     reply,
     selectedImageId: selectedImage?.id,
+    intent,
+    askedClarifyingQuestion,
     action: shouldShowImage
-      ? { type: "show_image", imageId: selectedImage!.id, reason: actionReason || selectedImage!.caption }
+      ? { type: "show_image", imageId: selectedImage!.id, reason: selectedImage!.caption }
       : { type: "keep_current_image" },
     sources: [
       { type: "catalog", id: car.vin, label: `${car.year} ${car.make} ${car.model}` },
@@ -217,7 +223,7 @@ app.post("/api/livekit/token", async (c) => {
     agents: [
       new RoomAgentDispatch({
         agentName: "vox-specialist",
-        metadata: JSON.stringify({ vin: DEFAULT_VIN })
+        metadata: JSON.stringify({ vin: DEFAULT_VIN, profileId: parsed.data.profileId })
       })
     ]
   });

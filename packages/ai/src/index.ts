@@ -3,7 +3,7 @@ import { readFile, writeFile, mkdir, copyFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import type { Car, CarImage, ImageRole } from "@vox/core";
-import { CarImageSchema, CarSchema, DEFAULT_VIN } from "@vox/core";
+import { CarImageSchema, CarSchema, DEFAULT_VIN, carFactSheet } from "@vox/core";
 import { z } from "zod";
 
 const root = findRepoRoot(process.cwd());
@@ -68,6 +68,22 @@ const MiniMaxFastTurnSchema = z.object({
   needsImage: z.boolean(),
   desiredVisualTarget: z.string().nullable().optional()
 });
+
+const SpecialistTurnPlanSchema = z.object({
+  intent: z.enum(["greeting", "spec_fact", "visual", "clarify", "objection"]),
+  needsImage: z.boolean(),
+  selectedImageId: z.string().nullable().optional(),
+  askedClarifyingQuestion: z.boolean().optional().default(false),
+  reply: z.string().min(1)
+});
+
+export type SpecialistTurnPlan = {
+  intent: "greeting" | "spec_fact" | "visual" | "clarify" | "objection";
+  needsImage: boolean;
+  selectedImageId: string | null;
+  askedClarifyingQuestion: boolean;
+  reply: string;
+};
 
 let mossClientCache: MossClientCache | undefined;
 
@@ -363,8 +379,9 @@ export async function chooseMiniMaxSpecialistImage(input: {
       "Talk like a friend showing them the car, not a brochure. Relaxed, warm, get to the point.",
       "Mostly just answer the question directly. Only sometimes open with a quick acknowledgement like 'Yeah, good question' or 'Oh nice' — do not start every reply that way; vary it and often skip it.",
       "Point them to what's on screen when it helps ('you can see it here on the left'), and add one concrete spec only if it is present in the car data or image description.",
+      "The car object includes a full factSheet with the trim, price, mileage, condition, engine, horsepower, torque, transmission, 0-60, top speed, fuel economy, colors, VIN, stock number, warranty, packages, and options — answer price, mileage, and spec questions directly and accurately from it.",
       "Keep it short and natural: usually one or two sentences, like talking to a buddy.",
-      "Never oversell, never hype, never stack adjectives or push the sale. If you don't know an exact number or measurement, just say so casually instead of inventing it.",
+      "Never oversell, never hype, never stack adjectives or push the sale. If a fact is not in the car data or image description, say so casually instead of inventing it.",
       "Return strict JSON only with keys reply, selectedImageId, actionReason."
     ].join(" "),
     user: JSON.stringify({
@@ -375,10 +392,13 @@ export async function chooseMiniMaxSpecialistImage(input: {
         year: input.car.year,
         make: input.car.make,
         model: input.car.model,
+        trim: input.car.trim,
         body: input.car.body,
         color: input.car.color,
-        features: input.car.features,
-        description: input.car.description
+        price: input.car.price,
+        mileage: input.car.mileage,
+        availability: input.car.availability,
+        factSheet: carFactSheet(input.car)
       },
       imageOptions
     }),
@@ -503,6 +523,110 @@ export async function generateMiniMaxSpecialistPlan(input: {
     reply: compactReply(parsed.reply),
     selectedImageId,
     actionReason: parsed.actionReason
+  };
+}
+
+/**
+ * Intent-aware, salesperson-style turn planner for the web chat.
+ *
+ * Unlike chooseMiniMaxSpecialistImage (which is framed as "pick an image"),
+ * this classifies the shopper's turn first, answers spec/fact questions
+ * directly from the car fact sheet WITHOUT changing the image, only requests an
+ * image for genuinely visual turns, and may ask a single clarifying question
+ * when a request is ambiguous. One LLM round-trip per turn. The caller treats
+ * needsImage / selectedImageId as authoritative.
+ */
+export async function planSpecialistTurn(input: {
+  car: Car;
+  images: CarImage[];
+  message: string;
+  currentImageId?: string;
+  history?: { role: "user" | "assistant"; text: string }[];
+}): Promise<SpecialistTurnPlan> {
+  if (process.env.VOX_PROVIDER_MODE === "mock") {
+    const low = input.message.toLowerCase();
+    const wantsVisual = /(show|see|look|view|pull up|picture|photo|image|wheel|seat|interior|trunk|dashboard|exterior|color|rim|paint)/.test(low);
+    const candidate = wantsVisual ? input.images[0] : undefined;
+    return {
+      intent: wantsVisual ? "visual" : "spec_fact",
+      needsImage: Boolean(candidate),
+      selectedImageId: candidate?.id ?? null,
+      askedClarifyingQuestion: false,
+      reply: mockReply(input.message)
+    };
+  }
+
+  const allowedIds = new Set(input.images.map((image) => image.id));
+  const imageOptions = input.images.map((image) => ({
+    id: image.id,
+    role: image.role,
+    description: [
+      image.viewpoint,
+      image.caption,
+      `Visible: ${image.visibleFeatures.join(", ")}`,
+      image.conditionNotes.length ? `Evidence: ${image.conditionNotes.join(", ")}` : "",
+      image.searchTags.length ? `Aliases: ${image.searchTags.join(", ")}` : "",
+      image.likelyQuestions.length ? `Useful for: ${image.likelyQuestions.join(" ")}` : ""
+    ].filter(Boolean).join(" ")
+  }));
+
+  const recentTurns = (input.history ?? []).slice(-8).map((turn) => ({ role: turn.role, text: turn.text }));
+
+  const parsed = SpecialistTurnPlanSchema.parse(await callMiniMaxJson({
+    system: [
+      "You are Vox, a warm, sharp BMW sales specialist standing next to this car with a shopper. You sell by being genuinely helpful, never pushy — talk like a knowledgeable friend, not a brochure.",
+      "Each turn, first silently classify the shopper's latest message into exactly one intent:",
+      "greeting — hello, thanks, or small talk with no car question.",
+      "spec_fact — asks a value or judgment answerable from the car factSheet: price, mileage, 0-60, horsepower, torque, mpg, transmission, drivetrain, VIN, stock number, warranty, packages, options, or things like 'is it fast' or 'good on gas'.",
+      "visual — wants to SEE something, or a yes/no about a VISIBLE physical part best settled by a photo (wheels, seats, paint, curb rash, stitching, body lines).",
+      "clarify — you genuinely cannot answer well without guessing because the request or what they're referring to is unclear.",
+      "objection — price pushback, comparison shopping, hesitation, or a buying signal (test drive, financing, 'can I see it this weekend').",
+      "Then set needsImage true ONLY when intent is visual, or when intent is objection and a specific photo clearly helps. For greeting, spec_fact, and clarify, needsImage is false.",
+      "If needsImage is true, choose the single best id from IMAGE_OPTIONS by reasoning semantically over each option's role and description (not substring matching). Shopper slang: 'stick' = gear selector/shifter, 'rims' = wheel, 'screen' or 'nav' = dashboard. If no option genuinely matches, selectedImageId is null and say so casually. If needsImage is false, selectedImageId is null.",
+      "GROUNDING: answer price, mileage, and every spec directly and exactly from car.factSheet. Never invent or estimate specs, prices, packages, options, or features. If a fact isn't in the fact sheet, say so casually instead of guessing.",
+      "VISIBLE-FEATURE HONESTY: for a yes/no about something in a photo, if the chosen image's description says the feature is absent, answer no — never yes.",
+      "STYLE: keep replies to one or two sentences — spoken, natural, like a friend. This text may be read aloud, so write plain prose only: NO markdown, NO bullet lists, NO URLs, and NEVER any image tags or placeholders like [IMAGE:...] or [image_id]. Never dump a spec list; even for 'tell me about it', give a two-sentence highlight and then ask what they care about. Answer only what they asked plus at most one extra relevant spec. Vary your openers and usually skip them. Never hype, stack adjectives, or pressure.",
+      "IMAGE/REPLY CONSISTENCY: only say you're showing, pulling up, or pointing at something when needsImage is true AND you selected an image. If needsImage is false, do not claim to show anything.",
+      "BE A SALESPERSON — ASK BACK: when the shopper shares a use-case or goal ('daily driver', 'for the track', 'first car'), pushes back on price, or sends a buying signal, acknowledge it and end with ONE short, helpful question, and set askedClarifyingQuestion true. When the request is genuinely ambiguous, classify clarify, ask ONE clarifying question, give no answer yet, and set askedClarifyingQuestion true.",
+      "ANTI-OVER-QUESTIONING (hard rules): never ask something the fact sheet can answer — just answer it. If recentTurns shows your previous reply already ended with a question the shopper has not answered, do NOT ask again — make a reasonable assumption, answer, and offer the alternative in one short clause. One question maximum per turn; at most one question mark in the reply.",
+      "Use recentTurns for context and to resolve references like 'the other one', 'that', or 'show me that instead'.",
+      "EXAMPLES (shopper -> decision): 'what's the 0-60?' -> spec_fact, needsImage false, answer the number. | 'show me the wheels' -> visual, needsImage true, pick the wheel image. | 'I'm looking for a daily driver' -> clarify, needsImage false, ask what matters most: comfort, economy, or performance? | 'tell me about it' -> spec_fact, needsImage false, two-sentence highlight then ask what they care about most. | 'that's a bit steep' -> objection, needsImage false, empathize and ask what number they had in mind. | 'can I see it this weekend?' -> objection, needsImage false, confirm warmly and ask what day works.",
+      "Return STRICT JSON ONLY, no prose or markdown around it, with exactly these keys: intent (one of greeting, spec_fact, visual, clarify, objection), needsImage (boolean), selectedImageId (a string id from IMAGE_OPTIONS or null), askedClarifyingQuestion (boolean), reply (string)."
+    ].join(" "),
+    user: JSON.stringify({
+      shopperMessage: input.message,
+      currentImageId: input.currentImageId ?? null,
+      recentTurns,
+      car: {
+        year: input.car.year,
+        make: input.car.make,
+        model: input.car.model,
+        trim: input.car.trim,
+        body: input.car.body,
+        color: input.car.color,
+        price: input.car.price,
+        mileage: input.car.mileage,
+        availability: input.car.availability,
+        factSheet: carFactSheet(input.car)
+      },
+      imageOptions
+    }),
+    maxTokens: 320,
+    timeoutMs: 14_000
+  }));
+
+  const needsImage = parsed.needsImage;
+  const selectedImageId = needsImage && parsed.selectedImageId && allowedIds.has(parsed.selectedImageId)
+    ? parsed.selectedImageId
+    : null;
+  const reply = sanitizeReply(parsed.reply);
+  return {
+    intent: parsed.intent,
+    needsImage,
+    selectedImageId,
+    // Trust a trailing question over the model's self-report of the flag.
+    askedClarifyingQuestion: (parsed.askedClarifyingQuestion ?? false) || /\?\s*$/.test(reply),
+    reply
   };
 }
 
@@ -768,9 +892,23 @@ function compactReply(text: string): string {
   return text.replace(/\s+/g, " ").trim();
 }
 
+// Strip anything that shouldn't appear in a spoken/chat reply: image
+// placeholders the model sometimes hallucinates, markdown image/link syntax,
+// and stray URLs. The canvas shows images; the reply text never should.
+function sanitizeReply(text: string): string {
+  return compactReply(
+    text
+      .replace(/!?\[[^\]]*\]\([^)]*\)/g, "")            // markdown images/links
+      .replace(/\[\s*image[^\]]*\]/gi, "")               // [IMAGE: ...] / [image_id ...]
+      .replace(/https?:\/\/\S+/g, "")                    // bare URLs
+      .replace(/\s+([.,!?:;])/g, "$1")                   // tidy space before punctuation
+  );
+}
+
 export async function streamMiniMaxChat(input: {
   system: string;
   user: string;
+  model?: string;
   maxTokens?: number;
   timeoutMs?: number;
 }): Promise<ReadableStream<string>> {
@@ -785,7 +923,7 @@ export async function streamMiniMaxChat(input: {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      model: process.env.MINIMAX_MODEL || "MiniMax-Text-01",
+      model: input.model || process.env.MINIMAX_MODEL || "MiniMax-Text-01",
       messages: [
         { role: "system", content: input.system },
         { role: "user", content: input.user }

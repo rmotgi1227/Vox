@@ -1,15 +1,35 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUp, ImageIcon, Mic, X } from "lucide-react";
-import type { SpecialistState } from "@vox/core";
-import { DEFAULT_VIN } from "@vox/core";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import {
+  ArrowUp,
+  Check,
+  ChevronDown,
+  ImageIcon,
+  MessageSquare,
+  Mic,
+  PhoneOff,
+  User,
+} from "lucide-react";
+import type { ModelProfile, ModelProfileId, SpecialistState } from "@vox/core";
+import {
+  DEFAULT_MODEL_PROFILE_ID,
+  DEFAULT_VIN,
+  MODEL_PROFILES,
+  resolveModelProfile,
+} from "@vox/core";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { NoiseBackground } from "@/components/ui/noise-background";
+import { AgentVisualizer, type AgentVizMode } from "@/components/ui/agent-visualizer";
 import { getLiveKitToken, getSpecialistState, sendSpecialistMessage } from "@/lib/api";
 
-type Message = { role: "user" | "assistant"; text: string };
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+type Message = { role: "user" | "assistant"; text: string; streaming?: boolean };
+
 type LiveKitRoomLike = {
   disconnect(): void;
   startAudio?: () => Promise<void>;
@@ -21,12 +41,16 @@ type LiveKitRoomLike = {
     isMicrophoneEnabled?: boolean;
   };
 };
+
 type AgentTurnEvent = {
   type: "specialist_turn";
   transcript?: string;
   reply?: string;
   selectedImageId?: string;
+  action?: unknown;
+  sources?: unknown;
 };
+
 type AgentStatusEvent = {
   type: "agent_status";
   status?: string;
@@ -34,6 +58,133 @@ type AgentStatusEvent = {
   isFinal?: boolean;
   error?: string;
 };
+
+type ReplyDeltaEvent = {
+  type: "reply_delta";
+  text: string;
+};
+
+type ReplyDoneEvent = {
+  type: "reply_done";
+  reply: string;
+};
+
+type DataEvent = AgentTurnEvent | AgentStatusEvent | ReplyDeltaEvent | ReplyDoneEvent;
+
+// ---------------------------------------------------------------------------
+// Voice state machine
+// ---------------------------------------------------------------------------
+
+type VoiceState = "idle" | "connecting" | "connected" | "error";
+
+// ---------------------------------------------------------------------------
+// Utility: localStorage-backed model profile
+// ---------------------------------------------------------------------------
+
+const PROFILE_STORAGE_KEY = "vox.model.profile";
+
+function loadStoredProfile(): ModelProfile {
+  if (typeof window === "undefined") return resolveModelProfile(DEFAULT_MODEL_PROFILE_ID);
+  try {
+    const raw = localStorage.getItem(PROFILE_STORAGE_KEY);
+    return resolveModelProfile(raw);
+  } catch {
+    return resolveModelProfile(DEFAULT_MODEL_PROFILE_ID);
+  }
+}
+
+function persistProfile(id: ModelProfileId) {
+  try {
+    localStorage.setItem(PROFILE_STORAGE_KEY, id);
+  } catch {
+    // ignore storage errors
+  }
+}
+
+// ---------------------------------------------------------------------------
+// ModelSelector component
+// ---------------------------------------------------------------------------
+
+function ModelSelector({
+  activeProfile,
+  onSelect,
+}: {
+  activeProfile: ModelProfile;
+  onSelect: (profile: ModelProfile) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Close on outside click or Escape
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    function onPointer(e: MouseEvent) {
+      if (!containerRef.current?.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("mousedown", onPointer);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("mousedown", onPointer);
+    };
+  }, [open]);
+
+  return (
+    <div className="model-selector" ref={containerRef}>
+      <button
+        type="button"
+        className="model-selector-trigger"
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={`Model: ${activeProfile.label}`}
+      >
+        <span className="model-selector-label">{activeProfile.label}</span>
+        <ChevronDown
+          size={13}
+          strokeWidth={2.2}
+          className={`model-selector-chevron${open ? " open" : ""}`}
+        />
+      </button>
+
+      {open ? (
+        <div className="model-selector-dropdown" role="listbox" aria-label="Select model">
+          {MODEL_PROFILES.map((profile) => {
+            const isActive = profile.id === activeProfile.id;
+            return (
+              <button
+                key={profile.id}
+                type="button"
+                role="option"
+                aria-selected={isActive}
+                className={`model-selector-option${isActive ? " active" : ""}`}
+                onClick={() => {
+                  onSelect(profile);
+                  setOpen(false);
+                }}
+              >
+                <span className="model-option-check">
+                  {isActive ? <Check size={13} strokeWidth={2.5} /> : null}
+                </span>
+                <span className="model-option-text">
+                  <span className="model-option-label">{profile.label}</span>
+                  <span className="model-option-desc">{profile.description}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main page
+// ---------------------------------------------------------------------------
 
 export default function SpecialistPage() {
   const [state, setState] = useState<SpecialistState | null>(null);
@@ -43,22 +194,58 @@ export default function SpecialistPage() {
   const [busy, setBusy] = useState(false);
   const [imageBusy, setImageBusy] = useState(false);
   const [error, setError] = useState("");
-  const [voiceStatus, setVoiceStatus] = useState("Voice");
-  const [listening, setListening] = useState(false);
+  const [voiceState, setVoiceState] = useState<VoiceState>("idle");
   const [liveTranscript, setLiveTranscript] = useState("");
-  const [detailOpen, setDetailOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [activeProfile, setActiveProfile] = useState<ModelProfile>(() => loadStoredProfile());
+  // hover-to-disconnect state
+  const [buttonHovered, setButtonHovered] = useState(false);
+  // visualizer-only signals — never feed the voiceState machine / button label
+  const [agentTrack, setAgentTrack] = useState<MediaStreamTrack | null>(null);
+  const [agentActivity, setAgentActivity] = useState<AgentVizMode>("listening");
+
   const audioRef = useRef<HTMLAudioElement>(null);
   const remoteAudioRef = useRef<HTMLDivElement>(null);
   const roomRef = useRef<LiveKitRoomLike | null>(null);
   const agentJoinedRef = useRef<Promise<void> | null>(null);
+  const agentJoinedResolveRef = useRef<(() => void) | undefined>(undefined);
+  const chatLogRef = useRef<HTMLDivElement>(null);
+  const chatInputRef = useRef<HTMLTextAreaElement>(null);
+  const composerRef = useRef<HTMLDivElement>(null);
 
+  // Scroll chat log to bottom when messages update
+  useEffect(() => {
+    const log = chatLogRef.current;
+    if (!log) return;
+    log.scrollTop = log.scrollHeight;
+  }, [messages, liveTranscript, busy, error]);
+
+  // Chat popover keyboard/click-outside handling
+  useEffect(() => {
+    if (!chatOpen) return;
+    chatInputRef.current?.focus();
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setChatOpen(false);
+    }
+    function onPointer(e: MouseEvent) {
+      if (!composerRef.current?.contains(e.target as Node)) setChatOpen(false);
+    }
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("mousedown", onPointer);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("mousedown", onPointer);
+    };
+  }, [chatOpen]);
+
+  // Initial load + cleanup
   useEffect(() => {
     getSpecialistState(DEFAULT_VIN)
       .then((next) => {
         setState(next);
         setSelectedImageId(next.selectedImageId);
       })
-      .catch((err) => setError(err.message));
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : "Load failed"));
     return () => roomRef.current?.disconnect();
   }, []);
 
@@ -66,6 +253,10 @@ export default function SpecialistPage() {
     () => state?.images.find((image) => image.id === selectedImageId) ?? state?.images[0],
     [state, selectedImageId]
   );
+
+  // -------------------------------------------------------------------------
+  // Text chat
+  // -------------------------------------------------------------------------
 
   async function ask(text: string) {
     const clean = text.trim();
@@ -76,7 +267,14 @@ export default function SpecialistPage() {
     setMessages((items) => [...items, { role: "user", text: clean }]);
     try {
       setImageBusy(true);
-      const turn = await sendSpecialistMessage({ vin: DEFAULT_VIN, message: clean, currentImageId: selectedImageId, includeAudio: true });
+      const history = messages.slice(-12).map((m) => ({ role: m.role, text: m.text }));
+      const turn = await sendSpecialistMessage({
+        vin: DEFAULT_VIN,
+        message: clean,
+        currentImageId: selectedImageId,
+        includeAudio: true,
+        history,
+      });
       if (turn.selectedImageId) setSelectedImageId(turn.selectedImageId);
       setMessages((items) => [...items, { role: "assistant", text: turn.reply }]);
       setImageBusy(false);
@@ -97,49 +295,16 @@ export default function SpecialistPage() {
     return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
   }
 
-  function humanizeStatus(raw: string): string {
-    const key = raw.toLowerCase().trim();
-    const map: Record<string, string> = {
-      voice: "Voice",
-      connecting: "Connecting…",
-      "waiting for specialist…": "Waiting…",
-      "specialist joined": "Connected",
-      "starting mic": "Connecting…",
-      "mic live": "Listening",
-      live: "Listening",
-      initializing: "Connecting…",
-      listening: "Listening",
-      hearing: "Listening",
-      thinking: "Thinking…",
-      speaking: "Speaking…",
-      error: "Reconnecting…",
-      "tap to resume audio": "Tap to resume"
-    };
-    return map[key] ?? capitalize(raw);
-  }
-
-  function applyAgentTurn(event: AgentTurnEvent) {
-    if (event.selectedImageId) setSelectedImageId(event.selectedImageId);
-    setLiveTranscript("");
-    setMessages((items) => {
-      const next = [...items];
-      if (event.transcript) next.push({ role: "user", text: capitalize(event.transcript) });
-      if (event.reply) next.push({ role: "assistant", text: event.reply });
-      return next;
-    });
-  }
-
-  function applyAgentStatus(event: AgentStatusEvent) {
-    if (event.error) setError(event.error);
-    if (event.transcript) setLiveTranscript(capitalize(event.transcript));
-    if (event.status) setVoiceStatus(humanizeStatus(event.status));
-  }
+  // -------------------------------------------------------------------------
+  // Remote audio
+  // -------------------------------------------------------------------------
 
   function attachRemoteAudio(track: unknown) {
     const maybeAudioTrack = track as {
       kind?: string;
       attach?: () => HTMLMediaElement;
       detach?: () => HTMLMediaElement[];
+      mediaStreamTrack?: MediaStreamTrack;
     };
     if (maybeAudioTrack.kind !== "audio" || !maybeAudioTrack.attach) return;
     remoteAudioRef.current?.replaceChildren();
@@ -148,8 +313,10 @@ export default function SpecialistPage() {
     element.setAttribute("playsinline", "true");
     element.style.display = "none";
     remoteAudioRef.current?.appendChild(element);
+    // Feed the on-button visualizer from the agent's live audio.
+    if (maybeAudioTrack.mediaStreamTrack) setAgentTrack(maybeAudioTrack.mediaStreamTrack);
     void element.play().catch(() => {
-      setVoiceStatus("Tap to resume audio");
+      // Audio autoplay blocked; user must tap — handled gracefully
     });
   }
 
@@ -158,6 +325,7 @@ export default function SpecialistPage() {
     for (const element of maybeAudioTrack.detach?.() ?? []) {
       element.remove();
     }
+    setAgentTrack(null);
   }
 
   async function attachExistingRemoteAudio(room: LiveKitRoomLike) {
@@ -166,97 +334,282 @@ export default function SpecialistPage() {
         if (publication.track) attachRemoteAudio(publication.track);
       }
     }
-    await room.startAudio?.().catch(() => {
-      setVoiceStatus("Tap to resume audio");
+    await room.startAudio?.().catch(() => {});
+  }
+
+  // -------------------------------------------------------------------------
+  // Data-channel event handlers
+  // -------------------------------------------------------------------------
+
+  function applyAgentTurn(event: AgentTurnEvent) {
+    if (event.selectedImageId) setSelectedImageId(event.selectedImageId);
+    setLiveTranscript("");
+    setMessages((items) => {
+      const next = [...items];
+      if (event.transcript) next.push({ role: "user", text: capitalize(event.transcript) });
+      // legacy `reply` field — ignored when using reply_delta/reply_done flow
+      if (event.reply) next.push({ role: "assistant", text: event.reply });
+      return next;
     });
   }
 
-  async function ensureLiveKitRoom() {
+  function applyAgentStatus(event: AgentStatusEvent) {
+    if (event.error) setError(event.error);
+    // Route live transcript to chat log only — never to the button
+    if (event.transcript) setLiveTranscript(capitalize(event.transcript));
+    // agent_status status values (listening/thinking/speaking) do NOT update voiceState;
+    // they only drive the on-button visualizer.
+    if (event.status) {
+      const key = event.status.toLowerCase().trim();
+      if (key === "speaking") setAgentActivity("speaking");
+      else if (key === "thinking") setAgentActivity("thinking");
+      else if (key === "listening" || key === "hearing") setAgentActivity("listening");
+    }
+  }
+
+  function applyReplyDelta(event: ReplyDeltaEvent) {
+    setMessages((items) => {
+      const last = items[items.length - 1];
+      if (last?.role === "assistant" && last.streaming) {
+        // Append delta to the in-progress bubble
+        return [
+          ...items.slice(0, -1),
+          { ...last, text: last.text + event.text },
+        ];
+      }
+      // Create a new streaming bubble
+      return [...items, { role: "assistant", text: event.text, streaming: true }];
+    });
+  }
+
+  function applyReplyDone(event: ReplyDoneEvent) {
+    setMessages((items) => {
+      const last = items[items.length - 1];
+      if (last?.role === "assistant" && last.streaming) {
+        // Finalize: reconcile with authoritative full text, clear streaming flag
+        return [...items.slice(0, -1), { role: "assistant", text: event.reply }];
+      }
+      // Bubble wasn't started via deltas — just push it
+      return [...items, { role: "assistant", text: event.reply }];
+    });
+    setLiveTranscript("");
+  }
+
+  // -------------------------------------------------------------------------
+  // LiveKit room management
+  // -------------------------------------------------------------------------
+
+  async function ensureLiveKitRoom(profileId: ModelProfileId) {
     if (roomRef.current) return;
     const roomName = `vox-specialist-${DEFAULT_VIN.toLowerCase()}-${Date.now()}`;
     const session = await getLiveKitToken({
       roomName,
-      identity: `shopper-${Date.now()}`
+      identity: `shopper-${Date.now()}`,
+      profileId,
     });
     const { Room, RoomEvent } = await import("livekit-client");
     const room = new Room();
-    let resolveAgentJoined: (() => void) | undefined;
+
     agentJoinedRef.current = new Promise<void>((resolve) => {
-      resolveAgentJoined = resolve;
+      agentJoinedResolveRef.current = resolve;
     });
-    room.on(RoomEvent.ConnectionStateChanged, (status: string) => {
-      if (status !== "connected") setVoiceStatus(status);
-    });
+
+    // --- IMPORTANT: Do NOT expose raw transport state to the button. ---
+    // All intermediate states (connecting, connected, etc.) are collapsed
+    // into the single "connecting" held state until truly ready.
+
     room.on(RoomEvent.ParticipantConnected, () => {
-      setVoiceStatus("Specialist joined");
-      resolveAgentJoined?.();
+      agentJoinedResolveRef.current?.();
     });
-    room.on(RoomEvent.LocalTrackPublished, () => {
-      setVoiceStatus("Mic live");
-    });
+
     room.on(RoomEvent.TrackSubscribed, (track: unknown) => {
       attachRemoteAudio(track);
-      setVoiceStatus("Live");
     });
+
     room.on(RoomEvent.TrackUnsubscribed, (track: unknown) => {
       detachRemoteAudio(track);
     });
+
     room.on(RoomEvent.Disconnected, () => {
       remoteAudioRef.current?.replaceChildren();
       setLiveTranscript("");
-      setListening(false);
-      setVoiceStatus("Voice");
+      setVoiceState("idle");
+      setAgentTrack(null);
+      setAgentActivity("listening");
       roomRef.current = null;
     });
-    room.on(RoomEvent.DataReceived, (payload: Uint8Array, _participant, _kind, topic) => {
-      if (topic !== "vox.specialist.turn") return;
-      try {
-        const event = JSON.parse(new TextDecoder().decode(payload)) as AgentTurnEvent | AgentStatusEvent;
-        if (event.type === "specialist_turn") applyAgentTurn(event);
-        if (event.type === "agent_status") applyAgentStatus(event);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Could not parse agent event");
+
+    room.on(
+      RoomEvent.DataReceived,
+      (payload: Uint8Array, _participant: unknown, _kind: unknown, topic: string | undefined) => {
+        if (topic !== "vox.specialist.turn") return;
+        try {
+          const event = JSON.parse(new TextDecoder().decode(payload)) as DataEvent;
+          if (event.type === "specialist_turn") applyAgentTurn(event);
+          else if (event.type === "agent_status") applyAgentStatus(event);
+          else if (event.type === "reply_delta") applyReplyDelta(event);
+          else if (event.type === "reply_done") applyReplyDone(event);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "Could not parse agent event");
+        }
       }
-    });
+    );
+
     await room.connect(session.url, session.token, { autoSubscribe: true });
-    setVoiceStatus("Starting mic");
     roomRef.current = room;
     await attachExistingRemoteAudio(room);
   }
 
-  async function startVoice() {
-    if (listening) {
-      await roomRef.current?.localParticipant.setMicrophoneEnabled(false);
-      roomRef.current?.disconnect();
-      roomRef.current = null;
-      setListening(false);
-      setVoiceStatus("Voice");
+  // -------------------------------------------------------------------------
+  // Voice connect / disconnect
+  // -------------------------------------------------------------------------
+
+  async function disconnect() {
+    await roomRef.current?.localParticipant.setMicrophoneEnabled(false).catch(() => {});
+    roomRef.current?.disconnect();
+    roomRef.current = null;
+    setVoiceState("idle");
+  }
+
+  const startVoice = useCallback(async () => {
+    // Disconnect branch
+    if (voiceState === "connected") {
+      await disconnect();
       return;
     }
+
     setError("");
-    setVoiceStatus("Connecting");
+    setVoiceState("connecting");
+
     try {
-      await ensureLiveKitRoom();
-      setVoiceStatus("Waiting for specialist…");
+      await ensureLiveKitRoom(activeProfile.id);
+
+      // Wait for agent participant to join (timeout 6 s)
       await Promise.race([
         agentJoinedRef.current ?? Promise.resolve(),
-        new Promise<void>((resolve) => setTimeout(resolve, 6_000))
+        new Promise<void>((resolve) => setTimeout(resolve, 6_000)),
       ]);
+
+      // Enable local mic
       await roomRef.current?.localParticipant.setMicrophoneEnabled(true);
-      await roomRef.current?.startAudio?.().catch(() => {
-        setVoiceStatus("Tap to resume audio");
-      });
+
+      // Attempt to start audio context (autoplay unlocking)
+      await roomRef.current?.startAudio?.().catch(() => {});
+
       if (roomRef.current?.localParticipant.isMicrophoneEnabled === false) {
         throw new Error("Microphone did not publish. Check browser mic permission.");
       }
-      setListening(true);
-      setVoiceStatus("Live");
+
+      setVoiceState("connected");
     } catch (err) {
-      setListening(false);
-      setVoiceStatus("Voice");
+      // Clean up on failure
+      roomRef.current?.disconnect();
+      roomRef.current = null;
+      setVoiceState("error");
       setError(err instanceof Error ? err.message : "Voice failed");
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [voiceState, activeProfile.id]);
+
+  // -------------------------------------------------------------------------
+  // Profile selection + reconnect-on-change
+  // -------------------------------------------------------------------------
+
+  const handleProfileSelect = useCallback(async (profile: ModelProfile) => {
+    persistProfile(profile.id);
+    setActiveProfile(profile);
+
+    if (voiceState === "connected") {
+      // Reconnect with new profile so the backend uses the new LLM + TTS
+      setVoiceState("connecting");
+      try {
+        // Disconnect current room
+        await roomRef.current?.localParticipant.setMicrophoneEnabled(false).catch(() => {});
+        roomRef.current?.disconnect();
+        roomRef.current = null;
+
+        // Re-establish with new profile
+        await ensureLiveKitRoom(profile.id);
+
+        await Promise.race([
+          agentJoinedRef.current ?? Promise.resolve(),
+          new Promise<void>((resolve) => setTimeout(resolve, 6_000)),
+        ]);
+
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+        const switchedRoom = roomRef.current as LiveKitRoomLike | null;
+        if (switchedRoom !== null) {
+          await switchedRoom.localParticipant.setMicrophoneEnabled(true);
+          await switchedRoom.startAudio?.().catch(() => {});
+
+          if (switchedRoom.localParticipant.isMicrophoneEnabled === false) {
+            throw new Error("Microphone did not publish after model switch.");
+          }
+        }
+
+        setVoiceState("connected");
+      } catch (err) {
+        roomRef.current?.disconnect();
+        roomRef.current = null;
+        setVoiceState("error");
+        setError(err instanceof Error ? err.message : "Reconnect failed");
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [voiceState]);
+
+  // -------------------------------------------------------------------------
+  // Button rendering helpers
+  // -------------------------------------------------------------------------
+
+  function renderVoiceButtonContent() {
+    switch (voiceState) {
+      case "idle":
+        return (
+          <>
+            <span className="voice-cta-mic"><Mic size={18} /></span>
+            <span className="voice-cta-label">Start Conversation</span>
+          </>
+        );
+      case "connecting":
+        return (
+          <>
+            <span className="voice-cta-mic">
+              <span className="connecting-dots" aria-hidden="true">
+                <span /><span /><span />
+              </span>
+            </span>
+            <span className="voice-cta-label">Connecting</span>
+          </>
+        );
+      case "connected":
+        if (buttonHovered) {
+          return (
+            <>
+              <span className="voice-cta-mic"><PhoneOff size={18} /></span>
+              <span className="voice-cta-label">Disconnect</span>
+            </>
+          );
+        }
+        return (
+          <>
+            <AgentVisualizer track={agentTrack} mode={agentActivity} />
+            <span className="voice-cta-label">Connected</span>
+          </>
+        );
+      case "error":
+        return (
+          <>
+            <span className="voice-cta-mic"><Mic size={18} /></span>
+            <span className="voice-cta-label">Reconnecting…</span>
+          </>
+        );
+    }
   }
+
+  // -------------------------------------------------------------------------
+  // Loading state
+  // -------------------------------------------------------------------------
 
   if (!state) {
     return (
@@ -265,6 +618,10 @@ export default function SpecialistPage() {
       </main>
     );
   }
+
+  // -------------------------------------------------------------------------
+  // Render
+  // -------------------------------------------------------------------------
 
   return (
     <main className="specialist-shell">
@@ -278,11 +635,19 @@ export default function SpecialistPage() {
                   src={`/logos/${state.car.make.toLowerCase()}_logo.png`}
                   alt={`${state.car.make} logo`}
                 />
-                <h1>{state.car.year} {state.car.make} {state.car.model}</h1>
+                <div className="stage-heading-text">
+                  <ModelSelector
+                    activeProfile={activeProfile}
+                    onSelect={handleProfileSelect}
+                  />
+                  <h1>{state.car.year} {state.car.make} {state.car.model}</h1>
+                </div>
               </div>
               <div className="stage-meta">
                 <span className="stage-meta-price">
-                  {state.car.price != null ? `$${state.car.price.toLocaleString()}` : "Inquire for price"}
+                  {state.car.price != null
+                    ? `$${state.car.price.toLocaleString()}`
+                    : "Inquire for price"}
                 </span>
                 <span className="stage-meta-dot" aria-hidden="true" />
                 <span>{state.car.mileage.toLocaleString()} mi</span>
@@ -295,19 +660,25 @@ export default function SpecialistPage() {
                 ) : null}
               </div>
             </div>
-            <button
-              type="button"
-              className={`detail-btn ${detailOpen ? "on" : ""}`}
-              onClick={() => setDetailOpen((open) => !open)}
-              aria-pressed={detailOpen}
-            >
-              {detailOpen ? "Close" : "Detail"}
-            </button>
+            <div className="specialist-avatar" aria-hidden="true">
+              <User size={56} strokeWidth={1.4} />
+            </div>
           </div>
 
           <div className="image-canvas">
             {selectedImage ? (
-              <img className="hero-image" src={selectedImage.url} alt={selectedImage.caption} />
+              <figure className="canvas-figure">
+                <img
+                  className="hero-image"
+                  src={selectedImage.url}
+                  alt={selectedImage.caption}
+                />
+                {!imageBusy ? (
+                  <figcaption className="canvas-caption">
+                    {selectedImage.role.replaceAll("_", " ")}
+                  </figcaption>
+                ) : null}
+              </figure>
             ) : (
               <div className="empty-image">
                 <ImageIcon />
@@ -318,126 +689,105 @@ export default function SpecialistPage() {
               <div className="canvas-badge">
                 <span className="canvas-spinner" /> Finding the right view…
               </div>
-            ) : selectedImage ? (
-              <div className="canvas-caption">{selectedImage.role.replaceAll("_", " ")}</div>
-            ) : null}
-
-            {detailOpen ? (
-              <div className="detail-panel" role="dialog" aria-label="Vehicle details">
-                <div className="detail-head">
-                  <div>
-                    <span className="eyebrow">Overview</span>
-                    <h2>{state.car.year} {state.car.make} {state.car.model}</h2>
-                  </div>
-                  <button type="button" className="detail-close" onClick={() => setDetailOpen(false)} aria-label="Close details">
-                    <X size={18} />
-                  </button>
-                </div>
-
-                <div className="detail-specs">
-                  {[
-                    { label: "Trim", value: state.car.trim },
-                    { label: "Body", value: state.car.body },
-                    { label: "Drivetrain", value: state.car.drivetrain },
-                    { label: "Fuel", value: state.car.fuel },
-                    { label: "Color", value: state.car.color },
-                    { label: "Mileage", value: `${state.car.mileage.toLocaleString()} mi` },
-                    { label: "Availability", value: state.car.availability },
-                    { label: "Price", value: state.car.price != null ? `$${state.car.price.toLocaleString()}` : "Inquire" }
-                  ].map((spec) => (
-                    <div className="spec" key={spec.label}>
-                      <span>{spec.label}</span>
-                      <strong>{spec.value}</strong>
-                    </div>
-                  ))}
-                </div>
-
-                {state.car.features.length ? (
-                  <div className="detail-block">
-                    <h3>Features</h3>
-                    <div className="chips">
-                      {state.car.features.map((feature) => (
-                        <span className="chip" key={feature}>{feature}</span>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-
-                {state.car.description ? (
-                  <div className="detail-block">
-                    <h3>About this vehicle</h3>
-                    <p className="detail-desc">{state.car.description}</p>
-                  </div>
-                ) : null}
-              </div>
             ) : null}
           </div>
         </section>
 
         <aside className="chat-panel">
-          <div className="chat-log">
+          <div className="chat-log" ref={chatLogRef}>
             {messages.length === 0 ? (
               <div className="empty-log">
                 <h2>Ask anything about your BMW M4</h2>
-                <p>Start a conversation by voice, or type below — I&rsquo;ll walk you through every detail.</p>
               </div>
             ) : null}
             {messages.map((message, i) => (
-              <div key={i} className={`message ${message.role}`}>{message.text}</div>
+              <div key={i} className={`message ${message.role}`}>
+                {message.text}
+              </div>
             ))}
-            {liveTranscript ? <div className="message user live">{liveTranscript}</div> : null}
+            {busy ? (
+              <div className="message typing" role="status" aria-label="Specialist is typing">
+                <span />
+                <span />
+                <span />
+              </div>
+            ) : null}
+            {liveTranscript ? (
+              <div className="message user live">{liveTranscript}</div>
+            ) : null}
             {error ? <div className="message assistant">Error: {error}</div> : null}
           </div>
 
-          <div className="composer">
-            <NoiseBackground
-              containerClassName="voice-cta-noise w-full rounded-full p-2"
-              gradientColors={[
-                "rgb(190, 190, 195)",
-                "rgb(150, 150, 155)",
-                "rgb(220, 220, 225)"
-              ]}
-              noiseIntensity={0.55}
-              speed={0.14}
-              animating={!busy}
-            >
-              <button
-                type="button"
-                className={`voice-cta ${listening ? "on" : ""}`}
-                onClick={startVoice}
-                disabled={busy}
-                aria-pressed={listening}
-                title="Talk to the specialist"
-              >
-                <span className="voice-cta-mic"><Mic size={18} /></span>
-                <span className="voice-cta-label">
-                  {listening || voiceStatus !== "Voice" ? voiceStatus : "Start Conversation"}
-                </span>
-              </button>
-            </NoiseBackground>
+          <div className="composer" ref={composerRef}>
+            <div className="composer-actions">
+              {chatOpen ? (
+                <div className="chat-popover" role="dialog" aria-label="Type a message">
+                  <div className="text-row">
+                    <Textarea
+                      ref={chatInputRef}
+                      id="composer-input"
+                      value={draft}
+                      onChange={(e) => setDraft(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          void ask(draft);
+                        }
+                      }}
+                      rows={1}
+                      placeholder="Type a message"
+                    />
+                    <button
+                      type="button"
+                      className="pill-btn pill-send"
+                      onClick={() => void ask(draft)}
+                      disabled={busy || !draft.trim()}
+                      aria-label="Send"
+                    >
+                      <ArrowUp size={18} />
+                    </button>
+                  </div>
+                </div>
+              ) : null}
 
-            <div className="text-row">
-              <Textarea
-                id="composer-input"
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    ask(draft);
+              <NoiseBackground
+                containerClassName="voice-cta-noise rounded-full p-1.5"
+                gradientColors={[
+                  "rgb(190, 190, 195)",
+                  "rgb(150, 150, 155)",
+                  "rgb(220, 220, 225)",
+                ]}
+                noiseIntensity={0.55}
+                speed={0.14}
+                animating={voiceState !== "connected"}
+              >
+                <button
+                  type="button"
+                  className={`voice-cta${voiceState === "connected" ? " on" : ""}${voiceState === "connected" && buttonHovered ? " hover-disconnect" : ""}`}
+                  onClick={() => void startVoice()}
+                  disabled={busy || voiceState === "connecting"}
+                  aria-pressed={voiceState === "connected"}
+                  title={
+                    voiceState === "connected"
+                      ? "Disconnect"
+                      : "Talk to the specialist"
                   }
-                }}
-                rows={1}
-                placeholder="or type a message"
-              />
+                  onMouseEnter={() => setButtonHovered(true)}
+                  onMouseLeave={() => setButtonHovered(false)}
+                >
+                  {renderVoiceButtonContent()}
+                </button>
+              </NoiseBackground>
+
               <button
                 type="button"
-                className="pill-btn pill-send"
-                onClick={() => ask(draft)}
-                disabled={busy || !draft.trim()}
-                aria-label="Send"
+                className={`chat-toggle ${chatOpen ? "on" : ""}`}
+                onClick={() => setChatOpen((open) => !open)}
+                aria-pressed={chatOpen}
+                aria-label="Type a message"
               >
-                <ArrowUp size={18} />
+                <MessageSquare size={18} strokeWidth={2} />
+                <span className="chat-toggle-label">Chat</span>
               </button>
             </div>
           </div>

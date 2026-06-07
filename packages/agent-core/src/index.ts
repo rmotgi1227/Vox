@@ -431,6 +431,56 @@ export function selectImageForQuestion(
   return images.find((item) => item.id === currentImageId) ?? images[0];
 }
 
+// Tags/phrases that signal a wide, full-length "general car" exterior shot —
+// the kind you'd lead a listing with — versus a tight close-up or detail crop.
+const OVERVIEW_TERMS = [
+  "whole car",
+  "entire car",
+  "full car",
+  "full exterior",
+  "wide exterior",
+  "exterior overview",
+  "dealership exterior",
+  "three quarter",
+  "three-quarter",
+  "side profile",
+  "coupe profile",
+  "stance"
+];
+const CLOSEUP_TERMS = ["close-up", "close up", "closeup", "detail", "macro", "badge", "emblem"];
+
+/**
+ * Pick the best general, full-length exterior image to show first — a wide
+ * three-quarter / profile "whole car" shot. Scores processed exterior photos by
+ * overview vocabulary in their tags, viewpoint, and caption, penalizing tight
+ * close-ups. Falls back to any exterior photo, then the first processed image.
+ */
+export function selectOverviewImage(images: CarImage[]): CarImage | undefined {
+  const processed = images.filter((image) => image.status === "processed");
+  const exteriors = processed.filter(
+    (image) => image.role === "exterior_front" || image.role === "exterior_rear"
+  );
+
+  const scored = exteriors
+    .map((image) => {
+      const haystack = [
+        image.viewpoint,
+        image.caption,
+        ...(image.searchTags ?? [])
+      ]
+        .join(" ")
+        .toLowerCase();
+      let score = OVERVIEW_TERMS.reduce((sum, term) => (haystack.includes(term) ? sum + 1 : sum), 0);
+      if (CLOSEUP_TERMS.some((term) => haystack.includes(term))) score -= 3;
+      if (image.role === "exterior_front") score += 0.5; // prefer a front-led hero over rear
+      return { image, score };
+    })
+    .sort((a, b) => b.score - a.score || b.image.confidence - a.image.confidence);
+
+  if (scored[0] && scored[0].score > 0) return scored[0].image;
+  return exteriors[0] ?? processed[0] ?? images[0];
+}
+
 export async function orchestrateSpecialistTurn(
   deps: SpecialistDependencies,
   input: { vin: string; message: string; currentImageId?: string }

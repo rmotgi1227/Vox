@@ -1,14 +1,15 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { CarImageSchema, CarSchema } from "@vox/core";
+import { CarImageSchema, CarSchema, carFactSheet } from "@vox/core";
 
 type MossDoc = { id: string; text: string; metadata: Record<string, string> };
 
 function carDoc(car: unknown): MossDoc {
   const c = CarSchema.parse(car);
+  const s = c.specs;
   return {
     id: c.vin,
-    text: `${c.year} ${c.make} ${c.model} ${c.trim}, ${c.body}, ${c.drivetrain}, ${c.fuel}. ${c.color}. Features: ${c.features.join(", ")}. ${c.description}`,
+    text: carFactSheet(c),
     metadata: {
       doc_type: "car",
       car_id: c.vin,
@@ -22,7 +23,27 @@ function carDoc(car: unknown): MossDoc {
       opt_drivetrain: c.drivetrain,
       opt_fuel: c.fuel,
       opt_mileage: String(c.mileage),
-      opt_color: c.color
+      opt_color: c.color,
+      ...(s
+        ? {
+            condition: s.condition,
+            real_vin: s.vin,
+            stock_number: s.stockNumber,
+            msrp: String(s.msrp),
+            engine: s.engine,
+            horsepower: String(s.horsepower),
+            torque: s.torque,
+            transmission: s.transmission,
+            zero_to_sixty_s: String(s.zeroToSixtySeconds),
+            top_speed_mph: String(s.topSpeedMph),
+            mpg_city: String(s.mpgCity),
+            mpg_highway: String(s.mpgHighway),
+            mpg_combined: String(s.mpgCombined),
+            seating: String(s.seating),
+            interior_color: s.interiorColor,
+            warranty: s.warranty
+          }
+        : {})
     }
   };
 }
