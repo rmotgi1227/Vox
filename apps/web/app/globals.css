@@ -382,6 +382,9 @@ button, input, textarea { font: inherit; }
   box-shadow: var(--shadow-sm);
 }
 .specialist-avatar > * { opacity: 0.55; }
+/* The live avatar video must be fully opaque — the 0.55 dim is only for the
+   placeholder icon shown before the avatar connects. */
+.specialist-avatar > video { opacity: 1; }
 
 .image-canvas {
   position: relative;
