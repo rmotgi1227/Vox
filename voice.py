@@ -85,7 +85,17 @@ def synth(text: str, lang: str = "en") -> tuple[bytes, list[dict]]:
 # ElevenLabs (best quality + lowest latency) if a key is set; else MiniMax.
 EL_KEY = os.getenv("ELEVENLABS_API_KEY")
 EL_VOICE = os.getenv("ELEVENLABS_VOICE_ID", "pNInz6obpgDQGcFmaJgB")  # default premade voice
-EL_MODEL = os.getenv("ELEVENLABS_MODEL", "eleven_flash_v2_5")        # ~75ms TTFB
+EL_MODEL = os.getenv("ELEVENLABS_MODEL_ID") or os.getenv("ELEVENLABS_MODEL", "eleven_flash_v2_5")
+
+
+def _el_voice_settings() -> dict:
+    """Honor the ELEVENLABS_* tuning knobs from .env (sensible defaults if unset)."""
+    return {
+        "stability": float(os.getenv("ELEVENLABS_STABILITY", "0.45")),
+        "similarity_boost": float(os.getenv("ELEVENLABS_SIMILARITY_BOOST", "0.8")),
+        "style": float(os.getenv("ELEVENLABS_STYLE", "0.25")),
+        "use_speaker_boost": os.getenv("ELEVENLABS_SPEAKER_BOOST", "true").lower() == "true",
+    }
 # Sample rate of the streamed PCM (the browser is told this in the /ask_stream meta).
 PCM_SAMPLE_RATE = 24000 if EL_KEY else 32000
 
@@ -116,7 +126,7 @@ def _stream_elevenlabs(text: str):
         json={
             "text": text,
             "model_id": EL_MODEL,
-            "voice_settings": {"stability": 0.45, "similarity_boost": 0.8, "style": 0.25, "use_speaker_boost": True},
+            "voice_settings": _el_voice_settings(),
         },
         stream=True,
         timeout=60,
