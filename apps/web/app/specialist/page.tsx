@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import {
   ArrowUp,
+  CalendarCheck,
   MessageSquare,
   Mic,
   PhoneOff,
@@ -74,7 +75,25 @@ type ViewUpdateEvent = {
   view: ViewState;
 };
 
-type DataEvent = AgentTurnEvent | AgentStatusEvent | ReplyDeltaEvent | ReplyDoneEvent | ViewUpdateEvent;
+type BookingConfirmedEvent = {
+  type: "booking_confirmed";
+  slot: string;
+  carLabel?: string;
+  phone?: string;
+  smsStatus?: string;
+};
+
+type BookingPendingEvent = {
+  type: "booking_pending";
+};
+
+type BookingConfirmation = {
+  slot: string;
+  carLabel?: string;
+  smsStatus?: string;
+};
+
+type DataEvent = AgentTurnEvent | AgentStatusEvent | ReplyDeltaEvent | ReplyDoneEvent | ViewUpdateEvent | BookingConfirmedEvent | BookingPendingEvent;
 
 // ---------------------------------------------------------------------------
 // Voice state machine
@@ -116,6 +135,7 @@ export default function SpecialistPage() {
   const [error, setError] = useState("");
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
   const [liveTranscript, setLiveTranscript] = useState("");
+  const [bookingConfirmation, setBookingConfirmation] = useState<BookingConfirmation | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
   const [activeProfile] = useState<ModelProfile>(() => loadStoredProfile());
   // hover-to-disconnect state
@@ -140,13 +160,14 @@ export default function SpecialistPage() {
   const chatLogRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
   const composerRef = useRef<HTMLDivElement>(null);
+  const shownBookingKeysRef = useRef<Set<string>>(new Set());
 
   // Scroll chat log to bottom when messages update
   useEffect(() => {
     const log = chatLogRef.current;
     if (!log) return;
     log.scrollTop = log.scrollHeight;
-  }, [messages, liveTranscript, busy, error]);
+  }, [messages, liveTranscript, busy, error, bookingConfirmation]);
 
   // Chat popover keyboard/click-outside handling
   useEffect(() => {
@@ -328,6 +349,7 @@ export default function SpecialistPage() {
     setDraft("");
     setBusy(true);
     setError("");
+    setBookingConfirmation(null);
     setMessages((items) => [...items, { role: "user", text: clean }]);
     try {
       setImageBusy(true);
@@ -349,6 +371,13 @@ export default function SpecialistPage() {
         });
       }
       setMessages((items) => [...items, { role: "assistant", text: turn.reply }]);
+      if (turn.bookingSlot) {
+        showBookingConfirmation({
+          slot: turn.bookingSlot,
+          carLabel: state?.car ? `${state.car.year} ${state.car.make} ${state.car.model}` : undefined,
+          smsStatus: turn.smsStatus,
+        });
+      }
       setImageBusy(false);
       if (turn.audioBase64 && audioRef.current) {
         audioRef.current.src = `data:audio/mp3;base64,${turn.audioBase64}`;
@@ -421,7 +450,10 @@ export default function SpecialistPage() {
     setLiveTranscript("");
     setMessages((items) => {
       const next = [...items];
-      if (event.transcript) next.push({ role: "user", text: capitalize(event.transcript) });
+      if (event.transcript) {
+        setBookingConfirmation(null);
+        next.push({ role: "user", text: capitalize(event.transcript) });
+      }
       // legacy `reply` field — ignored when using reply_delta/reply_done flow
       if (event.reply) next.push({ role: "assistant", text: event.reply });
       return next;
@@ -468,6 +500,25 @@ export default function SpecialistPage() {
       return [...items, { role: "assistant", text: event.reply }];
     });
     setLiveTranscript("");
+  }
+
+  function showBookingConfirmation(next: BookingConfirmation) {
+    const key = `${next.slot}|${next.carLabel ?? ""}`;
+    if (shownBookingKeysRef.current.has(key)) return;
+    shownBookingKeysRef.current.add(key);
+    setBookingConfirmation(next);
+  }
+
+  function applyBookingConfirmed(event: BookingConfirmedEvent) {
+    showBookingConfirmation({
+      slot: event.slot,
+      carLabel: event.carLabel,
+      smsStatus: event.smsStatus,
+    });
+  }
+
+  function applyBookingPending() {
+    setBookingConfirmation(null);
   }
 
   // -------------------------------------------------------------------------
@@ -563,6 +614,8 @@ export default function SpecialistPage() {
           else if (event.type === "agent_status") applyAgentStatus(event);
           else if (event.type === "reply_delta") applyReplyDelta(event);
           else if (event.type === "reply_done") applyReplyDone(event);
+          else if (event.type === "booking_confirmed") applyBookingConfirmed(event);
+          else if (event.type === "booking_pending") applyBookingPending();
         } catch (err) {
           setError(err instanceof Error ? err.message : "Could not parse agent event");
         }
@@ -775,6 +828,18 @@ export default function SpecialistPage() {
                 {message.text}
               </div>
             ))}
+            {bookingConfirmation ? (
+              <div className="booking-card" role="status" aria-label="Test drive booked">
+                <div className="booking-card-icon" aria-hidden="true">
+                  <CalendarCheck size={18} strokeWidth={2.2} />
+                </div>
+                <div className="booking-card-copy">
+                  <div className="booking-card-eyebrow">Test drive booked</div>
+                  <div className="booking-card-slot">{bookingConfirmation.slot}</div>
+                  {bookingConfirmation.carLabel ? <div className="booking-card-car">{bookingConfirmation.carLabel}</div> : null}
+                </div>
+              </div>
+            ) : null}
             {busy ? (
               <div className="message typing" role="status" aria-label="Specialist is typing">
                 <span />

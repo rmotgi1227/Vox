@@ -22,7 +22,17 @@ import {
   type ViewState
 } from "@vox/core";
 import { applyAction, planCanvas, selectOverviewImage } from "@vox/agent-core";
-import { getCar, listImages, generateSpokenReply, decideCanvas } from "@vox/ai";
+import {
+  bookTestDriveAndNotify,
+  bookingFollowupPrompt,
+  decideCanvas,
+  extractPhoneNumber,
+  generateSpokenReply,
+  getCar,
+  listImages,
+  looksLikeBookingRequest,
+  parseBookingDetails
+} from "@vox/ai";
 
 config({ path: findRootEnv(process.cwd()) });
 
@@ -113,6 +123,7 @@ const M4_KEYTERMS: string[] = [
 const encoder = new TextEncoder();
 const FALLBACK_REPLY = "One sec, let me bring that up for you.";
 const CARTESIA_VOICE = process.env.CARTESIA_VOICE_ID || "db6b0ed5-d5d3-463d-ae85-518a07d3c2b4";
+const AGENT_NAME = process.env.VOX_AGENT_NAME ?? process.env.LIVEKIT_AGENT_NAME ?? "vox-specialist";
 
 function publishSpecialistDataAsync(ctx: JobContext, data: Record<string, unknown>) {
   const localParticipant = ctx.room.localParticipant;
@@ -145,12 +156,25 @@ function textStream(text: string): ReadableStream<string> {
   });
 }
 
+function looksLikeBookingFragment(message: string, hasPhone: boolean): boolean {
+  return hasPhone ||
+    looksLikeBookingRequest(message) ||
+    /\b(january|february|march|april|may|june|july|august|september|october|november|december|today|tomorrow|weekend|sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/.test(message) ||
+    /\b(\d{1,2}\/\d{1,2}|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s*(am|pm)\b/.test(message) ||
+    /\bzero\s+(one|two|three|four|five|six|seven|eight|nine|zero)\b/.test(message);
+}
+
+function isAffirmation(message: string): boolean {
+  return /^(yes|yeah|yep|correct|confirm|that's right|that is right|sounds good|do it|book it)\.?$/i.test(message.trim());
+}
 
 class VoxSpecialistVoiceAgent extends voice.Agent {
   // ViewState tracks what the canvas is currently showing. Seeded in entry()
   // from the first processed image; updated exclusively via applyAction so the
   // canvas lane and voice narration always see a coherent view.
   private viewState: ViewState = { layout: "single", items: [] };
+  private customerPhone: string | undefined;
+  private bookingDraft = "";
   private lastHandled = "";
   private lastHandledAt = 0;
   private turnCounter = 0;
@@ -165,7 +189,7 @@ class VoxSpecialistVoiceAgent extends voice.Agent {
     private readonly llmModel: string
   ) {
     super({
-      instructions: "You are Vox, a voice-first BMW M4 sales specialist. You hold a natural spoken conversation; a screen beside you can show photos as a visual aid, but you lead with talking, not images."
+      instructions: "You are Vox, a voice-first BMW M4 sales specialist. Test-drive booking and texting are handled by app code; never promise phone calls or manual team confirmation."
     });
   }
 
@@ -210,7 +234,20 @@ class VoxSpecialistVoiceAgent extends voice.Agent {
     // Empty/unintelligible turn — stay silent rather than nagging "didn't catch that".
     if (!message) return textStream("");
 
+    const detectedPhone = extractPhoneNumber(message);
+    if (detectedPhone) this.customerPhone = detectedPhone;
     const normalized = message.toLowerCase().replace(/\s+/g, " ").trim();
+    const draftNormalized = this.bookingDraft.toLowerCase().replace(/\s+/g, " ").trim();
+    const draftHasBookingIntent = looksLikeBookingRequest(draftNormalized);
+    const shouldUseDraft = draftHasBookingIntent && isAffirmation(normalized);
+    const shouldTrackBooking = looksLikeBookingFragment(normalized, !!detectedPhone);
+    const bookingCandidate = shouldTrackBooking || shouldUseDraft ? `${this.bookingDraft} ${message}`.trim() : message;
+    if (shouldTrackBooking) {
+      this.bookingDraft = bookingCandidate.slice(-1_200);
+      const draftPhone = extractPhoneNumber(this.bookingDraft);
+      if (draftPhone) this.customerPhone = draftPhone;
+    }
+
     const wordCount = normalized.split(" ").filter(Boolean).length;
     const now = Date.now();
     // Dedupe identical back-to-back finals (rapid STT re-submissions of the same text).
@@ -237,6 +274,47 @@ class VoxSpecialistVoiceAgent extends voice.Agent {
 
       // Publish the transcript for the chat HUD.
       publishSpecialistDataAsync(this.ctx, { type: "specialist_turn", vin: DEFAULT_VIN, transcript: message });
+
+      if (looksLikeBookingRequest(normalized) || draftHasBookingIntent) {
+        const details = parseBookingDetails(bookingCandidate);
+        const parsedBooking = details.parsedBooking;
+        if (details.phone) this.customerPhone = details.phone;
+        if (!parsedBooking || parsedBooking.hour24 < 11 || parsedBooking.hour24 > 15 || !this.customerPhone) {
+          this.bookingDraft = bookingCandidate.slice(-1_200);
+          publishSpecialistDataAsync(this.ctx, { type: "booking_pending" });
+          const reply = bookingFollowupPrompt({ ...details, phone: this.customerPhone });
+          publishSpecialistDataAsync(this.ctx, { type: "reply_done", reply });
+          return textStream(reply);
+        }
+
+        console.log(`Booking tool matched: ${parsedBooking.normalizedLabel} ${this.customerPhone ?? "no phone"}`);
+        publishSpecialistDataAsync(this.ctx, {
+          type: "agent_status",
+          status: "booking",
+          transcript: message
+        });
+        const booking = await bookTestDriveAndNotify({ car, phone: this.customerPhone, parsedBooking });
+        this.bookingDraft = "";
+        publishSpecialistDataAsync(this.ctx, {
+          type: "booking_confirmed",
+          slot: booking.slot,
+          carLabel: `${car.year} ${car.make} ${car.model}`,
+          phone: this.customerPhone,
+          smsStatus: booking.sms?.status
+        });
+        if (booking.sms) {
+          publishSpecialistDataAsync(this.ctx, {
+            type: "specialist_turn",
+            vin: DEFAULT_VIN,
+            transcript: message,
+            smsSid: booking.sms.sid,
+            smsStatus: booking.sms.status,
+            smsProvider: booking.sms.provider
+          });
+        }
+        publishSpecialistDataAsync(this.ctx, { type: "reply_done", reply: booking.reply });
+        return textStream(booking.reply);
+      }
 
       const resolvedCar = car;
       const resolvedImages = images;
@@ -480,10 +558,6 @@ export default defineAgent({
   }
 });
 
-// Must match the agentName the API dispatches to (apps/api/src/server.ts).
-// Set VOX_AGENT_NAME (same value both sides) + fully restart to isolate from a
-// stale/rogue worker still registered as "vox-specialist".
-const AGENT_NAME = process.env.VOX_AGENT_NAME ?? "vox-specialist";
 const AGENT_PORT = Number(process.env.LIVEKIT_AGENT_PORT ?? 8081);
 console.log(
   `🚗 Vox agent — two-call brain (separate speech + canvas Cerebras calls) — registering as "${AGENT_NAME}" on port ${AGENT_PORT}`

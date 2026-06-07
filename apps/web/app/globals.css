@@ -837,6 +837,60 @@ button, input, textarea { font: inherit; }
 }
 .message.live { opacity: 0.55; font-style: italic; }
 
+.booking-card {
+  align-self: stretch;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 15px;
+  border: 1px solid rgba(20, 130, 74, 0.22);
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(20, 130, 74, 0.1), rgba(255, 255, 255, 0.7)),
+    #ffffff;
+  color: var(--ink);
+  box-shadow: 0 14px 36px rgba(16, 24, 40, 0.07);
+  animation: vox-pop 0.18s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+.booking-card-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #0f8f55;
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(15, 143, 85, 0.2);
+}
+.booking-card-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.booking-card-slot {
+  display: block;
+  font-size: 15px;
+  line-height: 1.35;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+}
+.booking-card-car {
+  display: block;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+.booking-card-eyebrow {
+  display: block;
+  color: #0f8f55;
+  font-size: 11px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
 /* assistant "typing" — three bouncing dots while a reply is on the way */
 .message.typing {
   align-self: flex-start;

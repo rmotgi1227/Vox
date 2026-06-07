@@ -2646,5 +2646,28 @@
     ],
     "confidence": 1,
     "status": "processed"
+  },
+  {
+    "id": "img_2fb1fe46db66",
+    "vin": "BMW-M5",
+    "url": "/uploads/cars/BMW-M5/img_2fb1fe46db66.png",
+    "role": "dashboard",
+    "viewpoint": "uploaded image pending review",
+    "caption": "Uploaded image Screenshot_2024-01-25_at_5.png. Classified as dashboard from filename and upload context.",
+    "visibleFeatures": [
+      "driver display",
+      "infotainment",
+      "controls"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "dashboard",
+      "driver display",
+      "infotainment",
+      "controls"
+    ],
+    "likelyQuestions": [],
+    "confidence": 0.72,
+    "status": "processed"
   }
 ]

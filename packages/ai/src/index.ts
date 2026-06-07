@@ -3,7 +3,7 @@ import { readFile, writeFile, mkdir, copyFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import type { Car, CarImage, ImageRole, CanvasAction, ViewState } from "@vox/core";
-import { CarImageSchema, CarSchema, DEFAULT_VIN, carFactSheet, CanvasActionSchema } from "@vox/core";
+import { CarImageSchema, CarSchema, DEFAULT_VIN, ImageRoleSchema, carFactSheet, CanvasActionSchema } from "@vox/core";
 import { z } from "zod";
 
 const root = findRepoRoot(process.cwd());
@@ -76,6 +76,19 @@ const SpecialistTurnPlanSchema = z.object({
   askedClarifyingQuestion: z.boolean().optional().default(false),
   reply: z.string().min(1)
 });
+
+const UnsiloedImageAnalysisSchema = z.object({
+  role: ImageRoleSchema.optional().default("unknown"),
+  viewpoint: z.string().optional().default(""),
+  caption: z.string().optional().default("Uploaded vehicle image analyzed by Unsiloed."),
+  visibleFeatures: z.array(z.string()).optional().default([]),
+  conditionNotes: z.array(z.string()).optional().default([]),
+  searchTags: z.array(z.string()).optional().default([]),
+  likelyQuestions: z.array(z.string()).optional().default([]),
+  confidence: z.number().min(0).max(1).optional().default(0.75)
+});
+
+type UnsiloedImageAnalysis = z.infer<typeof UnsiloedImageAnalysisSchema>;
 
 export type SpecialistTurnPlan = {
   intent: "greeting" | "spec_fact" | "visual" | "clarify" | "objection";
@@ -181,15 +194,27 @@ export async function ingestImageObject(imageId: string): Promise<CarImage | und
   const current = images[idx];
   if (!current) return undefined;
   const role = inferRoleFromText(`${current.caption} ${current.url}`);
+  const unsiloed = await analyzeImageWithUnsiloed(current).catch((error) => {
+    console.warn(`Unsiloed image ingestion failed; using fallback: ${error instanceof Error ? error.message : String(error)}`);
+    return undefined;
+  });
+  const nextRole = unsiloed?.role ?? role;
+  const nextFeatures = unsiloed?.visibleFeatures.length ? unsiloed.visibleFeatures : featuresForRole(nextRole);
   const next: CarImage = {
     ...current,
-    role,
-    viewpoint: current.viewpoint || `${role.replaceAll("_", " ")} uploaded image`,
-    caption: await analyzeImageFallback(current, role),
-    visibleFeatures: featuresForRole(role),
-    conditionNotes: current.conditionNotes ?? [],
-    searchTags: [...new Set([...(current.searchTags ?? []), role.replaceAll("_", " "), ...featuresForRole(role)])],
-    confidence: role === "unknown" ? 0.35 : 0.72,
+    role: nextRole,
+    viewpoint: unsiloed?.viewpoint || current.viewpoint || `${nextRole.replaceAll("_", " ")} uploaded image`,
+    caption: unsiloed?.caption || await analyzeImageFallback(current, nextRole),
+    visibleFeatures: nextFeatures,
+    conditionNotes: unsiloed?.conditionNotes.length ? unsiloed.conditionNotes : current.conditionNotes ?? [],
+    searchTags: [...new Set([
+      ...(current.searchTags ?? []),
+      ...(unsiloed?.searchTags ?? []),
+      nextRole.replaceAll("_", " "),
+      ...nextFeatures
+    ])],
+    likelyQuestions: unsiloed?.likelyQuestions.length ? unsiloed.likelyQuestions : current.likelyQuestions ?? [],
+    confidence: unsiloed?.confidence ?? (nextRole === "unknown" ? 0.35 : 0.72),
     status: "processed"
   };
   images[idx] = next;
@@ -249,6 +274,132 @@ function featuresForRole(role: ImageRole): string[] {
   return map[role];
 }
 
+function mimeForImagePath(filePath: string): string {
+  const ext = path.extname(filePath).toLowerCase();
+  if (ext === ".jpg" || ext === ".jpeg") return "image/jpeg";
+  if (ext === ".png") return "image/png";
+  if (ext === ".tif" || ext === ".tiff") return "image/tiff";
+  throw new Error(`Unsiloed image ingestion supports JPEG, PNG, and TIFF uploads; got ${ext || "unknown extension"}.`);
+}
+
+function imagePathFromUrl(url: string): string {
+  const relativePath = url.replace(/^\//, "");
+  const filePath = path.join(root, "public", relativePath);
+  if (!filePath.startsWith(path.join(root, "public"))) {
+    throw new Error(`Refusing to read image outside public directory: ${url}`);
+  }
+  return filePath;
+}
+
+function unsiloedVehiclePrompt(): string {
+  return [
+    "Analyze this dealership vehicle image for a voice-first car sales specialist.",
+    "Return only a JSON object with keys: role, viewpoint, caption, visibleFeatures, conditionNotes, searchTags, likelyQuestions, confidence.",
+    "role must be one of: exterior_front, exterior_rear, interior_front, interior_rear, dashboard, trunk, wheel, detail, unknown.",
+    "visibleFeatures should name concrete visible objects or attributes. conditionNotes should mention only visible condition evidence, or be empty.",
+    "likelyQuestions should be short shopper questions this image can answer. confidence must be from 0 to 1."
+  ].join(" ");
+}
+
+function extractJsonObject(text: string): unknown {
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1];
+  const source = fenced ?? text;
+  const start = source.indexOf("{");
+  const end = source.lastIndexOf("}");
+  if (start < 0 || end <= start) throw new Error("Unsiloed response did not include a JSON object.");
+  return JSON.parse(source.slice(start, end + 1));
+}
+
+function collectUnsiloedText(value: unknown): string[] {
+  if (!value || typeof value !== "object") return [];
+  if (Array.isArray(value)) return value.flatMap(collectUnsiloedText);
+
+  const record = value as Record<string, unknown>;
+  const ownText = ["content", "markdown", "html", "text"]
+    .map((key) => record[key])
+    .filter((item): item is string => typeof item === "string");
+  return [
+    ...ownText,
+    ...Object.entries(record)
+      .filter(([key]) => !["content", "markdown", "html", "text"].includes(key))
+      .flatMap(([, item]) => collectUnsiloedText(item))
+  ];
+}
+
+async function pollUnsiloedParseJob(jobId: string, apiKey: string): Promise<unknown> {
+  const timeoutMs = Number(process.env.UNSILOED_PARSE_TIMEOUT_MS ?? 45_000);
+  const intervalMs = Number(process.env.UNSILOED_PARSE_POLL_MS ?? 2_500);
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() < deadline) {
+    const response = await fetch(`https://prod.visionapi.unsiloed.ai/parse/${jobId}`, {
+      headers: {
+        accept: "application/json",
+        "api-key": apiKey
+      }
+    });
+    if (!response.ok) {
+      throw new Error(`Unsiloed parse status ${response.status}: ${await response.text()}`);
+    }
+    const data = await response.json() as { status?: string; message?: string };
+    const status = String(data.status ?? "").toLowerCase();
+    if (status === "succeeded" || status === "success" || status === "completed") return data;
+    if (status === "failed" || status === "error") {
+      throw new Error(`Unsiloed parse failed: ${data.message ?? "unknown error"}`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
+
+  throw new Error(`Unsiloed parse timed out after ${timeoutMs}ms.`);
+}
+
+async function analyzeImageWithUnsiloed(image: CarImage): Promise<UnsiloedImageAnalysis | undefined> {
+  if (process.env.VOX_ENABLE_UNSILOED_INGEST !== "1") return undefined;
+  const apiKey = process.env.UNSILOED_API_KEY;
+  if (!apiKey) throw new Error("UNSILOED_API_KEY is required when VOX_ENABLE_UNSILOED_INGEST=1.");
+
+  const filePath = imagePathFromUrl(image.url);
+  const mime = mimeForImagePath(filePath);
+  const bytes = await readFile(filePath);
+  const form = new FormData();
+  form.set("file", new Blob([bytes], { type: mime }), path.basename(filePath));
+  form.set("segment_filter", "all");
+  form.set("output_fields", JSON.stringify({ html: false, markdown: true, ocr: false, image: false, content: true, bbox: false, confidence: true }));
+  form.set("segment_analysis", JSON.stringify({
+    Picture: {
+      html: "VLM",
+      markdown: "VLM",
+      model_id: process.env.UNSILOED_IMAGE_MODEL || "nova",
+      vlm: unsiloedVehiclePrompt()
+    },
+    Text: {
+      html: "VLM",
+      markdown: "VLM",
+      model_id: process.env.UNSILOED_IMAGE_MODEL || "nova",
+      vlm: unsiloedVehiclePrompt()
+    }
+  }));
+
+  const response = await fetch("https://prod.visionapi.unsiloed.ai/parse", {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "api-key": apiKey
+    },
+    body: form
+  });
+  if (!response.ok) {
+    throw new Error(`Unsiloed parse ${response.status}: ${await response.text()}`);
+  }
+  const created = await response.json() as { job_id?: string };
+  if (!created.job_id) throw new Error("Unsiloed parse response did not include job_id.");
+
+  const result = await pollUnsiloedParseJob(created.job_id, apiKey);
+  const text = collectUnsiloedText(result).join("\n").trim();
+  if (!text) throw new Error("Unsiloed parse result did not include text content.");
+  return UnsiloedImageAnalysisSchema.parse(extractJsonObject(text));
+}
+
 async function analyzeImageFallback(image: CarImage, role: ImageRole): Promise<string> {
   if (process.env.MINIMAX_API_KEY && process.env.VOX_ENABLE_MINIMAX_IMAGE_INGEST === "1") {
     return `${image.caption}. MiniMax image ingestion is configured for this adapter, but structured vehicle-image tagging is currently using fallback role inference.`;
@@ -290,6 +441,401 @@ export async function generateMiniMaxReply(input: {
   const text = String(data.choices?.[0]?.message?.content ?? "").trim();
   if (!text) throw new Error("MiniMax returned an empty text response.");
   return compactReply(text);
+}
+
+export type SmsSendResult = {
+  sid: string;
+  status: string;
+  provider: "linq";
+};
+
+export type BookingParseResult = {
+  date: Date;
+  hour24: number;
+  minutes: number;
+  normalizedLabel: string;
+};
+
+export type BookingDetails = {
+  date?: Date;
+  time?: { hour24: number; minutes: number };
+  phone?: string;
+  parsedBooking?: BookingParseResult;
+};
+
+const SPOKEN_DIGIT: Record<string, string> = {
+  zero: "0",
+  oh: "0",
+  o: "0",
+  one: "1",
+  two: "2",
+  three: "3",
+  four: "4",
+  five: "5",
+  six: "6",
+  seven: "7",
+  eight: "8",
+  nine: "9"
+};
+
+const SPOKEN_NUMBER: Record<string, number> = {
+  one: 1,
+  first: 1,
+  two: 2,
+  second: 2,
+  three: 3,
+  third: 3,
+  four: 4,
+  fourth: 4,
+  five: 5,
+  fifth: 5,
+  six: 6,
+  sixth: 6,
+  seven: 7,
+  seventh: 7,
+  eight: 8,
+  eighth: 8,
+  nine: 9,
+  ninth: 9,
+  ten: 10,
+  tenth: 10,
+  eleven: 11,
+  eleventh: 11,
+  twelve: 12,
+  twelfth: 12,
+  thirteen: 13,
+  thirteenth: 13,
+  fourteen: 14,
+  fourteenth: 14,
+  fifteen: 15,
+  fifteenth: 15,
+  sixteen: 16,
+  sixteenth: 16,
+  seventeen: 17,
+  seventeenth: 17,
+  eighteen: 18,
+  eighteenth: 18,
+  nineteen: 19,
+  nineteenth: 19,
+  twenty: 20,
+  twentieth: 20,
+  "twenty one": 21,
+  "twenty first": 21,
+  "twenty two": 22,
+  "twenty second": 22,
+  "twenty three": 23,
+  "twenty third": 23,
+  "twenty four": 24,
+  "twenty fourth": 24,
+  "twenty five": 25,
+  "twenty fifth": 25,
+  "twenty six": 26,
+  "twenty sixth": 26,
+  "twenty seven": 27,
+  "twenty seventh": 27,
+  "twenty eight": 28,
+  "twenty eighth": 28,
+  "twenty nine": 29,
+  "twenty ninth": 29,
+  thirty: 30,
+  thirtieth: 30,
+  "thirty one": 31,
+  "thirty first": 31
+};
+
+const SPOKEN_YEAR: Record<string, number> = {
+  "twenty twenty six": 2026,
+  "twenty twenty seven": 2027,
+  "twenty twenty eight": 2028,
+  "twenty twenty nine": 2029,
+  "twenty thirty": 2030
+};
+
+const BOOKING_MONTH_INDEX: Record<string, number> = {
+  january: 0,
+  february: 1,
+  march: 2,
+  april: 3,
+  may: 4,
+  june: 5,
+  july: 6,
+  august: 7,
+  september: 8,
+  october: 9,
+  november: 10,
+  december: 11
+};
+
+const SPOKEN_NUMBER_PATTERN = Object.keys(SPOKEN_NUMBER)
+  .sort((a, b) => b.length - a.length)
+  .map((word) => word.replaceAll(" ", "\\s+"))
+  .join("|");
+
+const SPOKEN_YEAR_PATTERN = Object.keys(SPOKEN_YEAR)
+  .sort((a, b) => b.length - a.length)
+  .map((word) => word.replaceAll(" ", "\\s+"))
+  .join("|");
+
+function spokenNumberValue(raw: string | undefined): number | undefined {
+  if (!raw) return undefined;
+  return SPOKEN_NUMBER[raw.toLowerCase().replace(/\s+/g, " ").trim()];
+}
+
+function spokenYearValue(raw: string | undefined): number | undefined {
+  if (!raw) return undefined;
+  return SPOKEN_YEAR[raw.toLowerCase().replace(/\s+/g, " ").trim()];
+}
+
+function extractSpokenDigits(text: string): string {
+  const tokens = text.toLowerCase().match(/[a-z]+/g) ?? [];
+  const runs: string[] = [];
+  let current = "";
+  for (const token of tokens) {
+    const digit = SPOKEN_DIGIT[token];
+    if (digit !== undefined) {
+      current += digit;
+      continue;
+    }
+    if (current.length >= 10) runs.push(current);
+    current = "";
+  }
+  if (current.length >= 10) runs.push(current);
+  for (const run of runs) {
+    if (run.length === 10) return run;
+    if (run.length === 11 && run.startsWith("1")) return run;
+    if (run.length > 10) return run.slice(0, 10);
+  }
+  return "";
+}
+
+export function extractPhoneNumber(text: string): string | undefined {
+  const match = text.match(/(?:\+?1[\s.-]?)?(?:\(?\d{3}\)?[\s.-]?)\d{3}[\s.-]?\d{4}/);
+  const digits = match ? match[0].replace(/\D/g, "") : extractSpokenDigits(text);
+  if (digits.length === 10) return `+1${digits}`;
+  if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;
+  return undefined;
+}
+
+export function looksLikeBookingRequest(message: string): boolean {
+  return /\b(book|booking|schedule|appointment|test drive|drive it|come see)\b/.test(message);
+}
+
+export function bookingPrompt(): string {
+  return "I can help set up a test drive. Tell me the day and a time between 11 AM and 3 PM.";
+}
+
+function formatBookingDate(date: Date): string {
+  return date.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric"
+  });
+}
+
+function formatBookingTime(time: { hour24: number; minutes: number }): string {
+  return new Date(2026, 0, 1, time.hour24, time.minutes).toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit"
+  });
+}
+
+function parseBookingTimeToken(raw: string): { hour24: number; minutes: number } | undefined {
+  const match = raw.trim().toLowerCase().match(/^(\d{1,2}|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)(?::(\d{2}))?\s*(am|pm)?$/);
+  const hourToken = match?.[1];
+  if (!hourToken) return undefined;
+  const hour = /^\d+$/.test(hourToken) ? Number(hourToken) : spokenNumberValue(hourToken);
+  const minutes = Number(match?.[2] ?? "0");
+  const meridiem = match?.[3];
+  if (hour === undefined || !Number.isFinite(minutes) || minutes < 0 || minutes > 59) return undefined;
+  if (meridiem === "am") return { hour24: hour === 12 ? 0 : hour, minutes };
+  if (meridiem === "pm") return { hour24: hour === 12 ? 12 : hour + 12, minutes };
+  return hour <= 23 ? { hour24: hour, minutes } : undefined;
+}
+
+function extractBookingTime(message: string): { hour24: number; minutes: number } | undefined {
+  const lower = message.toLowerCase();
+  const timeWord = "one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve";
+  const explicit = [...lower.matchAll(new RegExp(`\\b(\\d{1,2}(?::\\d{2})?\\s*(?:am|pm)|(?:${timeWord})\\s*(?:am|pm))\\b`, "g"))];
+  const explicitToken = explicit.at(-1)?.[1];
+  if (explicitToken) return parseBookingTimeToken(explicitToken);
+  const contextual = [...lower.matchAll(new RegExp(`\\b(?:at|for|@)\\s*(\\d{1,2}(?::\\d{2})?|${timeWord})\\b`, "g"))];
+  const contextualToken = contextual.at(-1)?.[1];
+  return contextualToken ? parseBookingTimeToken(contextualToken) : undefined;
+}
+
+function parseBookingDate(message: string): Date | undefined {
+  const base = new Date();
+  const today = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+  const weekdayIndex: Record<string, number> = {
+    sunday: 0,
+    monday: 1,
+    tuesday: 2,
+    wednesday: 3,
+    thursday: 4,
+    friday: 5,
+    saturday: 6
+  };
+  const weekday = message.toLowerCase().match(/\b(next\s+)?(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/);
+  if (weekday) {
+    const target = weekdayIndex[weekday[2] as keyof typeof weekdayIndex];
+    if (target === undefined) return undefined;
+    let daysAhead = target - today.getDay();
+    if (daysAhead <= 0) daysAhead += 7;
+    const candidate = new Date(today);
+    candidate.setDate(today.getDate() + daysAhead);
+    return candidate;
+  }
+
+  const monthNameDate = message.toLowerCase().match(new RegExp(`\\b(january|february|march|april|may|june|july|august|september|october|november|december)\\s+(\\d{1,2}|${SPOKEN_NUMBER_PATTERN})(?:st|nd|rd|th)?(?:,?\\s+(\\d{4}|${SPOKEN_YEAR_PATTERN}))?\\b`));
+  if (monthNameDate) {
+    const monthName = monthNameDate[1] as keyof typeof BOOKING_MONTH_INDEX;
+    const month = BOOKING_MONTH_INDEX[monthName];
+    const dayToken = monthNameDate[2];
+    if (month !== undefined && dayToken) {
+      const day = /^\d+$/.test(dayToken) ? Number(dayToken) : spokenNumberValue(dayToken);
+      const year = monthNameDate[3]
+        ? (/^\d+$/.test(monthNameDate[3]) ? Number(monthNameDate[3]) : spokenYearValue(monthNameDate[3]))
+        : today.getFullYear();
+      if (year === undefined) return undefined;
+      if (day !== undefined) return new Date(year, month, day);
+    }
+  }
+
+  const numeric = message.match(/\b(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\b/);
+  if (numeric) {
+    const month = Number(numeric[1]) - 1;
+    const day = Number(numeric[2]);
+    const rawYear = numeric[3];
+    let year = rawYear ? Number(rawYear) : today.getFullYear();
+    if (rawYear && rawYear.length === 2) year += 2000;
+    return new Date(year, month, day);
+  }
+
+  const tokens = message.toLowerCase().match(/[a-z]+/g) ?? [];
+  const runs: string[] = [];
+  let current = "";
+  for (const token of tokens) {
+    const digit = SPOKEN_DIGIT[token];
+    if (digit !== undefined) {
+      current += digit;
+      continue;
+    }
+    if (current) runs.push(current);
+    current = "";
+  }
+  if (current) runs.push(current);
+  for (const digits of runs.filter((run) => run.length === 4 || run.length === 8)) {
+    const month = Number(digits.slice(0, 2)) - 1;
+    const day = Number(digits.slice(2, 4));
+    const yearDigits = digits.slice(4, 8);
+    const year = yearDigits.length === 4 ? Number(yearDigits) : today.getFullYear();
+    const candidate = new Date(year, month, day);
+    if (candidate.getMonth() === month && candidate.getDate() === day) return candidate;
+  }
+
+  return undefined;
+}
+
+export function parseBookingRequest(message: string): BookingParseResult | undefined {
+  const time = extractBookingTime(message);
+  const date = parseBookingDate(message);
+  if (!time || !date) return undefined;
+  const candidate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), time.hour24, time.minutes);
+  return {
+    date: candidate,
+    hour24: time.hour24,
+    minutes: time.minutes,
+    normalizedLabel: candidate.toLocaleString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit"
+    })
+  };
+}
+
+export function parseBookingDetails(message: string): BookingDetails {
+  const time = extractBookingTime(message);
+  const date = parseBookingDate(message);
+  const parsedBooking = parseBookingRequest(message);
+  return {
+    date,
+    time,
+    phone: extractPhoneNumber(message),
+    parsedBooking
+  };
+}
+
+export function bookingFollowupPrompt(details: BookingDetails): string {
+  if (details.time && (details.time.hour24 < 11 || details.time.hour24 > 15)) {
+    const dateText = details.date ? ` on ${formatBookingDate(details.date)}` : "";
+    return `Test drives are available between 11 AM and 3 PM. What time in that window works${dateText}?`;
+  }
+  if (details.date && !details.time) {
+    return `What time between 11 AM and 3 PM works for ${formatBookingDate(details.date)}?`;
+  }
+  if (details.time && !details.date) {
+    return `What day works for ${formatBookingTime(details.time)}?`;
+  }
+  if (details.parsedBooking && !details.phone) {
+    return `I can do ${details.parsedBooking.normalizedLabel}. What number should I text the confirmation to?`;
+  }
+  return bookingPrompt();
+}
+
+export function buildVehicleSmsBody(input: { car: Pick<Car, "year" | "make" | "model">; reply: string }): string {
+  return `${input.car.year} ${input.car.make} ${input.car.model}: ${input.reply}`.slice(0, 320);
+}
+
+export async function sendLinqSms(input: { to: string; body: string }): Promise<SmsSendResult> {
+  const apiKey = process.env.LINQ_API_KEY;
+  const from = process.env.LINQ_FROM_NUMBER;
+  const preferredService = process.env.LINQ_PREFERRED_SERVICE;
+  if (!apiKey || !from) throw new Error("Linq is not configured. Set LINQ_API_KEY and LINQ_FROM_NUMBER.");
+  const message: Record<string, unknown> = {
+    parts: [{ type: "text", value: input.body }],
+    idempotency_key: randomUUID()
+  };
+  if (preferredService) message.preferred_service = preferredService;
+  const response = await fetch("https://api.linqapp.com/api/partner/v3/chats", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      Accept: "application/json"
+    },
+    body: JSON.stringify({ from, to: [input.to], message })
+  });
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    throw new Error(`Linq SMS failed (${response.status}): ${detail || response.statusText}`);
+  }
+  const data = await response.json() as { message?: { id?: string; delivery_status?: string } };
+  return { sid: data.message?.id ?? "", status: data.message?.delivery_status ?? "queued", provider: "linq" };
+}
+
+export async function bookTestDriveAndNotify(input: {
+  car: Pick<Car, "year" | "make" | "model">;
+  phone?: string;
+  parsedBooking: BookingParseResult;
+}): Promise<{ reply: string; slot: string; sms?: SmsSendResult }> {
+  const slot = input.parsedBooking.normalizedLabel;
+  if (!input.phone) {
+    return { slot, reply: `Perfect — you're booked for ${slot}.` };
+  }
+  const sms = await sendLinqSms({
+    to: input.phone,
+    body: buildVehicleSmsBody({
+      car: input.car,
+      reply: `Your requested test drive is ${slot}. Reply here and I can help with the next step.`
+    })
+  });
+  return {
+    slot,
+    sms,
+    reply: `Perfect — I have you down for ${slot}, and I texted the details to ${input.phone}.`
+  };
 }
 
 export async function generateMiniMaxFastTurn(input: {
