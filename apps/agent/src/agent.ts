@@ -34,7 +34,8 @@ import {
   getCar,
   listImages,
   looksLikeBookingRequest,
-  parseBookingDetails
+  parseBookingDetails,
+  searchCatalog
 } from "@vox/ai";
 
 config({ path: findRootEnv(process.cwd()) });
@@ -407,6 +408,12 @@ class VoxSpecialistVoiceAgent extends voice.Agent {
       const resolvedImages = images;
       const recentTurns = this.history.slice(-6);
 
+      // MOSS CROSS-SELL — semantic-search the rest of the lot for this message so
+      // the agent can recommend a real alternative (a family SUV, something
+      // cheaper, etc.) instead of wrongly claiming we don't carry it. searchCatalog
+      // queries the Moss catalog index (keyword fallback if the cloud is down).
+      const alternatives = await searchCatalog(message, { excludeVin: resolvedCar.vin, topK: 4 }).catch(() => []);
+
       // ── SINGLE BRAIN (default) ───────────────────────────────────────────
       // ONE Cerebras call decides the spoken reply AND the canvas actions
       // together, so the words and the picture come from the same decision and
@@ -418,7 +425,8 @@ class VoxSpecialistVoiceAgent extends voice.Agent {
           viewState: this.viewState,
           car: resolvedCar,
           images: resolvedImages,
-          recentTurns
+          recentTurns,
+          alternatives
         });
         let finalActs = actions;
         if (finalActs.length === 0) {
@@ -489,7 +497,7 @@ class VoxSpecialistVoiceAgent extends voice.Agent {
       // VOICE LANE — Cerebras spoken reply (~1s), separate from the canvas call so
       // voice never waits on it. TTS turns this into the agent's audio track,
       // which the browser pipes into Simli for lip-sync.
-      const replyText = await generateSpokenReply({ message, car: resolvedCar, recentTurns });
+      const replyText = await generateSpokenReply({ message, car: resolvedCar, recentTurns, alternatives });
       const spoken = replyText.trim() || FALLBACK_REPLY;
       publishSpecialistDataAsync(this.ctx, { type: "reply_delta", text: spoken });
       publishSpecialistDataAsync(this.ctx, { type: "reply_done", reply: spoken });

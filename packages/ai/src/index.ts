@@ -189,6 +189,81 @@ async function soldVins(): Promise<Set<string>> {
   return new Set(cars.filter((car) => car.availability === "sold").map((car) => car.vin));
 }
 
+export type CatalogMatch = {
+  vin: string;
+  title: string;
+  price: string;
+  body: string;
+  drivetrain: string;
+  fuel: string;
+  mileage: string;
+  text: string;
+  score: number;
+};
+
+// Inventory-wide semantic search via Moss (catalog index), excluding the current
+// and sold cars. Powers the agent's cross-sell ("do you have a family car?").
+// Falls back to local keyword scoring if the Moss cloud is unavailable.
+export async function searchCatalog(query: string, opts: { topK?: number; excludeVin?: string } = {}): Promise<CatalogMatch[]> {
+  const topK = opts.topK ?? 4;
+  const pid = process.env.MOSS_PROJECT_ID;
+  const key = process.env.MOSS_PROJECT_KEY;
+  const catalogIndex = process.env.MOSS_CATALOG_INDEX;
+  const imagesIndex = process.env.MOSS_IMAGES_INDEX;
+
+  const sold = await soldVins();
+  const keep = (vin: string) => (!opts.excludeVin || vin !== opts.excludeVin) && !sold.has(vin);
+
+  const fromDocs = (docs: Array<{ id: string; text: string; score?: number; metadata?: Record<string, string> }>): CatalogMatch[] =>
+    docs
+      .filter((d) => (d.metadata?.doc_type ?? "car") === "car")
+      .map((d) => ({
+        vin: d.metadata?.car_id ?? d.id,
+        title: d.metadata?.title ?? d.id,
+        price: d.metadata?.price ?? "",
+        body: d.metadata?.opt_body ?? "",
+        drivetrain: d.metadata?.opt_drivetrain ?? "",
+        fuel: d.metadata?.opt_fuel ?? "",
+        mileage: d.metadata?.opt_mileage ?? "",
+        text: d.text,
+        score: d.score ?? 0
+      }))
+      .filter((c) => keep(c.vin))
+      .slice(0, topK);
+
+  if (pid && key && catalogIndex && imagesIndex && process.env.VOX_PROVIDER_MODE !== "mock") {
+    try {
+      const client = await getLoadedMossClient(pid, key, catalogIndex, imagesIndex);
+      const res = await client.query(catalogIndex, query, { topK: topK + 1 });
+      return fromDocs(res.docs);
+    } catch (error) {
+      console.warn(`Catalog search failed; using local fallback: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  const cars = await readCatalog();
+  const words = query.toLowerCase().split(/\W+/).filter((w) => w.length > 2);
+  return cars
+    .map((car) => {
+      const hay = `${car.year} ${car.make} ${car.model} ${car.trim} ${car.body} ${car.drivetrain} ${car.fuel} ${car.features.join(" ")} ${car.description}`.toLowerCase();
+      const score = words.reduce((s, w) => s + (hay.includes(w) ? 1 : 0), 0);
+      return {
+        vin: car.vin,
+        title: `${car.year} ${car.make} ${car.model}`,
+        price: String(car.price ?? ""),
+        body: car.body,
+        drivetrain: car.drivetrain,
+        fuel: car.fuel,
+        mileage: String(car.mileage),
+        text: car.description,
+        score
+      };
+    })
+    .filter((c) => keep(c.vin) && c.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, topK);
+}
+
 export async function listImages(vin = DEFAULT_VIN): Promise<CarImage[]> {
   const images = await readImages();
   return images.filter((image) => image.vin === vin);
@@ -2068,6 +2143,7 @@ export async function decideTurn(input: {
   car: Car;
   images: CarImage[];
   recentTurns?: { role: string; text: string }[];
+  alternatives?: CatalogMatch[];
 }): Promise<{ reply: string; actions: CanvasAction[] }> {
   if (process.env.VOX_PROVIDER_MODE === "mock") {
     return { reply: mockReply(input.message), actions: [] };
@@ -2152,8 +2228,13 @@ export async function decideTurn(input: {
     '  (after that offer) "yeah go for it" -> {"reply":"On it — generating that now, give me a sec.","actions":[{"op":"generate","prompt":"Edit this exact BMW M4 trunk photo to show it neatly packed for a weekend trip: two hard-shell carry-on suitcases in the cargo net, a rolled blanket, a duffel bag, and a small backpack. Keep the trunk, car, paint, lighting, and parking-lot background EXACTLY the same — only add realistic luggage that fits the space. Photorealistic.","baseRef":{"index":0}}]}',
     '  "can I get the seats in red?" -> OFFER first: {"reply":"Yeah — want me to mock up red seats so you can see it?","actions":[]}  (then on "yes") {"reply":"On it — one sec.","actions":[{"op":"generate","prompt":"Recolor ONLY the seat upholstery in this exact interior photo to rich red leather; keep the dashboard, trim, carbon fiber, lighting, and everything else identical. Photorealistic.","baseRef":{"index":0}}]}',
     '  "hey there" -> {"reply":"Hey! Want me to walk you through it?","actions":[]}',
+    (input.alternatives && input.alternatives.length)
+      ? "OTHER INVENTORY on the lot (from our live catalog) you CAN recommend when the shopper wants a DIFFERENT kind of car than this M4 — a family SUV, something cheaper, electric, a truck, 3-row seating, etc.: "
+        + input.alternatives.map((a) => `${a.title} — ${a.body}, ${a.drivetrain}, ${a.fuel}${a.price ? `, $${Number(a.price).toLocaleString()}` : ""}`).join("; ")
+        + ". If they ask for something the M4 isn't (e.g. 'do you have a family car?'), recommend the single best match above BY NAME and price and offer to pull it up. NEVER say we only sell coupes or don't carry family cars — we DO; recommend from this list. Only recommend cars that appear in this list."
+      : "",
     `Catalog: ${carFactSheet(input.car)}`
-  ].join(" ");
+  ].filter(Boolean).join(" ");
 
   const userPayload = JSON.stringify({
     shopperMessage: input.message,
@@ -2259,7 +2340,12 @@ export async function generateVisualization(input: {
  * SPEECH call — returns ONLY the spoken reply (no canvas). Short, conversational,
  * voice-first. Throws on total Cerebras failure so the caller can fall back.
  */
-function buildSpokenSystem(car: Car): string {
+function buildSpokenSystem(car: Car, alternatives?: CatalogMatch[]): string {
+  const inventoryBlock = (alternatives && alternatives.length)
+    ? "OTHER INVENTORY on the lot you CAN recommend when the shopper wants a DIFFERENT kind of car than this M4 (a family SUV, something cheaper, electric, a truck, 3-row seating): "
+      + alternatives.map((a) => `${a.title} — ${a.body}, ${a.drivetrain}, ${a.fuel}${a.price ? `, $${Number(a.price).toLocaleString()}` : ""}`).join("; ")
+      + ". If they ask for something the M4 isn't (e.g. 'do you have a family car?'), recommend the single best match above BY NAME and price and offer to pull it up. NEVER say we only sell coupes or don't carry family cars — we DO; recommend from this list."
+    : "";
   return [
     `You are Vox, a warm, sharp BMW ${car.make} ${car.model} sales specialist talking with a customer by VOICE. Sell by being genuinely helpful, never pushy — talk like a knowledgeable friend, not a brochure.`,
     "CRITICAL — NO REPETITION: Never open two replies the same way. Do NOT start with a restatement like 'The trunk on the M4 Competition is…' — lead straight into the answer with fresh wording every single turn. Vary sentence shape.",
@@ -2278,8 +2364,9 @@ function buildSpokenSystem(car: Car): string {
       ? `IMPORTANT: This ${car.make} ${car.model} has just been SOLD and is no longer available. Do NOT try to sell it or talk it up. If the shopper asks about it, warmly tell them it just sold, then offer to show them something similar from inventory. Keep it brief and helpful.`
       : "This M4 is CURRENTLY AVAILABLE for sale. NEVER say it is sold, reserved, gone, or unavailable, and do NOT bring up or pitch any other vehicle unless the shopper explicitly asks for alternatives.",
     "The shopper's words are a live speech-to-text transcript and may contain recognition errors (e.g. 'i4'↔'M4', misheard trims/numbers); interpret charitably in the context of selling this M4.",
+    inventoryBlock,
     `Catalog: ${carFactSheet(car)}`
-  ].join(" ");
+  ].filter(Boolean).join(" ");
 }
 
 function spokenUserPayload(message: string, recentTurns?: { role: string; text: string }[]): string {
@@ -2290,13 +2377,14 @@ export async function generateSpokenReply(input: {
   message: string;
   car: Car;
   recentTurns?: { role: string; text: string }[];
+  alternatives?: CatalogMatch[];
 }): Promise<string> {
   if (process.env.VOX_PROVIDER_MODE === "mock") return mockReply(input.message);
   // Cerebras for the spoken reply — ~1s inference (the architecture's fast path).
   // Falls back to MiniMax only if no Cerebras key is configured.
   if (cerebrasKeys().length === 0) {
     const text = await generateMiniMaxReply({
-      system: buildSpokenSystem(input.car),
+      system: buildSpokenSystem(input.car, input.alternatives),
       user: spokenUserPayload(input.message, input.recentTurns)
     });
     console.log(`[speech] LLM reply (minimax) → ${JSON.stringify(text)}`);
@@ -2305,7 +2393,7 @@ export async function generateSpokenReply(input: {
   const json = await cerebrasChatCompletion({
     model: process.env.CEREBRAS_SPEECH_MODEL || process.env.CEREBRAS_MODEL || "gpt-oss-120b",
     messages: [
-      { role: "system", content: buildSpokenSystem(input.car) },
+      { role: "system", content: buildSpokenSystem(input.car, input.alternatives) },
       { role: "user", content: spokenUserPayload(input.message, input.recentTurns) }
     ],
     temperature: 0.4,
