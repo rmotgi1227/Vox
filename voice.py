@@ -90,17 +90,20 @@ EL_MODEL = os.getenv("ELEVENLABS_MODEL", "eleven_flash_v2_5")        # ~75ms TTF
 PCM_SAMPLE_RATE = 24000 if EL_KEY else 32000
 
 
-def synth_stream(text: str, lang: str = "en"):
+def synth_stream(text: str, lang: str = "en", sample_rate: int | None = None):
     """Yield raw 16-bit mono PCM byte-chunks (low latency) for Web-Audio streaming.
 
     ElevenLabs Flash if ELEVENLABS_API_KEY is set (best voice, ~75ms to first byte),
     otherwise MiniMax streaming TTS. The browser plays chunks as they arrive, so the
     host starts talking almost immediately. No subtitles on the streaming path.
+
+    sample_rate overrides the MiniMax PCM rate (the Simli avatar ingests 16 kHz, so the
+    live agent asks for that to avoid a resample). Defaults to PCM_SAMPLE_RATE.
     """
     if EL_KEY:
         yield from _stream_elevenlabs(text)
         return
-    yield from _stream_minimax(text, lang)
+    yield from _stream_minimax(text, lang, sample_rate or 32000)
 
 
 def _stream_elevenlabs(text: str):
@@ -125,8 +128,8 @@ def _stream_elevenlabs(text: str):
             yield chunk
 
 
-def _stream_minimax(text: str, lang: str = "en"):
-    """MiniMax streaming TTS -> raw PCM (32 kHz) chunks (fallback)."""
+def _stream_minimax(text: str, lang: str = "en", sample_rate: int = 32000):
+    """MiniMax streaming TTS -> raw PCM chunks (fallback)."""
     key = os.getenv("MINIMAX_API_KEY")
     if not key:
         raise SystemExit("Set ELEVENLABS_API_KEY or MINIMAX_API_KEY in .env")
@@ -139,7 +142,7 @@ def _stream_minimax(text: str, lang: str = "en"):
             "text": text,
             "stream": True,
             "voice_setting": {"voice_id": voice_for(lang), "speed": 1.0, "vol": 1.0, "pitch": 0},
-            "audio_setting": {"sample_rate": 32000, "bitrate": 128000, "format": "pcm", "channel": 1},
+            "audio_setting": {"sample_rate": sample_rate, "bitrate": 128000, "format": "pcm", "channel": 1},
         },
         stream=True,
         timeout=60,
