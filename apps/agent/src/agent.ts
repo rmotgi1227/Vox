@@ -16,13 +16,13 @@ import { BackgroundVoiceCancellation } from "@livekit/noise-cancellation-node";
 import {
   DEFAULT_VIN,
   DEFAULT_MODEL_PROFILE_ID,
-  carFactSheet,
   resolveModelProfile,
   type Car,
-  type CarImage
+  type CarImage,
+  type ViewState
 } from "@vox/core";
-import { rankImagesForQuestion, selectOverviewImage } from "@vox/agent-core";
-import { getCar, listImages, streamMiniMaxChat } from "@vox/ai";
+import { applyAction, planCanvas, selectOverviewImage } from "@vox/agent-core";
+import { getCar, listImages, generateSpokenReply, decideCanvas } from "@vox/ai";
 
 config({ path: findRootEnv(process.cwd()) });
 
@@ -39,40 +39,75 @@ function findRootEnv(start: string): string {
 
 // ---------------------------------------------------------------------------
 // M4 domain keyterms for Deepgram nova-3 keyterm prompting.
-// Kept tight (~30 terms) — too many degrades accuracy.
+// Curated against the actual catalog (data/catalog.json) plus the words a
+// shopper actually says out loud — model/trim, performance, colors, packages,
+// and buying-process terms that generic STT mangles. nova-3 handles ~100
+// keyterms; this stays curated (~45) so boosts don't smear.
 // Passed through LiveKit Inference (no Deepgram API key required).
 // ---------------------------------------------------------------------------
 const M4_KEYTERMS: string[] = [
+  // Model & trim
+  "BMW M4",
   "M4",
+  "M4 Competition",
   "Competition",
   "xDrive",
   "M xDrive",
+  // Engine & performance
   "S58",
-  "twin-turbo",
   "TwinPower Turbo",
-  "carbon bucket seats",
-  "M Carbon",
-  "Merino leather",
-  "carbon fiber roof",
-  "Adaptive M suspension",
-  "paddle shifters",
-  "gear selector",
-  "M Steptronic",
-  "Brembo",
-  "blue calipers",
-  "quad exhaust",
-  "Harman Kardon",
-  "head-up display",
-  "drivetrain",
+  "twin-turbo",
+  "inline-six",
   "horsepower",
   "torque",
-  "Brooklyn Grey",
-  "Frozen Brilliant White",
-  "Isle of Man Green",
-  "M Driver's Package",
-  "Executive Package",
+  "zero to sixty",
+  "top speed",
+  "M Steptronic",
+  "paddle shifters",
+  "M Sport differential",
+  "Adaptive M suspension",
+  "M Sport brakes",
+  "quad exhaust",
+  // Drivetrain
+  "rear-wheel drive",
+  "drivetrain",
+  // Interior & tech
+  "M Carbon bucket seats",
+  "Merino leather",
+  "carbon-fiber roof",
+  "carbon fiber trim",
+  "Harman Kardon",
+  "head-up display",
   "Laserlight",
   "iDrive",
+  "Apple CarPlay",
+  "Parking Assistant Plus",
+  "surround-view cameras",
+  // Colors
+  "Brooklyn Grey Metallic",
+  "Frozen Brilliant White",
+  "Isle of Man Green",
+  // Packages
+  "Executive Package",
+  "M Driver's Package",
+  "Driving Assistance Professional",
+  // Interior — target scenario words + synonyms (gear shifter, center console area)
+  "interior",
+  "gear shifter",
+  "shifter",
+  "gear selector",
+  "center console",
+  // Visual commands — "pictures", "show me", "zoom in"
+  "pictures",
+  "show me",
+  "zoom in",
+  // Buying process
+  "MSRP",
+  "warranty",
+  "test drive",
+  "financing",
+  "lease",
+  "trade-in",
 ];
 
 const encoder = new TextEncoder();
@@ -110,45 +145,20 @@ function textStream(text: string): ReadableStream<string> {
   });
 }
 
-function buildVoicePrompt(input: {
-  car: Car;
-  image: CarImage | undefined;
-  message: string;
-}): { system: string; user: string } {
-  const { car, image, message } = input;
-  const imageContext = image
-    ? [
-        `You are currently showing the customer this view: ${image.caption}`,
-        image.visibleFeatures.length ? `Visible in the photo: ${image.visibleFeatures.join(", ")}.` : "",
-        image.conditionNotes?.length ? `Notes: ${image.conditionNotes.join(", ")}.` : ""
-      ].filter(Boolean).join(" ")
-    : "No specific photo is up right now.";
-
-  const system = [
-    `You are Vox, a warm, sharp BMW ${car.make} ${car.model} sales specialist talking with a customer. You sell by being genuinely helpful, never pushy.`,
-    "This is a VOICE conversation — lead with what you say. A screen beside you can show a photo as a visual aid, but it is secondary: most turns are just talking, and you should not steer every answer toward an image.",
-    "Reply in one or two short, natural spoken sentences — under ~30 words total. Conversational, not a pitch.",
-    "Silently read what they're doing: small talk, a spec or fact question, a request to SEE something, something ambiguous, or an objection or buying signal. Then:",
-    "- Spec or fact (price, mileage, 0-60, horsepower, mpg, transmission, packages, 'is it fast', 'good on gas'): just answer it straight from the catalog below. Don't mention the screen or a photo at all.",
-    "- They clearly want to SEE something: bring it up and say a quick word about it ('here's the rear — check out the quad tips'). Only then reference the screen.",
-    "- Ambiguous (you'd be guessing): ask ONE short question back, then stop and wait — don't answer yet.",
-    "- Objection or buying signal: acknowledge it, answer plainly, and you may add one soft, helpful question.",
-    "Only mention the screen when a relevant photo is actually up for a visual request; otherwise never say 'here' / 'on screen' / 'check this out' — just talk. Never say 'in the image' or 'in this photo'.",
-    "Ask at most one question per reply, and never re-ask something you just asked — make a reasonable assumption and move on. Never ask what the catalog already answers; just answer it.",
-    "Do not use markdown, bullets, headers, asterisks, or emojis — your text is read aloud. Never read specs like a brochure list; give the one or two numbers they actually asked for.",
-    "Use only the catalog and the photo notes provided below. Never invent specs, packages, prices, mileage, options, or features not stated; if you don't have a fact, say so casually.",
-    `Catalog: ${carFactSheet(car)}`,
-    imageContext
-  ].join(" ");
-
-  return { system, user: message };
-}
 
 class VoxSpecialistVoiceAgent extends voice.Agent {
-  private currentImageId: string | undefined;
+  // ViewState tracks what the canvas is currently showing. Seeded in entry()
+  // from the first processed image; updated exclusively via applyAction so the
+  // canvas lane and voice narration always see a coherent view.
+  private viewState: ViewState = { layout: "single", items: [] };
   private lastHandled = "";
   private lastHandledAt = 0;
   private turnCounter = 0;
+  // True while Vox is speaking — used to gate out short echo / cross-talk turns.
+  private speaking = false;
+  // Short rolling conversation history fed to the single-brain decider so
+  // follow-ups ("show me the other one") resolve against context.
+  private history: { role: string; text: string }[] = [];
 
   constructor(
     private readonly ctx: JobContext,
@@ -159,17 +169,59 @@ class VoxSpecialistVoiceAgent extends voice.Agent {
     });
   }
 
-  setInitialImage(id: string | undefined) {
-    this.currentImageId = id;
+  /** Seed the initial ViewState from the overview image chosen in entry(). */
+  setInitialViewState(state: ViewState) {
+    this.viewState = state;
+  }
+
+  /** Track whether Vox is currently speaking (driven by AgentStateChanged). */
+  setSpeaking(value: boolean) {
+    this.speaking = value;
+  }
+
+  /**
+   * Publish a full ViewState replacement to the web client.
+   * The web side replaces its local ViewState on receipt (not patch — full replace).
+   */
+  private publishViewUpdate(view: ViewState): void {
+    publishSpecialistDataAsync(this.ctx, { type: "view_update", view });
+  }
+
+  // Speak a deterministic, voice-first opener once when the conversation
+  // starts — so the first thing the shopper hears is a real greeting, not a
+  // phantom turn that ends up describing whatever photo happens to be loaded.
+  override async onEnter(): Promise<void> {
+    try {
+      const car = await getCar(DEFAULT_VIN);
+      const name = car ? `${car.year} ${car.make} ${car.model} ${car.trim}` : "BMW M4";
+      const greeting = `Hey, welcome! I'm Vox. This is the ${name} — beautiful car. What would you like to know, or want me to walk you through it?`;
+      // Use the same reply_done protocol every other turn uses, so the greeting
+      // reliably renders in the chat log (the legacy specialist_turn.reply field
+      // is no longer read by the web).
+      publishSpecialistDataAsync(this.ctx, { type: "reply_done", reply: greeting });
+      this.session.say(greeting, { allowInterruptions: true });
+    } catch (error) {
+      console.warn(`greeting failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   override async llmNode(chatCtx: llm.ChatContext): Promise<ReadableStream<string> | null> {
     const message = latestUserText(chatCtx);
-    if (!message) return textStream("I didn't catch that — could you say it again?");
+    // Empty/unintelligible turn — stay silent rather than nagging "didn't catch that".
+    if (!message) return textStream("");
 
     const normalized = message.toLowerCase().replace(/\s+/g, " ").trim();
+    const wordCount = normalized.split(" ").filter(Boolean).length;
     const now = Date.now();
+    // Dedupe identical back-to-back finals (rapid STT re-submissions of the same text).
     if (normalized === this.lastHandled && now - this.lastHandledAt < 1_200) {
+      return textStream("");
+    }
+    // Turn-gate: while Vox is speaking, ignore short fragments — these are
+    // almost always self-echo or bystander cross-talk picked up by the
+    // always-on mic. A real interruption needs >= 3 words (matching the
+    // session's interruption.minWords), so deliberate barge-in still lands.
+    if (this.speaking && wordCount < 3) {
       return textStream("");
     }
     this.lastHandled = normalized;
@@ -177,83 +229,101 @@ class VoxSpecialistVoiceAgent extends voice.Agent {
     const turnId = ++this.turnCounter;
     console.log(`Vox turn #${turnId}: ${message}`);
 
+    let car: Car | undefined;
+    let images: CarImage[] = [];
     try {
-      const [car, images] = await Promise.all([getCar(DEFAULT_VIN), listImages(DEFAULT_VIN)]);
+      [car, images] = await Promise.all([getCar(DEFAULT_VIN), listImages(DEFAULT_VIN)]);
       if (!car) return textStream("I can't find this vehicle right now.");
 
-      const ranked = rankImagesForQuestion(message, images);
-      const heuristicWinner = ranked[0]?.image;
-      const topScore = ranked[0]?.score ?? 0;
+      // Publish the transcript for the chat HUD.
+      publishSpecialistDataAsync(this.ctx, { type: "specialist_turn", vin: DEFAULT_VIN, transcript: message });
 
-      const imageForReply = topScore >= 6 ? heuristicWinner : images.find((image) => image.id === this.currentImageId);
+      const resolvedCar = car;
+      const resolvedImages = images;
+      const recentTurns = this.history.slice(-6);
 
-      if (heuristicWinner && topScore >= 6 && heuristicWinner.id !== this.currentImageId) {
-        this.currentImageId = heuristicWinner.id;
-        publishSpecialistDataAsync(this.ctx, {
-          type: "specialist_turn",
-          vin: DEFAULT_VIN,
-          transcript: message,
-          selectedImageId: heuristicWinner.id,
-          action: { type: "show_image", imageId: heuristicWinner.id, reason: heuristicWinner.caption },
-          sources: [
-            { type: "catalog", id: car.vin, label: `${car.year} ${car.make} ${car.model}` },
-            { type: "image", id: heuristicWinner.id, label: heuristicWinner.caption }
-          ]
+      // ── TWO INDEPENDENT CEREBRAS CALLS ───────────────────────────────────
+      // One call speaks, one call drives the canvas. They run in parallel, each
+      // on its own key via the revolver, fully decoupled: the canvas call never
+      // blocks voice, and decideCanvas returns [] on any failure so a canvas
+      // problem can't break speech (and vice-versa).
+
+      // CANVAS LANE — fire-and-forget; resolves on its own, publishes view_update.
+      void decideCanvas({ message, viewState: this.viewState, car: resolvedCar, images: resolvedImages, recentTurns })
+        .then((actions) => {
+          // Safety net: model narrated a visual but emitted no actions → backfill
+          // from the instant heuristic so the canvas never lies.
+          let finalActs = actions;
+          if (finalActs.length === 0) {
+            const hinted = planCanvas(message, resolvedImages, this.viewState);
+            if (hinted.length > 0) finalActs = hinted;
+          }
+          if (finalActs.length > 0) {
+            let nextView = this.viewState;
+            const catalog = { images: resolvedImages, cars: [resolvedCar] };
+            for (const act of finalActs) nextView = applyAction(nextView, act, catalog);
+            this.viewState = nextView;
+            this.publishViewUpdate(nextView);
+            console.log(`Vox turn #${turnId} canvas: published view_update layout=${nextView.layout} items=${nextView.items.length} ops=[${finalActs.map((a) => a.op).join(",")}]`);
+          } else {
+            console.log(`Vox turn #${turnId} canvas: no actions — canvas unchanged`);
+          }
+        })
+        .catch((err) => {
+          console.warn(`Vox turn #${turnId} canvas lane error: ${err instanceof Error ? err.message : String(err)}`);
         });
-      } else {
-        publishSpecialistDataAsync(this.ctx, {
-          type: "specialist_turn",
-          vin: DEFAULT_VIN,
-          transcript: message
-        });
-      }
 
-      const { system, user } = buildVoicePrompt({ car, image: imageForReply, message });
-      const rawStream = await streamMiniMaxChat({
-        system,
-        user,
-        model: this.llmModel,
-        maxTokens: 160,
-        timeoutMs: 12_000
-      });
-      const tokenStream = rawStream as unknown as ReadableStream<string>;
-      return this.teeAndPublishReply(tokenStream);
+      // VOICE LANE — await the spoken reply and return ASAP (low latency). This
+      // is a separate Cerebras call from the canvas, so voice never waits on it.
+      const replyText = await generateSpokenReply({ message, car: resolvedCar, recentTurns });
+      const spoken = replyText.trim() || FALLBACK_REPLY;
+      publishSpecialistDataAsync(this.ctx, { type: "reply_delta", text: spoken });
+      publishSpecialistDataAsync(this.ctx, { type: "reply_done", reply: spoken });
+      this.recordTurn(message, spoken);
+      console.log(`Vox turn #${turnId} reply: ${spoken}`);
+      return textStream(spoken);
     } catch (error) {
+      // ── SPEECH-CALL FAILURE FALLBACK (e.g. all keys 429) ─────────────────
+      // Run the instant heuristic for the canvas and speak a short templated
+      // line. The canvas lane above is independent and may already have fired.
       const detail = error instanceof Error ? error.message : String(error);
-      console.warn(`llmNode failed: ${detail}`);
-      publishSpecialistDataAsync(this.ctx, { type: "agent_status", status: "Error", error: detail });
-      return textStream(FALLBACK_REPLY);
-    }
-  }
+      console.warn(`generateSpokenReply failed (${detail}), using heuristic fallback`);
 
-  private teeAndPublishReply(tokenStream: ReadableStream<string>): ReadableStream<string> {
-    const [speakStream, captureStream] = tokenStream.tee();
-    void this.captureReplyText(captureStream).catch((err) => {
-      console.warn(`reply capture failed: ${err instanceof Error ? err.message : String(err)}`);
-    });
-    return speakStream;
-  }
-
-  private async captureReplyText(stream: ReadableStream<string>): Promise<void> {
-    const reader = stream.getReader();
-    let buffer = "";
-    try {
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        if (value) {
-          buffer += value;
-          // Task 5: publish each chunk as it arrives so the UI renders text incrementally.
-          publishSpecialistDataAsync(this.ctx, { type: "reply_delta", text: value });
+      let fallbackLine = FALLBACK_REPLY;
+      try {
+        if (car) {
+          const fallbackActions = planCanvas(message, images, this.viewState);
+          if (fallbackActions.length > 0) {
+            // Derive a short templated line from the first action op.
+            const firstOp = fallbackActions[0]?.op;
+            if (firstOp === "showImages") {
+              fallbackLine = "Here are a few angles for you.";
+            } else if (firstOp === "zoom") {
+              fallbackLine = "Here's a closer look.";
+            } else if (firstOp === "showImage") {
+              fallbackLine = "Here you go.";
+            }
+            let nextView = this.viewState;
+            const catalog = { images, cars: [car] };
+            for (const act of fallbackActions) nextView = applyAction(nextView, act, catalog);
+            this.viewState = nextView;
+            this.publishViewUpdate(nextView);
+          }
         }
+      } catch {
+        // ignore fallback canvas errors — voice still answers
       }
-    } finally {
-      reader.releaseLock();
+
+      this.recordTurn(message, fallbackLine);
+      publishSpecialistDataAsync(this.ctx, { type: "reply_done", reply: fallbackLine });
+      return textStream(fallbackLine);
     }
-    const reply = buffer.replace(/\s+/g, " ").trim();
-    if (!reply) return;
-    // Task 5: terminal event — full assembled reply text.
-    publishSpecialistDataAsync(this.ctx, { type: "reply_done", reply });
+  }
+
+  /** Append a turn to the rolling history fed to the decider (capped at 12). */
+  private recordTurn(userText: string, assistantText: string): void {
+    this.history.push({ role: "user", text: userText }, { role: "assistant", text: assistantText });
+    if (this.history.length > 12) this.history = this.history.slice(-12);
   }
 }
 
@@ -288,9 +358,19 @@ export default defineAgent({
 
     const specialist = new VoxSpecialistVoiceAgent(ctx, profile.llmModel);
 
+    // Seed the initial ViewState from the overview image so the canvas shows
+    // something meaningful the moment the session connects.
     void listImages(DEFAULT_VIN)
-      .then((images) => specialist.setInitialImage(selectOverviewImage(images)?.id ?? images[0]?.id))
-      .catch((error) => console.warn(`Could not seed initial image: ${error instanceof Error ? error.message : String(error)}`));
+      .then((images) => {
+        const overview = selectOverviewImage(images) ?? images[0];
+        if (overview) {
+          specialist.setInitialViewState({
+            layout: "single",
+            items: [{ kind: "image", carId: overview.vin, imageId: overview.id }]
+          });
+        }
+      })
+      .catch((error) => console.warn(`Could not seed initial ViewState: ${error instanceof Error ? error.message : String(error)}`));
 
     // -----------------------------------------------------------------------
     // Deepgram nova-3 STT via LiveKit Inference — billed on LiveKit credits,
@@ -300,6 +380,12 @@ export default defineAgent({
     const sttOption = new inference.STT<"deepgram/nova-3">({
       model: "deepgram/nova-3",
       language: "en",
+      // keyterms only — known-good.
+      // smart_format and numerals were reverted: an unsupported modelOption on
+      // the LiveKit nova-3 Inference gateway can silently drop the entire STT
+      // stream, killing transcription for the session. Re-add ONLY after
+      // verifying in a live Inference session (not locally) that these flags
+      // are accepted by the gateway version deployed in production.
       modelOptions: { keyterms: M4_KEYTERMS }
     });
 
@@ -309,13 +395,23 @@ export default defineAgent({
       tts: ttsString,
       userAwayTimeout: null,
       turnHandling: {
+        // "stt" uses Deepgram's end-of-speech signal then applies our minDelay.
+        // No silero VAD or EOU-model plugin is installed in this repo, so "vad"
+        // and the dynamic EOU predictor are both unavailable — "stt" + fixed
+        // endpointing is the correct mode. "dynamic" mode ONLY helps when an
+        // EOU confidence model is present; without one it silently falls back to
+        // flat behaviour identical to "fixed", so the "dynamic" label was
+        // misleading. Using "fixed" explicitly so intent is clear.
         turnDetection: "stt",
-        // Dynamic endpointing adapts to the speaker's pace and waits out
-        // mid-sentence pauses ("walk me through the, like, ... estimates")
-        // instead of firing on every brief silence.
+        // minDelay 1300ms: Deepgram nova-3 fires its end-of-speech signal
+        // before the speaker is actually done on short pauses ("show me the,
+        // uh, gear shifter"). 800ms clipped the tail of slower utterances;
+        // 1300ms holds the turn open through typical within-sentence pauses
+        // without feeling laggy. App-layer dedup (lastHandled + 1200ms guard)
+        // catches any duplicate finals that still slip through.
         endpointing: {
-          mode: "dynamic",
-          minDelay: 600,
+          mode: "fixed",
+          minDelay: 1300,
           maxDelay: 3500
         },
         interruption: {
@@ -346,6 +442,8 @@ export default defineAgent({
     });
     session.on(voice.AgentSessionEventTypes.AgentStateChanged, (event) => {
       console.log(`agent state: ${event.oldState} -> ${event.newState}`);
+      // Gate short echo/cross-talk turns while Vox is mid-sentence.
+      specialist.setSpeaking(event.newState === "speaking");
       publishSpecialistDataAsync(ctx, {
         type: "agent_status",
         status: event.newState
@@ -382,9 +480,17 @@ export default defineAgent({
   }
 });
 
+// Must match the agentName the API dispatches to (apps/api/src/server.ts).
+// Set VOX_AGENT_NAME (same value both sides) + fully restart to isolate from a
+// stale/rogue worker still registered as "vox-specialist".
+const AGENT_NAME = process.env.VOX_AGENT_NAME ?? "vox-specialist";
+const AGENT_PORT = Number(process.env.LIVEKIT_AGENT_PORT ?? 8081);
+console.log(
+  `🚗 Vox agent — two-call brain (separate speech + canvas Cerebras calls) — registering as "${AGENT_NAME}" on port ${AGENT_PORT}`
+);
 cli.runApp(new ServerOptions({
   agent: fileURLToPath(import.meta.url),
-  agentName: "vox-specialist",
+  agentName: AGENT_NAME,
   logLevel: "info",
-  port: Number(process.env.LIVEKIT_AGENT_PORT ?? 8081)
+  port: AGENT_PORT
 }));

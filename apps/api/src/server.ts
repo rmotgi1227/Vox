@@ -222,9 +222,13 @@ app.post("/api/livekit/token", async (c) => {
   token.roomConfig = new RoomConfiguration({
     agents: [
       new RoomAgentDispatch({
-        agentName: "vox-specialist",
+        // Must match the worker's agentName (apps/agent/src/agent.ts). Set
+        // VOX_AGENT_NAME (in .env, same value both sides) + restart to isolate
+        // from a stale/rogue "vox-specialist" worker.
+        agentName: process.env.VOX_AGENT_NAME ?? "vox-specialist",
         metadata: JSON.stringify({ vin: DEFAULT_VIN, profileId: parsed.data.profileId })
       })
+
     ]
   });
   return c.json({ token: await token.toJwt(), url, roomName: parsed.data.roomName });

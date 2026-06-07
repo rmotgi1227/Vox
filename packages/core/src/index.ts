@@ -57,6 +57,15 @@ export const CarSchema = z.object({
   specs: CarSpecsSchema.optional()
 });
 
+// ── Canvas agent foundation (Phase 0) ────────────────────────────────────────
+// Normalized bounding-box: [x, y, w, h] all in 0..1 relative to image dims.
+export const BBoxSchema = z.tuple([
+  z.number().min(0).max(1),
+  z.number().min(0).max(1),
+  z.number().min(0).max(1),
+  z.number().min(0).max(1)
+]);
+
 export const CarImageSchema = z.object({
   id: z.string().min(1),
   vin: z.string().min(1),
@@ -69,7 +78,12 @@ export const CarImageSchema = z.object({
   searchTags: z.array(z.string()).optional().default([]),
   likelyQuestions: z.array(z.string()).optional().default([]),
   confidence: z.number().min(0).max(1),
-  status: ImageStatusSchema
+  status: ImageStatusSchema,
+  // Optional canvas metadata — seeded by ingest (Phase 6+). Safe defaults let
+  // the existing 46-image data/images.json parse without any changes.
+  boxes: z.array(z.object({ label: z.string(), box: BBoxSchema })).optional().default([]),
+  zoomTargets: z.record(z.string(), BBoxSchema).optional().default({}),
+  pairs: z.array(z.string()).optional().default([])
 });
 
 export const ConversationTurnSchema = z.object({
@@ -155,6 +169,121 @@ export type SpecialistTurn = z.infer<typeof SpecialistTurnSchema>;
 export type SpecialistState = z.infer<typeof SpecialistStateSchema>;
 export type LiveKitTokenRequest = z.infer<typeof LiveKitTokenRequestSchema>;
 export type ModelProfileId = z.infer<typeof ModelProfileIdSchema>;
+
+// Canvas agent inferred types (Phase 0)
+export type BBox = z.infer<typeof BBoxSchema>;
+export type CanvasItem = z.infer<typeof CanvasItemSchema>;
+export type ItemRef = z.infer<typeof ItemRefSchema>;
+export type ItemFilter = z.infer<typeof ItemFilterSchema>;
+export type CanvasAction = z.infer<typeof CanvasActionSchema>;
+export type ViewState = z.infer<typeof ViewStateSchema>;
+export type ViewUpdateEvent = z.infer<typeof ViewUpdateEventSchema>;
+
+// ── Canvas action types (Phase 0 continued) ───────────────────────────────────
+
+// A reference to an item either by its ids or by its index in ViewState.items.
+export const ItemRefSchema = z.union([
+  z.object({ carId: z.string().min(1), imageId: z.string().min(1) }),
+  z.object({ index: z.number().int().min(0) })
+]);
+
+// Filter for selecting images from the catalog.
+export const ItemFilterSchema = z.object({
+  carId: z.string().min(1).optional(),
+  role: ImageRoleSchema.optional(),
+  feature: z.string().optional(),
+  tags: z.array(z.string()).optional()
+});
+
+// A single item the canvas is showing.
+export const CanvasItemSchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("image"),
+    carId: z.string().min(1),
+    imageId: z.string().min(1)
+  }),
+  z.object({
+    kind: z.literal("generated"),
+    id: z.string().min(1),
+    prompt: z.string().min(1),
+    status: z.enum(["pending", "ready", "failed"]),
+    url: z.string().optional()
+  }),
+  z.object({
+    kind: z.literal("car"),
+    carId: z.string().min(1)
+  })
+]);
+
+// What the screen is showing right now. The renderer is a pure function of this.
+export const ViewStateSchema = z.object({
+  layout: z.enum(["single", "grid", "compare", "focus"]),
+  items: z.array(CanvasItemSchema),
+  zoom: z.object({
+    itemIndex: z.number().int().min(0),
+    region: BBoxSchema
+  }).optional(),
+  marks: z.array(z.object({
+    itemIndex: z.number().int().min(0),
+    box: BBoxSchema,
+    label: z.string()
+  })).optional(),
+  caption: z.string().optional()
+});
+
+// Canonical agent → web event for the canvas. Published on the LiveKit data
+// channel topic "vox.specialist.turn" alongside the existing specialist_turn /
+// agent_status events. The web replaces its local ViewState with `view`.
+export const ViewUpdateEventSchema = z.object({
+  type: z.literal("view_update"),
+  view: ViewStateSchema
+});
+
+// The tool-call contract. Every change to the screen must go through one of these.
+// Region for zoom: either a BBox tuple or a named zoomTarget string.
+export const CanvasActionSchema = z.discriminatedUnion("op", [
+  // ── Tier 1: full behavior ──────────────────────────────────────────────────
+  z.object({
+    op: z.literal("showImage"),
+    carId: z.string().min(1),
+    imageId: z.string().min(1)
+  }),
+  z.object({
+    op: z.literal("showImages"),
+    carId: z.string().min(1).optional(),
+    imageIds: z.array(z.string().min(1)).optional(),
+    filter: ItemFilterSchema.optional(),
+    limit: z.number().int().min(1).max(4).optional()
+  }),
+  z.object({
+    op: z.literal("zoom"),
+    itemRef: ItemRefSchema,
+    region: z.union([BBoxSchema, z.string()])
+  }),
+  // ── Tier 2: schema now, behavior in Phase 5–6 ─────────────────────────────
+  z.object({
+    op: z.literal("annotate"),
+    itemRef: ItemRefSchema,
+    marks: z.array(z.object({ box: BBoxSchema, label: z.string() }))
+  }),
+  z.object({
+    op: z.literal("compare"),
+    itemRefs: z.tuple([ItemRefSchema, ItemRefSchema])
+  }),
+  z.object({
+    op: z.literal("focusCar"),
+    carId: z.string().min(1)
+  }),
+  // ── Tier 3: stub, no behavior yet (Phase 7) ───────────────────────────────
+  z.object({
+    op: z.literal("generate"),
+    prompt: z.string().min(1),
+    baseRef: ItemRefSchema.optional()
+  }),
+  z.object({
+    op: z.literal("reset")
+  })
+]);
 
 export const DEFAULT_VIN = "BMW-M4";
 

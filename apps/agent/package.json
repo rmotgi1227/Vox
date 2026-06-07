@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx ../../scripts/start-livekit-agent.ts",
+    "dev": "tsx watch ../../scripts/start-livekit-agent.ts",
     "start": "tsx ../../scripts/start-livekit-agent.ts",
     "typecheck": "tsc --noEmit"
   },

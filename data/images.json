@@ -6,6 +6,11 @@
     "role": "dashboard",
     "viewpoint": "close interior dashboard view from passenger side focused on infotainment screen and center vents",
     "caption": "Dashboard close-up showing the BMW infotainment navigation map, carbon-fiber dash trim, stitched upper dash, center air vents, hazard and lock buttons, climate controls, and radio preset row.",
+    "zoomTargets": {
+      "screen": [0.10, 0.05, 0.65, 0.45],
+      "infotainment": [0.10, 0.05, 0.65, 0.45],
+      "vents": [0.30, 0.50, 0.40, 0.25]
+    },
     "visibleFeatures": [
       "wide infotainment display",
       "navigation map",
@@ -62,6 +67,7 @@
     "role": "detail",
     "viewpoint": "overhead documentation and key-fob detail photo",
     "caption": "Desk photo of the vehicle paperwork and accessories showing a CARFAX-style report sheet, two BMW key fobs, a yellow dealer tag, and a handwritten listing tag.",
+    "zoomTargets": {},
     "visibleFeatures": [
       "vehicle history paperwork",
       "CARFAX report sheet",
@@ -113,6 +119,13 @@
     "role": "interior_front",
     "viewpoint": "driver-side door-open front seat and console view",
     "caption": "Driver-side interior view showing the black leather M sport front seat, illuminated M4 seat badge, sculpted bolsters, carbon-fiber center console trim, gear selector, iDrive controller, armrest, floor mat, and door sill.",
+    "zoomTargets": {
+      "badge": [0.05, 0.30, 0.25, 0.20],
+      "gear selector": [0.55, 0.45, 0.30, 0.30],
+      "shifter": [0.55, 0.45, 0.30, 0.30],
+      "center console": [0.50, 0.40, 0.40, 0.50],
+      "iDrive": [0.60, 0.65, 0.25, 0.25]
+    },
     "visibleFeatures": [
       "black leather driver seat",
       "M sport bucket seat",
@@ -177,6 +190,11 @@
     "role": "wheel",
     "viewpoint": "front driver-side wheel, tire, brake, and fender close-up",
     "caption": "Front driver-side wheel close-up showing the multi-spoke BMW alloy rim, Continental ExtremeContact tire, blue M brake caliper, drilled brake rotor, front fender vent, side marker, and parking sensor.",
+    "zoomTargets": {
+      "wheel": [0.10, 0.10, 0.70, 0.80],
+      "caliper": [0.25, 0.40, 0.30, 0.30],
+      "brake": [0.20, 0.35, 0.40, 0.40]
+    },
     "visibleFeatures": [
       "front driver-side wheel",
       "multi-spoke alloy rim",
@@ -235,6 +253,7 @@
     "role": "exterior_front",
     "viewpoint": "front driver-side corner detail from low exterior angle",
     "caption": "Front driver-side exterior close-up showing the black M4 kidney grille, LED headlight signature, white bumper, parking sensors, amber side marker, lower mesh intake, and carbon-fiber front lip/splitter.",
+    "zoomTargets": {},
     "visibleFeatures": [
       "black kidney grille",
       "M4 grille badge",
@@ -292,6 +311,9 @@
     "role": "detail",
     "viewpoint": "interior door tweeter and speaker grille close-up",
     "caption": "Close-up of the interior Harman Kardon speaker grille on the door sail area, with perforated metal mesh, Harman Kardon badge, leather door trim, and window glass edge.",
+    "zoomTargets": {
+      "badge": [0.25, 0.55, 0.50, 0.30]
+    },
     "visibleFeatures": [
       "Harman Kardon speaker badge",
       "perforated speaker grille",
@@ -344,6 +366,7 @@
     "role": "detail",
     "viewpoint": "lower steering-column and knee-area detail from driver footwell",
     "caption": "Driver footwell detail showing the steering-column adjustment lever, heated steering wheel button, lower dash trim, pedals area, steering stalk, center console edge, and black floor mat.",
+    "zoomTargets": {},
     "visibleFeatures": [
       "steering column adjustment lever",
       "heated steering wheel button",
@@ -400,6 +423,9 @@
     "role": "detail",
     "viewpoint": "close-up of front seat upper bolster and M4 badge",
     "caption": "Seat detail showing the M4 illuminated badge, perforated leather center insert, upper shoulder bolsters, stitching, and the sculpted sport-seat shell.",
+    "zoomTargets": {
+      "badge": [0.30, 0.35, 0.40, 0.30]
+    },
     "visibleFeatures": [
       "M4 illuminated seat badge",
       "perforated leather insert",
@@ -449,6 +475,12 @@
     "role": "interior_front",
     "viewpoint": "passenger-side door-open view across front seats and center console",
     "caption": "Front cabin view showing both black leather sport seats, driver seat bolsters, center console, gear selector, iDrive controller, dashboard stack, door panel, all-weather floor mat, and M door sill.",
+    "zoomTargets": {
+      "center console": [0.35, 0.40, 0.40, 0.45],
+      "gear selector": [0.40, 0.45, 0.25, 0.30],
+      "shifter": [0.40, 0.45, 0.25, 0.30],
+      "iDrive": [0.55, 0.60, 0.25, 0.25]
+    },
     "visibleFeatures": [
       "both front sport seats",
       "black leather upholstery",
@@ -503,6 +535,11 @@
     "role": "exterior_front",
     "viewpoint": "wide front driver-side three-quarter exterior view at dealership",
     "caption": "Wide front three-quarter exterior view of the white BMW M4 coupe showing the black kidney grille, LED headlights, carbon-fiber roof, carbon mirror caps, black wheels, blue brake calipers, front splitter, side vent, and coupe body profile.",
+    "zoomTargets": {
+      "caliper": [0.05, 0.55, 0.20, 0.25],
+      "wheel": [0.00, 0.45, 0.30, 0.45],
+      "mirror": [0.25, 0.15, 0.20, 0.20]
+    },
     "visibleFeatures": [
       "white exterior paint",
       "front three-quarter angle",
@@ -569,6 +606,7 @@
     "role": "detail",
     "viewpoint": "close-up of dashboard start/stop control",
     "caption": "Close-up of the BMW start/stop ignition button and automatic start-stop off indicator set into the lower dash trim next to the steering wheel.",
+    "zoomTargets": {},
     "visibleFeatures": [
       "start stop engine button",
       "ignition button",
@@ -615,6 +653,7 @@
     "role": "exterior_front",
     "viewpoint": "straight front exterior view centered on hood, grille, headlights, and bumper",
     "caption": "Straight-on front exterior view of the white BMW M4 showing the hood, BMW roundel, black kidney grille, LED headlight signatures, front bumper intakes, parking sensors, carbon-fiber lower lip, and license plate frame.",
+    "zoomTargets": {},
     "visibleFeatures": [
       "white hood",
       "BMW roundel",
@@ -666,6 +705,13 @@
     "role": "interior_front",
     "viewpoint": "overhead center-console and front-seat view",
     "caption": "Center-console interior view showing carbon-fiber trim, electronic gear selector, iDrive controller, drive-mode button row, manual parking brake, cupholder area, leather sport seats, and all-weather mats.",
+    "zoomTargets": {
+      "center console": [0.25, 0.20, 0.50, 0.65],
+      "gear selector": [0.30, 0.20, 0.30, 0.25],
+      "shifter": [0.30, 0.20, 0.30, 0.25],
+      "button cluster": [0.25, 0.45, 0.50, 0.25],
+      "iDrive": [0.55, 0.55, 0.25, 0.25]
+    },
     "visibleFeatures": [
       "carbon-fiber center console",
       "electronic gear selector",
@@ -734,6 +780,11 @@
     "role": "detail",
     "viewpoint": "close-up of center-console performance and parking buttons",
     "caption": "Close-up of the center-console button bank showing M drive/performance settings, suspension and traction-related controls, camera view, parking sensor button, auto hold, and the gear selector surround.",
+    "zoomTargets": {
+      "button cluster": [0.10, 0.30, 0.80, 0.45],
+      "gear selector": [0.60, 0.05, 0.35, 0.30],
+      "center console": [0.05, 0.05, 0.90, 0.90]
+    },
     "visibleFeatures": [
       "M drive button row",
       "performance setting buttons",
@@ -789,6 +840,7 @@
     "role": "interior_front",
     "viewpoint": "open front door panel view from outside",
     "caption": "Front door panel view showing black leather door trim, contrast stitching, sculpted grab handle, metallic door handle, gloss dark trim, window and mirror switch area, lower storage pocket, and speaker area.",
+    "zoomTargets": {},
     "visibleFeatures": [
       "front door panel",
       "black leather trim",
@@ -844,6 +896,11 @@
     "role": "exterior_front",
     "viewpoint": "driver-side exterior profile from front fender to rear quarter",
     "caption": "Driver-side profile view of the white M4 showing tinted side glass, hardtop coupe roofline, carbon-fiber mirror cap, M fender vent, black window trim, black wheels, blue brake calipers, and side character line.",
+    "zoomTargets": {
+      "mirror": [0.15, 0.20, 0.20, 0.20],
+      "caliper": [0.08, 0.55, 0.20, 0.25],
+      "wheel": [0.03, 0.45, 0.28, 0.45]
+    },
     "visibleFeatures": [
       "driver-side profile",
       "white exterior paint",
@@ -902,6 +959,7 @@
     "role": "detail",
     "viewpoint": "front bumper lower-intake and headlight detail",
     "caption": "Front bumper detail showing the driver-side LED headlight, parking sensor, tow-hook cover, lower intake mesh, white bumper surface, and carbon-fiber front intake/splitter trim.",
+    "zoomTargets": {},
     "visibleFeatures": [
       "driver-side LED headlight",
       "front parking sensor",
@@ -953,6 +1011,9 @@
     "role": "detail",
     "viewpoint": "carbon-fiber side mirror close-up",
     "caption": "Close-up of the carbon-fiber side mirror cap with visible weave, glossy clear coat, aerodynamic M-style mirror shape, black mirror base, window trim, and white door edge.",
+    "zoomTargets": {
+      "mirror": [0.10, 0.10, 0.80, 0.75]
+    },
     "visibleFeatures": [
       "carbon-fiber side mirror cap",
       "visible carbon weave",
@@ -1001,6 +1062,9 @@
     "role": "interior_rear",
     "viewpoint": "rear passenger cabin view from side door opening",
     "caption": "Rear cabin view showing two sculpted black leather rear seats, integrated headrests, center pass-through/armrest area, rear climate vents, seat belts, floor mat, and side panel speakers.",
+    "zoomTargets": {
+      "vents": [0.30, 0.55, 0.40, 0.25]
+    },
     "visibleFeatures": [
       "two rear seats",
       "black leather rear bench",
@@ -1051,6 +1115,11 @@
     "role": "exterior_front",
     "viewpoint": "wide front driver-side three-quarter exterior view",
     "caption": "Front three-quarter exterior view showing the white M4 with black double-slat grille, LED headlights, carbon-fiber front splitter, carbon mirror caps, fixed carbon-fiber roof, black wheels, blue brake calipers, M4 fender badge, and front parking sensors.",
+    "zoomTargets": {
+      "caliper": [0.05, 0.55, 0.20, 0.25],
+      "wheel": [0.00, 0.45, 0.28, 0.45],
+      "mirror": [0.30, 0.18, 0.20, 0.20]
+    },
     "visibleFeatures": [
       "white exterior paint",
       "black double-slat kidney grille",
@@ -1109,6 +1178,11 @@
     "role": "exterior_front",
     "viewpoint": "wide front passenger-side three-quarter exterior view",
     "caption": "Front three-quarter exterior view from the opposite angle showing the white hood, black grille, LED headlights, carbon front lip, front intakes, black wheel, blue brake caliper, carbon mirror cap, tinted glass, and fixed carbon-fiber roof.",
+    "zoomTargets": {
+      "caliper": [0.65, 0.55, 0.22, 0.25],
+      "wheel": [0.60, 0.45, 0.30, 0.45],
+      "mirror": [0.45, 0.18, 0.20, 0.20]
+    },
     "visibleFeatures": [
       "white hood",
       "black kidney grille",
@@ -1165,6 +1239,15 @@
     "role": "interior_front",
     "viewpoint": "driver cockpit view from open door",
     "caption": "Driver cockpit view showing the BMW M steering wheel, analog gauge cluster, infotainment screen, dashboard vents, carbon-fiber dash trim, center console, gear selector, iDrive controller, leather sport seats, and all-weather mat.",
+    "zoomTargets": {
+      "screen": [0.40, 0.05, 0.35, 0.30],
+      "infotainment": [0.40, 0.05, 0.35, 0.30],
+      "vents": [0.35, 0.35, 0.40, 0.20],
+      "center console": [0.50, 0.55, 0.40, 0.40],
+      "gear selector": [0.52, 0.55, 0.25, 0.25],
+      "shifter": [0.52, 0.55, 0.25, 0.25],
+      "iDrive": [0.65, 0.68, 0.22, 0.22]
+    },
     "visibleFeatures": [
       "M steering wheel",
       "tri-color steering stitching",
@@ -1224,6 +1307,7 @@
     "role": "detail",
     "viewpoint": "top-down close exterior view of roof panel and windshield edge",
     "caption": "",
+    "zoomTargets": {},
     "visibleFeatures": [
       "fixed carbon-fiber roof",
       "carbon roof weave",
@@ -1273,6 +1357,11 @@
     "role": "wheel",
     "viewpoint": "side wheel close-up centered on rim, tire, rotor, and brake caliper",
     "caption": "Wheel and brake close-up showing the multi-spoke BMW alloy rim, Continental ExtremeContact tire, blue M brake caliper, drilled rotor, BMW center cap, and white quarter-panel edge.",
+    "zoomTargets": {
+      "wheel": [0.10, 0.05, 0.75, 0.85],
+      "caliper": [0.25, 0.35, 0.35, 0.35],
+      "brake": [0.20, 0.30, 0.45, 0.45]
+    },
     "visibleFeatures": [
       "multi-spoke BMW alloy wheel",
       "BMW center cap",
@@ -1323,6 +1412,11 @@
     "role": "exterior_front",
     "viewpoint": "wide front passenger-side three-quarter exterior view",
     "caption": "Wide front three-quarter view of the white BMW M4 coupe with black wheels, blue calipers, black grille, LED headlights, front bumper intakes, carbon mirror cap, tinted windows, and fixed carbon-fiber roof.",
+    "zoomTargets": {
+      "caliper": [0.65, 0.55, 0.22, 0.25],
+      "wheel": [0.60, 0.45, 0.32, 0.45],
+      "mirror": [0.40, 0.18, 0.20, 0.20]
+    },
     "visibleFeatures": [
       "white exterior paint",
       "front three-quarter view",
@@ -1378,6 +1472,13 @@
     "role": "interior_front",
     "viewpoint": "wide cabin view from passenger side across dashboard and front seats",
     "caption": "Wide front cabin view showing both leather sport seats, M steering wheel, dashboard, infotainment screen, center console, gear selector, carbon-fiber trim, door panel, passenger footwell, and all-weather floor mats.",
+    "zoomTargets": {
+      "screen": [0.35, 0.05, 0.35, 0.30],
+      "infotainment": [0.35, 0.05, 0.35, 0.30],
+      "center console": [0.45, 0.50, 0.40, 0.40],
+      "gear selector": [0.50, 0.52, 0.22, 0.25],
+      "shifter": [0.50, 0.52, 0.22, 0.25]
+    },
     "visibleFeatures": [
       "both front seats",
       "black leather upholstery",
@@ -1432,6 +1533,7 @@
     "role": "interior_front",
     "viewpoint": "driver seat cushion and lower bolster close-up",
     "caption": "Driver-seat close-up showing the black leather seat cushion, lower bolsters, perforated center panels, seat adjustment controls, door sill plate, steering wheel edge, console edge, and floor mat.",
+    "zoomTargets": {},
     "visibleFeatures": [
       "driver seat cushion",
       "lower side bolsters",
@@ -1485,6 +1587,11 @@
     "role": "wheel",
     "viewpoint": "front wheel/tire/brake close-up from low side angle",
     "caption": "Close-up of the front wheel assembly showing a multi-spoke BMW alloy rim, BMW center cap, Continental ExtremeContact tire, blue M brake caliper, drilled brake rotor, white fender edge, and parking sensor.",
+    "zoomTargets": {
+      "wheel": [0.05, 0.05, 0.80, 0.85],
+      "caliper": [0.22, 0.38, 0.35, 0.32],
+      "brake": [0.18, 0.32, 0.45, 0.42]
+    },
     "visibleFeatures": [
       "front wheel",
       "multi-spoke alloy rim",
@@ -1537,6 +1644,13 @@
     "role": "interior_front",
     "viewpoint": "driver-side open-door front cabin overview",
     "caption": "Driver-side cabin view showing the M steering wheel, black leather M sport driver seat with M4 badge, center console, gear selector, dashboard vents, door panel, floor mat, and seat bolsters.",
+    "zoomTargets": {
+      "badge": [0.10, 0.30, 0.25, 0.20],
+      "center console": [0.52, 0.45, 0.40, 0.45],
+      "gear selector": [0.55, 0.48, 0.25, 0.28],
+      "shifter": [0.55, 0.48, 0.25, 0.28],
+      "vents": [0.30, 0.25, 0.40, 0.20]
+    },
     "visibleFeatures": [
       "M steering wheel",
       "driver M sport seat",
@@ -1590,6 +1704,13 @@
     "role": "interior_front",
     "viewpoint": "front cabin from driver side focused on steering wheel and seats",
     "caption": "Driver-side interior view showing the M steering wheel, gauge cluster, black leather front seat with M4 badge, center console, shifter, iDrive controller, door panel, door sill, and all-weather floor mat.",
+    "zoomTargets": {
+      "badge": [0.08, 0.28, 0.25, 0.22],
+      "center console": [0.52, 0.50, 0.40, 0.42],
+      "gear selector": [0.54, 0.52, 0.24, 0.25],
+      "shifter": [0.54, 0.52, 0.24, 0.25],
+      "iDrive": [0.65, 0.65, 0.22, 0.22]
+    },
     "visibleFeatures": [
       "M steering wheel",
       "gauge cluster",
@@ -1646,6 +1767,7 @@
     "role": "detail",
     "viewpoint": "driver door switch panel close-up",
     "caption": "Close-up of the driver door switch panel showing dual window switches, mirror adjustment knob, mirror selector buttons, lock/window control trim, chrome accent strip, and textured black door material.",
+    "zoomTargets": {},
     "visibleFeatures": [
       "driver window switches",
       "power mirror adjustment knob",
@@ -1694,6 +1816,9 @@
     "role": "detail",
     "viewpoint": "rear decklid and spoiler close-up from driver-side rear corner",
     "caption": "Rear decklid detail showing the carbon-fiber trunk spoiler, M4 badge, BMW roundel edge, white trunk lid, taillight corner, license plate frame edge, and rear body panel gaps.",
+    "zoomTargets": {
+      "badge": [0.30, 0.25, 0.40, 0.30]
+    },
     "visibleFeatures": [
       "carbon-fiber rear spoiler",
       "trunk lid",
@@ -1745,6 +1870,7 @@
     "role": "exterior_front",
     "viewpoint": "straight front exterior view from slightly above",
     "caption": "Straight front view of the white BMW M4 showing the hood, BMW roundel, black kidney grille, LED headlights, front parking sensors, lower intakes, carbon-fiber front lip, and dealer plate frame.",
+    "zoomTargets": {},
     "visibleFeatures": [
       "white hood",
       "BMW roundel",
@@ -1797,6 +1923,9 @@
     "role": "exterior_rear",
     "viewpoint": "straight rear exterior view",
     "caption": "Straight rear view of the white BMW M4 showing the trunk lid, carbon-fiber rear spoiler, M4 badge, BMW roundel, LED taillights, rear bumper, parking sensors, quad exhaust area, and dealer plate frame.",
+    "zoomTargets": {
+      "badge": [0.35, 0.28, 0.30, 0.20]
+    },
     "visibleFeatures": [
       "rear trunk lid",
       "carbon-fiber rear spoiler",
@@ -1848,6 +1977,11 @@
     "role": "exterior_front",
     "viewpoint": "wide front driver-side three-quarter exterior view at dealership",
     "caption": "Wide dealership exterior view of the white BMW M4 showing the front bumper, black grille, LED headlights, carbon front lip, fixed carbon-fiber roof, carbon mirror cap, black wheels, blue brakes, side vent, and coupe body.",
+    "zoomTargets": {
+      "caliper": [0.05, 0.55, 0.20, 0.25],
+      "wheel": [0.00, 0.45, 0.28, 0.45],
+      "mirror": [0.28, 0.18, 0.20, 0.20]
+    },
     "visibleFeatures": [
       "white exterior paint",
       "front bumper",
@@ -1910,6 +2044,7 @@
     "role": "interior_front",
     "viewpoint": "front door panel wide detail with window open",
     "caption": "Front door panel view showing black leather door trim, contrast stitching, gloss dark accent strip, metallic door handle, sculpted grab handle, lower pocket, speaker area, and white exterior door edge.",
+    "zoomTargets": {},
     "visibleFeatures": [
       "front door panel",
       "black leather door trim",
@@ -1963,6 +2098,9 @@
     "role": "detail",
     "viewpoint": "windshield-through dashboard reflection focused on head-up display panel",
     "caption": "Windshield/dash detail showing the head-up display projection area on top of the dashboard, stitched dash surface, windshield glass, wiper edge, and reflected sky.",
+    "zoomTargets": {
+      "screen": [0.15, 0.40, 0.70, 0.40]
+    },
     "visibleFeatures": [
       "head-up display area",
       "HUD projection window",
@@ -2011,6 +2149,11 @@
     "role": "exterior_rear",
     "viewpoint": "rear passenger-side three-quarter exterior view",
     "caption": "Rear three-quarter exterior view showing the white coupe side profile, rear quarter panel, taillights, carbon rear spoiler, trunk lid, shark-fin antenna, tinted windows, black wheels, blue brakes, and fuel door.",
+    "zoomTargets": {
+      "mirror": [0.08, 0.25, 0.18, 0.20],
+      "caliper": [0.68, 0.55, 0.22, 0.25],
+      "wheel": [0.62, 0.45, 0.30, 0.45]
+    },
     "visibleFeatures": [
       "rear three-quarter view",
       "white rear quarter panel",
@@ -2067,6 +2210,7 @@
     "role": "detail",
     "viewpoint": "open hood engine-bay view",
     "caption": "Engine bay view with the hood open showing the BMW M Power engine cover, carbon-fiber strut brace, intake components, fluid reservoirs, hood hinges, front radiator support, and BMW roundel on the nose.",
+    "zoomTargets": {},
     "visibleFeatures": [
       "open hood",
       "BMW M Power engine cover",
@@ -2120,6 +2264,11 @@
     "role": "exterior_front",
     "viewpoint": "driver-side exterior profile cropped from front wheel to roofline",
     "caption": "Driver-side exterior view showing the white coupe profile, fixed carbon-fiber roof, tinted side glass, carbon-fiber mirror cap, M fender vent, side skirt, black wheel, and blue brake caliper.",
+    "zoomTargets": {
+      "mirror": [0.18, 0.15, 0.22, 0.22],
+      "caliper": [0.10, 0.55, 0.22, 0.25],
+      "wheel": [0.05, 0.45, 0.30, 0.45]
+    },
     "visibleFeatures": [
       "driver-side profile",
       "white coupe body",
@@ -2176,6 +2325,7 @@
     "role": "trunk",
     "viewpoint": "open trunk cargo-area view",
     "caption": "Open trunk view showing the cargo opening, carpeted trunk floor, rubber cargo mat, side storage trim, trunk hinges/support arms, weather seal, rear bulkhead area, and the underside of the open trunk lid.",
+    "zoomTargets": {},
     "visibleFeatures": [
       "open trunk",
       "cargo opening",
@@ -2230,6 +2380,11 @@
     "role": "wheel",
     "viewpoint": "wheel, tire, rotor, and brake caliper close-up",
     "caption": "Wheel close-up showing the BMW multi-spoke alloy rim, Continental ExtremeContact tire, blue M brake caliper, drilled brake rotor, BMW center cap, and white quarter-panel edge.",
+    "zoomTargets": {
+      "wheel": [0.08, 0.05, 0.78, 0.85],
+      "caliper": [0.22, 0.35, 0.35, 0.35],
+      "brake": [0.18, 0.30, 0.45, 0.45]
+    },
     "visibleFeatures": [
       "BMW multi-spoke alloy rim",
       "Continental ExtremeContact tire",
@@ -2279,6 +2434,11 @@
     "role": "exterior_rear",
     "viewpoint": "rear driver-side three-quarter exterior view",
     "caption": "Rear driver-side three-quarter view showing the white coupe side profile, rear bumper, taillights, carbon rear spoiler, black wheels, tinted side glass, shark-fin antenna, side vent, and sloping coupe roofline.",
+    "zoomTargets": {
+      "mirror": [0.62, 0.22, 0.18, 0.20],
+      "caliper": [0.05, 0.55, 0.22, 0.25],
+      "wheel": [0.00, 0.45, 0.30, 0.45]
+    },
     "visibleFeatures": [
       "rear driver-side angle",
       "white coupe side profile",
@@ -2334,6 +2494,7 @@
     "role": "detail",
     "viewpoint": "lower dashboard button near driver footwell",
     "caption": "Lower driver-side dash detail showing a rectangular control button with illuminated green indicator near the pedals, surrounding lower trim, carpeted footwell, pedal edge, and floor mat.",
+    "zoomTargets": {},
     "visibleFeatures": [
       "lower dashboard button",
       "green indicator light",
@@ -2382,6 +2543,9 @@
     "role": "detail",
     "viewpoint": "hood, grille, and BMW roundel close-up",
     "caption": "Front detail view showing the white hood edge, BMW roundel, black kidney grille, grille slats, hood shut line, front bumper top edge, and a small glimpse of the front lip below.",
+    "zoomTargets": {
+      "badge": [0.35, 0.05, 0.30, 0.35]
+    },
     "visibleFeatures": [
       "BMW roundel",
       "white hood edge",
@@ -2431,6 +2595,10 @@
     "role": "interior_front",
     "viewpoint": "close front-cabin view centered on armrest, console, and passenger seat",
     "caption": "Front cabin close-up showing the center armrest, manual parking brake, carbon-fiber console trim, iDrive controller, front passenger sport seat, black leather upholstery, contrast stitching, door panel, and rear-seat edge.",
+    "zoomTargets": {
+      "center console": [0.05, 0.30, 0.55, 0.60],
+      "iDrive": [0.10, 0.45, 0.30, 0.35]
+    },
     "visibleFeatures": [
       "center armrest",
       "manual parking brake",

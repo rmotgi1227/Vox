@@ -3,21 +3,19 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import {
   ArrowUp,
-  Check,
-  ChevronDown,
-  ImageIcon,
   MessageSquare,
   Mic,
   PhoneOff,
   User,
 } from "lucide-react";
-import type { ModelProfile, ModelProfileId, SpecialistState } from "@vox/core";
+import type { ModelProfile, ModelProfileId, SpecialistState, ViewState } from "@vox/core";
 import {
   DEFAULT_MODEL_PROFILE_ID,
   DEFAULT_VIN,
-  MODEL_PROFILES,
+  ViewUpdateEventSchema,
   resolveModelProfile,
 } from "@vox/core";
+import { Canvas } from "./Canvas";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { NoiseBackground } from "@/components/ui/noise-background";
@@ -45,7 +43,9 @@ type LiveKitRoomLike = {
 type AgentTurnEvent = {
   type: "specialist_turn";
   transcript?: string;
+  /** legacy `reply` field — present on wire but superseded by reply_delta/reply_done */
   reply?: string;
+  /** selectedImageId may arrive on wire but is intentionally unused here — canvas comes from view_update only */
   selectedImageId?: string;
   action?: unknown;
   sources?: unknown;
@@ -69,7 +69,12 @@ type ReplyDoneEvent = {
   reply: string;
 };
 
-type DataEvent = AgentTurnEvent | AgentStatusEvent | ReplyDeltaEvent | ReplyDoneEvent;
+type ViewUpdateEvent = {
+  type: "view_update";
+  view: ViewState;
+};
+
+type DataEvent = AgentTurnEvent | AgentStatusEvent | ReplyDeltaEvent | ReplyDoneEvent | ViewUpdateEvent;
 
 // ---------------------------------------------------------------------------
 // Voice state machine
@@ -93,95 +98,6 @@ function loadStoredProfile(): ModelProfile {
   }
 }
 
-function persistProfile(id: ModelProfileId) {
-  try {
-    localStorage.setItem(PROFILE_STORAGE_KEY, id);
-  } catch {
-    // ignore storage errors
-  }
-}
-
-// ---------------------------------------------------------------------------
-// ModelSelector component
-// ---------------------------------------------------------------------------
-
-function ModelSelector({
-  activeProfile,
-  onSelect,
-}: {
-  activeProfile: ModelProfile;
-  onSelect: (profile: ModelProfile) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Close on outside click or Escape
-  useEffect(() => {
-    if (!open) return;
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
-    }
-    function onPointer(e: MouseEvent) {
-      if (!containerRef.current?.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("keydown", onKey);
-    document.addEventListener("mousedown", onPointer);
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.removeEventListener("mousedown", onPointer);
-    };
-  }, [open]);
-
-  return (
-    <div className="model-selector" ref={containerRef}>
-      <button
-        type="button"
-        className="model-selector-trigger"
-        onClick={() => setOpen((v) => !v)}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-label={`Model: ${activeProfile.label}`}
-      >
-        <span className="model-selector-label">{activeProfile.label}</span>
-        <ChevronDown
-          size={13}
-          strokeWidth={2.2}
-          className={`model-selector-chevron${open ? " open" : ""}`}
-        />
-      </button>
-
-      {open ? (
-        <div className="model-selector-dropdown" role="listbox" aria-label="Select model">
-          {MODEL_PROFILES.map((profile) => {
-            const isActive = profile.id === activeProfile.id;
-            return (
-              <button
-                key={profile.id}
-                type="button"
-                role="option"
-                aria-selected={isActive}
-                className={`model-selector-option${isActive ? " active" : ""}`}
-                onClick={() => {
-                  onSelect(profile);
-                  setOpen(false);
-                }}
-              >
-                <span className="model-option-check">
-                  {isActive ? <Check size={13} strokeWidth={2.5} /> : null}
-                </span>
-                <span className="model-option-text">
-                  <span className="model-option-label">{profile.label}</span>
-                  <span className="model-option-desc">{profile.description}</span>
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
 // ---------------------------------------------------------------------------
 // Main page
 // ---------------------------------------------------------------------------
@@ -189,6 +105,10 @@ function ModelSelector({
 export default function SpecialistPage() {
   const [state, setState] = useState<SpecialistState | null>(null);
   const [selectedImageId, setSelectedImageId] = useState<string | undefined>();
+  const [viewState, setViewState] = useState<ViewState>({
+    layout: "single",
+    items: [],
+  });
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
@@ -197,12 +117,20 @@ export default function SpecialistPage() {
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
   const [liveTranscript, setLiveTranscript] = useState("");
   const [chatOpen, setChatOpen] = useState(false);
-  const [activeProfile, setActiveProfile] = useState<ModelProfile>(() => loadStoredProfile());
+  const [activeProfile] = useState<ModelProfile>(() => loadStoredProfile());
   // hover-to-disconnect state
   const [buttonHovered, setButtonHovered] = useState(false);
   // visualizer-only signals — never feed the voiceState machine / button label
   const [agentTrack, setAgentTrack] = useState<MediaStreamTrack | null>(null);
   const [agentActivity, setAgentActivity] = useState<AgentVizMode>("listening");
+  // Phase-1 dev harness: ?canvas=demo cycles through hardcoded ViewStates.
+  const [demoIndex, setDemoIndex] = useState(0);
+  // Lazily read from URL to avoid SSR/client hydration mismatch.
+  const [isCanvasDemo] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("canvas") === "demo"
+  );
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const remoteAudioRef = useRef<HTMLDivElement>(null);
@@ -244,6 +172,21 @@ export default function SpecialistPage() {
       .then((next) => {
         setState(next);
         setSelectedImageId(next.selectedImageId);
+
+        // Seed initial ViewState from the first image (or the selectedImageId).
+        const seedId = next.selectedImageId ?? next.images[0]?.id;
+        if (seedId) {
+          setViewState({
+            layout: "single",
+            items: [{ kind: "image", carId: DEFAULT_VIN, imageId: seedId }],
+          });
+        }
+
+        // Preload all images so grid/compare/zoom don't flash.
+        for (const img of next.images) {
+          const el = new window.Image();
+          el.src = img.url;
+        }
       })
       .catch((err: unknown) => setError(err instanceof Error ? err.message : "Load failed"));
     return () => roomRef.current?.disconnect();
@@ -253,6 +196,127 @@ export default function SpecialistPage() {
     () => state?.images.find((image) => image.id === selectedImageId) ?? state?.images[0],
     [state, selectedImageId]
   );
+
+  // -------------------------------------------------------------------------
+  // Phase-1 dev harness — ?canvas=demo
+  // Cycles through hardcoded ViewStates so every layout can be seen without
+  // running the agent. Entirely inert in production (no ?canvas=demo param).
+  // -------------------------------------------------------------------------
+
+  const demoViewStates = useMemo<ViewState[]>(() => {
+    if (!state || state.images.length === 0) return [];
+    // ids[0] is guaranteed by the length guard above.
+    const ids = state.images.map((img) => img.id) as [string, ...string[]];
+    const id0 = ids[0];
+    const id1 = ids[1] ?? id0;
+    const id2 = ids[2] ?? id0;
+    const id3 = ids[3] ?? id0;
+    return [
+      // 0 — single
+      {
+        layout: "single",
+        items: [{ kind: "image", carId: DEFAULT_VIN, imageId: id0 }],
+        caption: "Single — exterior front",
+      },
+      // 1 — grid of 4
+      {
+        layout: "grid",
+        items: ([id0, id1, id2, id3] as string[]).map((id) => ({
+          kind: "image" as const,
+          carId: DEFAULT_VIN,
+          imageId: id,
+        })),
+        caption: "Grid — 4 images",
+      },
+      // 2 — compare
+      {
+        layout: "compare",
+        items: [
+          { kind: "image", carId: DEFAULT_VIN, imageId: id0 },
+          { kind: "image", carId: DEFAULT_VIN, imageId: id1 },
+        ],
+        caption: "Compare — front vs rear",
+      },
+      // 3 — zoom
+      {
+        layout: "single",
+        items: [{ kind: "image", carId: DEFAULT_VIN, imageId: id0 }],
+        zoom: { itemIndex: 0, region: [0.3, 0.2, 0.4, 0.6] as [number, number, number, number] },
+        caption: "Zoom — center region",
+      },
+      // 4 — annotated
+      {
+        layout: "single",
+        items: [{ kind: "image", carId: DEFAULT_VIN, imageId: id0 }],
+        marks: [
+          { itemIndex: 0, box: [0.1, 0.1, 0.25, 0.2] as [number, number, number, number], label: "M Badge" },
+          { itemIndex: 0, box: [0.6, 0.6, 0.3, 0.3] as [number, number, number, number], label: "Caliper" },
+        ],
+        caption: "Annotated — marks demo",
+      },
+    ];
+  }, [state]);
+
+  // When demo mode is active, override viewState with the current demo step.
+  useEffect(() => {
+    if (!isCanvasDemo || demoViewStates.length === 0) return;
+    const vs = demoViewStates[demoIndex % demoViewStates.length];
+    if (vs) setViewState(vs);
+  }, [isCanvasDemo, demoIndex, demoViewStates]);
+
+  // -------------------------------------------------------------------------
+  // DEV CONSOLE HOOK — drive the canvas directly from the browser console,
+  // FULLY decoupled from the voice agent / LiveKit. Proves the render path works
+  // (setViewState → <Canvas>) independent of who produces the actions. Usage:
+  //   __voxShowRole("exterior_rear")    → grid of rear images ("show me the back")
+  //   __voxShowRole("wheel") / "interior_front" / "dashboard" / "detail"
+  //   __voxShowRole("exterior_front", 1) → single image
+  //   __voxView({ layout:"single", items:[{kind:"image",carId:"BMW-M4",imageId:"<id>"}] })
+  // -------------------------------------------------------------------------
+  useEffect(() => {
+    const w = window as unknown as {
+      __voxShowRole?: (role: string, limit?: number) => void;
+      __voxZoom?: (role?: string, region?: [number, number, number, number]) => void;
+      __voxView?: (v: ViewState) => void;
+    };
+    w.__voxShowRole = (role, limit = 4) => {
+      const imgs = (state?.images ?? []).filter((i) => i.role === role).slice(0, limit);
+      if (imgs.length === 0) {
+        console.warn(
+          `[vox] no images with role "${role}". Available roles:`,
+          [...new Set((state?.images ?? []).map((i) => i.role))]
+        );
+        return;
+      }
+      setViewState({
+        layout: imgs.length > 1 ? "grid" : "single",
+        items: imgs.map((i) => ({ kind: "image", carId: DEFAULT_VIN, imageId: i.id })),
+        caption: `${role} (${imgs.length})`,
+      });
+      console.log(`[vox] __voxShowRole("${role}") → ${imgs.length} image(s) on canvas`);
+    };
+    // Zoom: single image of `role` with a normalized [x,y,w,h] region (0..1).
+    w.__voxZoom = (role = "exterior_front", region = [0.3, 0.2, 0.4, 0.4]) => {
+      const img = (state?.images ?? []).find((i) => i.role === role) ?? state?.images?.[0];
+      if (!img) {
+        console.warn(`[vox] no images to zoom`);
+        return;
+      }
+      setViewState({
+        layout: "single",
+        items: [{ kind: "image", carId: DEFAULT_VIN, imageId: img.id }],
+        zoom: { itemIndex: 0, region },
+        caption: `zoom ${role}`,
+      });
+      console.log(`[vox] __voxZoom("${role}", [${region}])`);
+    };
+    w.__voxView = (v) => setViewState(v);
+    return () => {
+      delete w.__voxShowRole;
+      delete w.__voxZoom;
+      delete w.__voxView;
+    };
+  }, [state]);
 
   // -------------------------------------------------------------------------
   // Text chat
@@ -275,7 +339,15 @@ export default function SpecialistPage() {
         includeAudio: true,
         history,
       });
-      if (turn.selectedImageId) setSelectedImageId(turn.selectedImageId);
+      if (turn.selectedImageId) {
+        setSelectedImageId(turn.selectedImageId);
+        // Legacy bridge: map selectedImageId → single-image ViewState so the
+        // typed-chat path still drives the canvas without the agent protocol.
+        setViewState({
+          layout: "single",
+          items: [{ kind: "image", carId: DEFAULT_VIN, imageId: turn.selectedImageId }],
+        });
+      }
       setMessages((items) => [...items, { role: "assistant", text: turn.reply }]);
       setImageBusy(false);
       if (turn.audioBase64 && audioRef.current) {
@@ -342,7 +414,10 @@ export default function SpecialistPage() {
   // -------------------------------------------------------------------------
 
   function applyAgentTurn(event: AgentTurnEvent) {
-    if (event.selectedImageId) setSelectedImageId(event.selectedImageId);
+    // Voice canvas authority is EXCLUSIVELY the view_update event.
+    // specialist_turn must NEVER force a ViewState — doing so would clobber
+    // multi-image grid/compare layouts that arrived via view_update just prior.
+    // Any selectedImageId on this event is intentionally ignored here.
     setLiveTranscript("");
     setMessages((items) => {
       const next = [...items];
@@ -408,7 +483,19 @@ export default function SpecialistPage() {
       profileId,
     });
     const { Room, RoomEvent } = await import("livekit-client");
-    const room = new Room();
+    // Capture-side cleanup runs in the browser BEFORE audio is encoded/sent —
+    // the biggest lever for the "too much background noise / echo" problem.
+    // echoCancellation stops the agent's own TTS (over speakers) bleeding back
+    // into the mic. (voiceIsolation — Chrome's experimental ML suppression —
+    // was removed: it's an unproven capture constraint and a possible suspect
+    // for the mic not publishing; these three are the safe LiveKit defaults.)
+    const room = new Room({
+      audioCaptureDefaults: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      },
+    });
 
     agentJoinedRef.current = new Promise<void>((resolve) => {
       agentJoinedResolveRef.current = resolve;
@@ -445,7 +532,34 @@ export default function SpecialistPage() {
         if (topic !== "vox.specialist.turn") return;
         try {
           const event = JSON.parse(new TextDecoder().decode(payload)) as DataEvent;
-          if (event.type === "specialist_turn") applyAgentTurn(event);
+          // TEMP DIAG: log every agent event so we can see if view_update arrives.
+          console.log(
+            "[vox] recv",
+            event.type,
+            event.type === "view_update"
+              ? `layout=${(event as ViewUpdateEvent).view?.layout} items=${(event as ViewUpdateEvent).view?.items?.length}`
+              : ""
+          );
+          if (event.type === "view_update") {
+            // Canvas agent protocol: replace local ViewState with the agent's view.
+            // Validate with Zod so a malformed event never crashes the canvas.
+            const parsed = ViewUpdateEventSchema.safeParse(event);
+            if (!parsed.success) {
+              console.warn("[vox] view_update REJECTED by schema:", JSON.stringify(parsed.error.issues).slice(0, 500));
+            } else {
+              const view = parsed.data.view;
+              console.log("[vox] applying view_update → setViewState", view.layout, view.zoom ? "(zoom)" : "");
+              if (view.zoom) {
+                // Live zoom: show the FULL image first, then apply the zoom a beat
+                // later so the CSS transition animates full → zoomed (otherwise the
+                // image mounts already-zoomed with no motion).
+                setViewState({ ...view, zoom: undefined });
+                setTimeout(() => setViewState(view), 500);
+              } else {
+                setViewState(view);
+              }
+            }
+          } else if (event.type === "specialist_turn") applyAgentTurn(event);
           else if (event.type === "agent_status") applyAgentStatus(event);
           else if (event.type === "reply_delta") applyReplyDelta(event);
           else if (event.type === "reply_done") applyReplyDone(event);
@@ -510,53 +624,6 @@ export default function SpecialistPage() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [voiceState, activeProfile.id]);
-
-  // -------------------------------------------------------------------------
-  // Profile selection + reconnect-on-change
-  // -------------------------------------------------------------------------
-
-  const handleProfileSelect = useCallback(async (profile: ModelProfile) => {
-    persistProfile(profile.id);
-    setActiveProfile(profile);
-
-    if (voiceState === "connected") {
-      // Reconnect with new profile so the backend uses the new LLM + TTS
-      setVoiceState("connecting");
-      try {
-        // Disconnect current room
-        await roomRef.current?.localParticipant.setMicrophoneEnabled(false).catch(() => {});
-        roomRef.current?.disconnect();
-        roomRef.current = null;
-
-        // Re-establish with new profile
-        await ensureLiveKitRoom(profile.id);
-
-        await Promise.race([
-          agentJoinedRef.current ?? Promise.resolve(),
-          new Promise<void>((resolve) => setTimeout(resolve, 6_000)),
-        ]);
-
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-        const switchedRoom = roomRef.current as LiveKitRoomLike | null;
-        if (switchedRoom !== null) {
-          await switchedRoom.localParticipant.setMicrophoneEnabled(true);
-          await switchedRoom.startAudio?.().catch(() => {});
-
-          if (switchedRoom.localParticipant.isMicrophoneEnabled === false) {
-            throw new Error("Microphone did not publish after model switch.");
-          }
-        }
-
-        setVoiceState("connected");
-      } catch (err) {
-        roomRef.current?.disconnect();
-        roomRef.current = null;
-        setVoiceState("error");
-        setError(err instanceof Error ? err.message : "Reconnect failed");
-      }
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [voiceState]);
 
   // -------------------------------------------------------------------------
   // Button rendering helpers
@@ -636,10 +703,6 @@ export default function SpecialistPage() {
                   alt={`${state.car.make} logo`}
                 />
                 <div className="stage-heading-text">
-                  <ModelSelector
-                    activeProfile={activeProfile}
-                    onSelect={handleProfileSelect}
-                  />
                   <h1>{state.car.year} {state.car.make} {state.car.model}</h1>
                 </div>
               </div>
@@ -665,31 +728,38 @@ export default function SpecialistPage() {
             </div>
           </div>
 
-          <div className="image-canvas">
-            {selectedImage ? (
-              <figure className="canvas-figure">
-                <img
-                  className="hero-image"
-                  src={selectedImage.url}
-                  alt={selectedImage.caption}
-                />
-                {!imageBusy ? (
-                  <figcaption className="canvas-caption">
-                    {selectedImage.role.replaceAll("_", " ")}
-                  </figcaption>
-                ) : null}
-              </figure>
-            ) : (
-              <div className="empty-image">
-                <ImageIcon />
+          {/* Canvas — pure renderer driven by viewState */}
+          <div className="canvas-outer">
+            <Canvas
+              viewState={viewState}
+              images={state.images}
+              imageBusy={imageBusy}
+            />
+            {/* Phase-1 dev harness — only visible when ?canvas=demo */}
+            {isCanvasDemo && demoViewStates.length > 0 && (
+              <div className="canvas-demo-controls">
+                <span className="canvas-demo-label">
+                  Demo {(demoIndex % demoViewStates.length) + 1}/{demoViewStates.length}:&nbsp;
+                  {demoViewStates[demoIndex % demoViewStates.length]?.layout}
+                </span>
+                <button
+                  type="button"
+                  className="canvas-demo-btn"
+                  onClick={() => setDemoIndex((n) => (n - 1 + demoViewStates.length) % demoViewStates.length)}
+                  aria-label="Previous demo state"
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  className="canvas-demo-btn"
+                  onClick={() => setDemoIndex((n) => (n + 1) % demoViewStates.length)}
+                  aria-label="Next demo state"
+                >
+                  ›
+                </button>
               </div>
             )}
-
-            {imageBusy ? (
-              <div className="canvas-badge">
-                <span className="canvas-spinner" /> Finding the right view…
-              </div>
-            ) : null}
           </div>
         </section>
 

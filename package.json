@@ -9,7 +9,7 @@
     "dev": "npm-run-all --parallel dev:api dev:web dev:agent",
     "dev:web": "npm --workspace @vox/web run dev",
     "dev:api": "npm --workspace @vox/api run dev",
-    "dev:agent": "npm --workspace @vox/agent run start",
+    "dev:agent": "npm --workspace @vox/agent run dev",
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "vitest run",

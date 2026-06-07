@@ -1,4 +1,16 @@
-import type { Car, CarImage, ImageRole, SpecialistSource, SpecialistTurn } from "@vox/core";
+import type {
+  BBox,
+  CanvasAction,
+  CanvasItem,
+  Car,
+  CarImage,
+  ImageRole,
+  ItemFilter,
+  ItemRef,
+  SpecialistSource,
+  SpecialistTurn,
+  ViewState
+} from "@vox/core";
 
 export type CatalogStore = {
   getCar(vin: string): Promise<Car | undefined>;
@@ -560,4 +572,417 @@ export async function orchestrateSpecialistTurn(
       : { type: "keep_current_image" },
     sources
   };
+}
+
+// ── Canvas agent foundation (Phase 0) ────────────────────────────────────────
+
+type Catalog = { images: CarImage[]; cars: Car[] };
+
+/**
+ * Resolve an ItemRef to a CanvasItem (image kind) using the catalog and the
+ * current ViewState. Returns undefined when the ref cannot be resolved.
+ */
+function resolveItemRef(ref: ItemRef, catalog: Catalog, state: ViewState): CanvasItem | undefined {
+  if ("index" in ref) {
+    const item = state.items[ref.index];
+    return item;
+  }
+  // Match by imageId ALONE — ids are globally unique, and the LLM frequently
+  // emits the wrong carId (e.g. the 17-char VIN from the fact sheet instead of
+  // the catalog key). Requiring carId to match was silently dropping every
+  // zoom/compare. Use the image's real vin so downstream stays consistent.
+  const image = catalog.images.find((img) => img.id === ref.imageId);
+  if (!image) return undefined;
+  return { kind: "image", carId: image.vin, imageId: image.id };
+}
+
+/**
+ * Filter the catalog images by optional carId/role/feature/tags and map the
+ * survivors to `{ kind: "image" }` CanvasItems, capped at `limit`.
+ *
+ * - `feature` is a case-insensitive substring search across caption,
+ *   visibleFeatures, and searchTags.
+ * - `tags` filters images that contain at least one of the given tags
+ *   (case-insensitive substring match against searchTags).
+ *
+ * Candidates are sorted by `confidence` descending before slicing so the
+ * strongest shots appear first in any grid — deterministically, regardless of
+ * catalog insertion order.
+ */
+export function selectItems(
+  catalog: Catalog,
+  filter: ItemFilter,
+  limit = 4
+): CanvasItem[] {
+  const featureLower = filter.feature ? normalize(filter.feature) : undefined;
+  const tagLowers = filter.tags?.map((t) => normalize(t)) ?? [];
+
+  return catalog.images
+    .filter((img) => img.status === "processed")
+    .filter((img) => !filter.carId || img.vin === filter.carId)
+    .filter((img) => !filter.role || img.role === filter.role)
+    .filter((img) => {
+      if (!featureLower) return true;
+      const haystack = normalize([
+        img.caption,
+        img.visibleFeatures.join(" "),
+        (img.searchTags ?? []).join(" ")
+      ].join(" "));
+      return haystack.includes(featureLower);
+    })
+    .filter((img) => {
+      if (tagLowers.length === 0) return true;
+      const imgTags = (img.searchTags ?? []).map((t) => normalize(t));
+      return tagLowers.some((tl) => imgTags.some((it) => it.includes(tl)));
+    })
+    .sort((a, b) => b.confidence - a.confidence)
+    .slice(0, limit)
+    .map((img): CanvasItem => ({ kind: "image", carId: img.vin, imageId: img.id }));
+}
+
+/**
+ * Pure, synchronous, total reducer. Returns the new ViewState for a given
+ * CanvasAction. Never throws on valid-typed input; unresolvable refs produce
+ * a no-op (returns `state` unchanged).
+ *
+ * Tier 2 ops (annotate, compare, focusCar) are schema-complete but their full
+ * behavior ships in Phase 5–6. They do update state here so the contract is
+ * exercisable from tests and the LLM decider today.
+ *
+ * Tier 3 ops (generate, reset) insert a pending item / reset to overview.
+ */
+export function applyAction(state: ViewState, action: CanvasAction, catalog: Catalog): ViewState {
+  switch (action.op) {
+    case "showImage": {
+      // Normalize carId to the image's real vin (the LLM often sends the wrong
+      // carId); resolve by imageId. Unknown imageId → no-op.
+      const image = catalog.images.find((img) => img.id === action.imageId);
+      if (!image) return state;
+      const item: CanvasItem = { kind: "image", carId: image.vin, imageId: image.id };
+      return { layout: "single", items: [item] };
+    }
+
+    case "showImages": {
+      let items: CanvasItem[];
+      if (action.imageIds && action.imageIds.length > 0) {
+        // Explicit list of imageIds — resolve against catalog; drop unknowns.
+        const carId = action.carId;
+        items = action.imageIds.flatMap((imageId): CanvasItem[] => {
+          const img = catalog.images.find(
+            (i) => i.id === imageId && (!carId || i.vin === carId)
+          );
+          if (!img) return [];
+          return [{ kind: "image", carId: img.vin, imageId: img.id }];
+        });
+      } else {
+        const filter: ItemFilter = {
+          carId: action.carId,
+          role: action.filter?.role,
+          feature: action.filter?.feature,
+          tags: action.filter?.tags
+        };
+        items = selectItems(catalog, filter, action.limit ?? 4);
+      }
+      const limited = items.slice(0, action.limit ?? 4);
+      return { layout: "grid", items: limited };
+    }
+
+    case "zoom": {
+      const target = resolveItemRef(action.itemRef, catalog, state);
+      if (!target || target.kind !== "image") return state;
+
+      // Is the target already on screen? Zoom it in place. Otherwise "zoom
+      // implies show": focus it as a single image first, so we never zoom the
+      // wrong photo (previously this fell back to item index 0).
+      const existingIndex = state.items.findIndex(
+        (it) => it.kind === "image" && it.imageId === target.imageId && it.carId === target.carId
+      );
+      const onScreen = existingIndex >= 0;
+      const items = onScreen ? state.items : [target];
+      const layout = onScreen ? state.layout : "single";
+      const itemIndex = onScreen ? existingIndex : 0;
+
+      let region: BBox;
+      if (typeof action.region === "string") {
+        const image = catalog.images.find((i) => i.id === target.imageId && i.vin === target.carId);
+        // Named zoomTarget if seeded (Phase 6); otherwise a tight center crop so
+        // "zoom in" is an obvious close-up, not a barely-noticeable nudge.
+        region = image?.zoomTargets?.[action.region] ?? [0.28, 0.3, 0.44, 0.44];
+      } else {
+        region = action.region;
+      }
+      return { ...state, layout, items, zoom: { itemIndex, region } };
+    }
+
+    case "annotate": {
+      const target = resolveItemRef(action.itemRef, catalog, state);
+      if (!target) return state;
+      const itemIndex = state.items.findIndex(
+        (it) =>
+          it.kind === "image" &&
+          target.kind === "image" &&
+          it.imageId === target.imageId &&
+          it.carId === target.carId
+      );
+      const resolvedIndex = itemIndex >= 0 ? itemIndex : 0;
+      const marks = action.marks.map((m) => ({
+        itemIndex: resolvedIndex,
+        box: m.box,
+        label: m.label
+      }));
+      return { ...state, marks };
+    }
+
+    case "compare": {
+      const [refA, refB] = action.itemRefs;
+      const itemA = resolveItemRef(refA, catalog, state);
+      const itemB = resolveItemRef(refB, catalog, state);
+      if (!itemA || !itemB) return state;
+      return { layout: "compare", items: [itemA, itemB] };
+    }
+
+    case "focusCar": {
+      // Switch focus to the given car. Default view = that car's first image.
+      const firstImage = catalog.images.find(
+        (img) => img.vin === action.carId && img.status === "processed"
+      );
+      if (!firstImage) {
+        // Car exists in catalog.cars but has no images — show a car card.
+        const carItem: CanvasItem = { kind: "car", carId: action.carId };
+        return { layout: "focus", items: [carItem] };
+      }
+      const item: CanvasItem = { kind: "image", carId: firstImage.vin, imageId: firstImage.id };
+      return { layout: "single", items: [item] };
+    }
+
+    case "generate": {
+      // Insert a pending generated item; the heavy lane resolves it later.
+      const generated: CanvasItem = {
+        kind: "generated",
+        id: `gen-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        prompt: action.prompt,
+        status: "pending"
+      };
+      return { ...state, items: [...state.items, generated] };
+    }
+
+    case "reset": {
+      // Default overview: first processed image as single.
+      const firstImage = catalog.images.find((img) => img.status === "processed");
+      if (!firstImage) return { layout: "single", items: [] };
+      const item: CanvasItem = { kind: "image", carId: firstImage.vin, imageId: firstImage.id };
+      return { layout: "single", items: [item] };
+    }
+  }
+}
+
+// ── Intent detection constants for planCanvas ─────────────────────────────────
+
+const SHOW_ALL_PHRASES = [
+  "show all", "all pics", "all pictures", "all photos", "all angles",
+  "all images", "every photo", "everything", "all of them", "all the photos",
+  "show everything", "see all", "see everything"
+];
+
+// Bare count/quantity phrases that mean "show me several images" with no role filter.
+const BARE_COUNT_PHRASES = [
+  "four images", "four photos", "four pictures", "four pics",
+  "a few images", "a few photos", "a few pictures", "a few pics",
+  "some images", "some photos", "some pictures", "some pics",
+  "several images", "several photos", "several pictures",
+  "more images", "more photos", "more pictures"
+];
+
+// Broad AREA terms → role(s). These trigger a showImages grid (not a single image).
+// Interior is special: includes both interior_front and interior_rear.
+type AreaEntry = { roles: ImageRole[]; terms: string[] };
+const AREA_INTENT_MAP: AreaEntry[] = [
+  { roles: ["interior_front", "interior_rear"], terms: ["interior", "inside", "cabin", "seats", "seat"] },
+  { roles: ["dashboard"], terms: ["dashboard", "dash", "cockpit"] },
+  { roles: ["exterior_front"], terms: ["exterior", "outside", "front"] },
+  { roles: ["exterior_rear"], terms: ["rear", "back"] },
+  { roles: ["wheel"], terms: ["wheel", "wheels", "rim", "rims", "tire", "tires"] },
+  { roles: ["trunk"], terms: ["trunk", "cargo", "boot"] }
+];
+
+const COMPARE_PHRASES = ["compare", " vs ", " versus ", "difference", "both", "other side", "side by side", "side-by-side"];
+const ZOOM_PHRASES = ["closer", "zoom in", "zoom into", "up close", "close up on", "detail of", "zoom", "close-up", "zoomed"];
+
+// Specific small-part phrases that trigger showImage + zoom pair rather than a grid.
+// Ordered longest-first so multi-word phrases are matched before their substrings.
+const SPECIFIC_PARTS: string[] = [
+  "gear selector",
+  "gear shifter",
+  "gear stick",
+  "shift lever",
+  "gear lever",
+  "infotainment screen",
+  "center console",
+  "button cluster",
+  "brake caliper",
+  "shifter",
+  "gearstick",
+  "infotainment",
+  "stitching",
+  "caliper",
+  "vent",
+  "badge",
+  "mirror",
+  "button",
+  "screen",
+  "stick"
+];
+
+/**
+ * Per-part zoom regions [x, y, w, h] in 0..1 relative image coordinates.
+ * Used by the specific-part branch of planCanvas so the heuristic fallback
+ * auto-zooms to the right area without an LLM call.
+ */
+const PART_REGIONS: Record<string, BBox> = {
+  "gear selector": [0.26, 0.45, 0.42, 0.45],
+  "gear shifter":  [0.26, 0.45, 0.42, 0.45],
+  "gear stick":    [0.26, 0.45, 0.42, 0.45],
+  "shift lever":   [0.26, 0.45, 0.42, 0.45],
+  "gear lever":    [0.26, 0.45, 0.42, 0.45],
+  "shifter":       [0.26, 0.45, 0.42, 0.45],
+  "gearstick":     [0.26, 0.45, 0.42, 0.45],
+  "badge":         [0.30, 0.30, 0.30, 0.30],
+  "button":        [0.30, 0.55, 0.40, 0.35],
+  "button cluster":[0.30, 0.55, 0.40, 0.35],
+  "vent":          [0.25, 0.20, 0.50, 0.35],
+  "screen":        [0.20, 0.10, 0.60, 0.50],
+  "infotainment":  [0.20, 0.10, 0.60, 0.50],
+  "infotainment screen": [0.20, 0.10, 0.60, 0.50],
+  "center console":[0.30, 0.40, 0.40, 0.50],
+  "caliper":       [0.20, 0.30, 0.50, 0.50],
+  "brake caliper": [0.20, 0.30, 0.50, 0.50],
+  "mirror":        [0.60, 0.20, 0.30, 0.40],
+  "stitching":     [0.25, 0.50, 0.50, 0.40],
+  "stick":         [0.26, 0.45, 0.42, 0.45]
+};
+
+/** Default per-part zoom region when the specific part has no explicit entry. */
+const DEFAULT_PART_REGION: BBox = [0.28, 0.3, 0.44, 0.44];
+
+/**
+ * Gather images matching any of the given roles, sorted by confidence desc,
+ * limited to `limit`. Used to build the interior grid that spans both
+ * interior_front and interior_rear.
+ */
+function mergeRoleImages(images: CarImage[], roles: ImageRole[], limit: number): CarImage[] {
+  return images
+    .filter((img) => img.status === "processed" && roles.includes(img.role))
+    .sort((a, b) => b.confidence - a.confidence)
+    .slice(0, limit);
+}
+
+/**
+ * Fast heuristic decider: maps a user utterance to a list of CanvasActions
+ * using the existing `rankImagesForQuestion` scorer. Pure, synchronous, O(n
+ * images) — designed to run in < 5ms. Returns [] for greetings / empty input
+ * so the canvas stays unchanged.
+ *
+ * Intent priority (first match wins):
+ *  1. Greeting / empty          → []
+ *  2. "show all"                → showImages({})
+ *  3. Bare count triggers       → showImages({}, limit 4)
+ *  4. Specific small part       → [showImage top-ranked, zoom with PART_REGIONS BBox]
+ *  5. Compare intent            → compare top-2 ranked
+ *  6. Zoom intent               → zoom top-ranked (named-target string)
+ *  7. Broad area / category     → showImages({ imageIds: merged roles, limit 4 })
+ *  8. Default                   → showImage top-ranked
+ *
+ * Compare and zoom run before area so "compare the front and rear" / "zoom in
+ * on the wheels" are not swallowed by the area branch.
+ */
+export function planCanvas(message: string, images: CarImage[], state: ViewState): CanvasAction[] {
+  if (!message.trim() || isCasualGreeting(message)) return [];
+
+  const lower = message.toLowerCase();
+
+  // 1. "show all / everything / all pics / all angles"
+  if (SHOW_ALL_PHRASES.some((phrase) => lower.includes(phrase))) {
+    return [{ op: "showImages" }];
+  }
+
+  // 2. Bare count triggers ("a few photos", "some pictures", "four images")
+  if (BARE_COUNT_PHRASES.some((phrase) => lower.includes(phrase))) {
+    return [{ op: "showImages", limit: 4 }];
+  }
+
+  // 3. Specific small-part recognizer — runs before area so "gear shifter"
+  //    doesn't get swallowed by the broad "interior/cabin" area branch.
+  //    SPECIFIC_PARTS is ordered longest-first to avoid partial matches.
+  const matchedPart = SPECIFIC_PARTS.find((part) => lower.includes(part));
+  if (matchedPart) {
+    const ranked = rankImagesForQuestion(message, images);
+    const top = ranked[0];
+    if (!top) return [];
+    const region: BBox = PART_REGIONS[matchedPart] ?? DEFAULT_PART_REGION;
+    const itemRef: ItemRef = { carId: top.image.vin, imageId: top.image.id };
+    return [
+      { op: "showImage", carId: top.image.vin, imageId: top.image.id },
+      { op: "zoom", itemRef, region }
+    ];
+  }
+
+  // 4. Compare intent — runs before area so "compare the front and rear" is not
+  //    captured by the area branch ("front"/"rear" terms).
+  const hasCompareIntent = COMPARE_PHRASES.some((phrase) => lower.includes(phrase));
+  if (hasCompareIntent) {
+    const ranked = rankImagesForQuestion(message, images);
+    const first = ranked[0];
+    const second = ranked[1];
+    if (first && second) {
+      const refA: ItemRef = { carId: first.image.vin, imageId: first.image.id };
+      const refB: ItemRef = { carId: second.image.vin, imageId: second.image.id };
+      return [{ op: "compare", itemRefs: [refA, refB] }];
+    }
+    if (first) {
+      return [{ op: "showImage", carId: first.image.vin, imageId: first.image.id }];
+    }
+    return [];
+  }
+
+  // 5. Zoom intent — runs before area so "zoom in on the wheels" is not
+  //    captured by the area branch ("wheels" term).
+  const matchedZoomPhrase = ZOOM_PHRASES.find((phrase) => lower.includes(phrase));
+  if (matchedZoomPhrase) {
+    const ranked = rankImagesForQuestion(message, images);
+    const top = ranked[0];
+    if (top) {
+      // Use the matched zoom phrase as the named target (normalized, no spaces).
+      const namedTarget = matchedZoomPhrase.trim().replace(/\s+/g, "-");
+      return [{ op: "zoom", itemRef: { carId: top.image.vin, imageId: top.image.id }, region: namedTarget }];
+    }
+    // Bare "zoom in" with no rankable target → zoom whatever is CURRENTLY on
+    // screen (don't return [] — that left the canvas idle while the reply said
+    // "here's a closer look", a voice/canvas mismatch).
+    const current = state.items[0];
+    if (current?.kind === "image") {
+      return [{ op: "zoom", itemRef: { index: 0 }, region: [0.28, 0.3, 0.44, 0.44] }];
+    }
+    return [];
+  }
+
+  // 6. Broad AREA intent → showImages grid (includes interior_rear for interior).
+  //    Triggered by area terms alone OR when paired with a MULTI_IMAGE_PHRASE.
+  const areaMatch = AREA_INTENT_MAP.find(
+    (entry) => entry.terms.some((term) => lower.includes(term))
+  );
+  if (areaMatch) {
+    const merged = mergeRoleImages(images, areaMatch.roles, 4);
+    if (merged.length > 0) {
+      const imageIds = merged.map((img) => img.id);
+      const carId = merged[0]!.vin;
+      return [{ op: "showImages", carId, imageIds, limit: 4 }];
+    }
+    // No matching images — fall through to ranked default below.
+  }
+
+  // 7. Default: showImage of top-ranked
+  const ranked = rankImagesForQuestion(message, images);
+  const top = ranked[0];
+  if (!top) return [];
+  return [{ op: "showImage", carId: top.image.vin, imageId: top.image.id }];
 }

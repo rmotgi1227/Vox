@@ -2,8 +2,8 @@ import { existsSync } from "node:fs";
 import { readFile, writeFile, mkdir, copyFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
-import type { Car, CarImage, ImageRole } from "@vox/core";
-import { CarImageSchema, CarSchema, DEFAULT_VIN, carFactSheet } from "@vox/core";
+import type { Car, CarImage, ImageRole, CanvasAction, ViewState } from "@vox/core";
+import { CarImageSchema, CarSchema, DEFAULT_VIN, carFactSheet, CanvasActionSchema } from "@vox/core";
 import { z } from "zod";
 
 const root = findRepoRoot(process.cwd());
@@ -163,7 +163,10 @@ export async function saveUploadedImage(input: {
     searchTags: [],
     likelyQuestions: [],
     confidence: 0,
-    status: "pending"
+    status: "pending",
+    boxes: [],
+    zoomTargets: {},
+    pairs: []
   };
   const images = await readImages();
   images.push(image);
@@ -213,7 +216,10 @@ export async function copySeedImageForTests(sourceUrl: string, vin = DEFAULT_VIN
     searchTags: [],
     likelyQuestions: [],
     confidence: 0,
-    status: "pending"
+    status: "pending",
+    boxes: [],
+    zoomTargets: {},
+    pairs: []
   };
 }
 
@@ -999,4 +1005,940 @@ export async function streamMiniMaxChat(input: {
       void reader.cancel(reason).catch(() => {});
     }
   });
+}
+
+// ── STT cleanup (Cerebras) ──────────────────────────────────────────────────
+//
+// Layer a fast LLM on top of Deepgram to repair recognition errors before the
+// transcript is sent to the reply model and shown in the chat. Runs Cerebras
+// gpt-oss-120b with modest reasoning — a short correction lands in ~150–350ms,
+// dominated by reasoning + network RTT, not the (tiny) output. Note: the public
+// Cerebras tier only serves gpt-oss-120b / zai-glm-4.7 (Llama needs a dedicated
+// endpoint), so gpt-oss-120b is the default.
+//
+// Hard rules for the voice critical path:
+//  - bounded: a short AbortController timeout; on ANY failure/timeout/mock-mode
+//    we return the RAW transcript so a slow or down Cerebras never blocks or
+//    breaks a turn.
+//  - conservative: temperature 0 + a prompt that only fixes obvious ASR errors
+//    and never rephrases, answers, or changes meaning.
+//  - cheap: skipped for trivially short turns (greetings) where there is nothing
+//    to fix and the round trip isn't worth the latency.
+
+const CEREBRAS_CHAT_URL = "https://api.cerebras.ai/v1/chat/completions";
+
+// ── Cerebras API-key "revolver" ─────────────────────────────────────────────
+// Multiple keys multiply the per-key requests-per-minute limit. cerebrasKeys()
+// gathers every configured key; cerebrasChatCompletion() round-robins the START
+// key per call (spreading load across turns) and, on ANY failure for a key
+// (429 rate-limit, 5xx, bad key, network/timeout), rotates to the next key
+// before giving up. Add keys as CEREBRAS_API_KEY, CEREBRAS_API_KEY_2, _3, …
+// (or a comma-separated CEREBRAS_API_KEYS) — they're discovered automatically.
+function cerebrasKeys(): string[] {
+  const keys: string[] = [];
+  const push = (v: string | undefined) => {
+    const t = v?.trim();
+    if (t && !keys.includes(t)) keys.push(t);
+  };
+  for (const part of (process.env.CEREBRAS_API_KEYS ?? "").split(",")) push(part);
+  push(process.env.CEREBRAS_API_KEY);
+  for (let n = 2; n <= 12; n++) push(process.env[`CEREBRAS_API_KEY_${n}`]);
+  return keys;
+}
+
+let cerebrasKeyCursor = 0;
+
+async function cerebrasChatCompletion(
+  body: Record<string, unknown>,
+  opts: { timeoutMs: number }
+): Promise<{ choices?: Array<{ message?: { content?: string } }> }> {
+  const keys = cerebrasKeys();
+  if (keys.length === 0) throw new Error("No Cerebras API key configured (set CEREBRAS_API_KEY).");
+
+  // Advance once per call so consecutive turns start on different keys.
+  const start = cerebrasKeyCursor;
+  cerebrasKeyCursor = (cerebrasKeyCursor + 1) % keys.length;
+  const payload = JSON.stringify(body);
+
+  let lastErr: Error | undefined;
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[(start + i) % keys.length]!;
+    const controller = new AbortController();
+    const timeoutHandle = setTimeout(() => controller.abort(), opts.timeoutMs);
+    try {
+      const resp = await fetch(CEREBRAS_CHAT_URL, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+        body: payload,
+        signal: controller.signal
+      });
+      if (!resp.ok) {
+        // 429 / 5xx / bad key — rotate to the next chamber of the revolver.
+        lastErr = new Error(`Cerebras ${resp.status}: ${await resp.text().catch(() => "")}`);
+        continue;
+      }
+      return (await resp.json()) as { choices?: Array<{ message?: { content?: string } }> };
+    } catch (err) {
+      // Timeout / network / abort — try the next key too.
+      lastErr = err instanceof Error ? err : new Error(String(err));
+      continue;
+    } finally {
+      clearTimeout(timeoutHandle);
+    }
+  }
+  throw lastErr ?? new Error("Cerebras request failed on all keys.");
+}
+
+export async function correctTranscript(input: {
+  transcript: string;
+  carContext?: string;
+  model?: string;
+  timeoutMs?: number;
+}): Promise<string> {
+  const raw = input.transcript.trim();
+  // No key, mock mode, or too short to be worth a round trip / correction risk.
+  if (
+    cerebrasKeys().length === 0 ||
+    process.env.VOX_PROVIDER_MODE === "mock" ||
+    raw.length < 8 ||
+    raw.split(/\s+/).length < 2
+  ) {
+    return raw;
+  }
+
+  try {
+    const system = [
+      "You repair raw speech-to-text transcripts from a live BMW M4 sales conversation.",
+      "Return the FULL transcript with ONLY obvious speech-recognition errors fixed: misheard model names, trims, options, colors, and numbers — e.g. 'em four'/'i4' -> 'M4', 'ex drive' -> 'xDrive', 'step tronic' -> 'Steptronic', 'brooklyn gray' -> 'Brooklyn Grey', spelled-out prices or mileage into digits.",
+      "Keep EVERY other word, including the question itself. Never drop, add, summarize, answer, reorder, or rephrase. If nothing is clearly misrecognized, return the transcript verbatim.",
+      "Output ONLY the corrected transcript text — no quotes, labels, preamble, or explanation.",
+      input.carContext ? `The car being discussed: ${input.carContext}.` : ""
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    const json = await cerebrasChatCompletion({
+      model: input.model || process.env.CEREBRAS_MODEL || "gpt-oss-120b",
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: raw }
+      ],
+      temperature: 0,
+      // gpt-oss is a reasoning model; "low" was prone to dropping words,
+      // "medium" stays faithful. Give the cap headroom so reasoning never
+      // starves the (short) corrected output — truncation yields empty
+      // content and we'd fall back to raw.
+      reasoning_effort: "medium",
+      max_completion_tokens: 400,
+      stream: false
+    }, { timeoutMs: input.timeoutMs ?? 600 });
+
+    const corrected = json.choices?.[0]?.message?.content
+      ?.replace(/^["'`\s]+|["'`\s]+$/g, "")
+      .trim();
+    if (!corrected) return raw;
+    // Guardrails: reject rewrites that balloon OR gut the transcript — those are
+    // the model rephrasing / answering / dropping the question, not correcting
+    // recognition. The raw transcript is safer than a mangled one.
+    const rawWords = raw.split(/\s+/).length;
+    const outWords = corrected.split(/\s+/).length;
+    if (corrected.length > raw.length * 2 + 40) return raw;
+    if (rawWords >= 4 && outWords < rawWords * 0.6) return raw;
+    return corrected;
+  } catch {
+    // timeout / abort / network / all keys exhausted — never block the turn
+    return raw;
+  }
+}
+
+/**
+ * Fast JSON call on Cerebras (OpenAI-compatible). Cerebras inference is ~10–20×
+ * MiniMax-Text-01 throughput, so the single-brain decideTurn call returns in
+ * ~1s instead of 5–6s. Uses low reasoning effort for speed; relies on the
+ * prompt + parseJsonObject for JSON (no response_format, to stay compatible).
+ * Throws on any failure so the caller can fall back to MiniMax.
+ */
+async function callCerebrasJson(input: {
+  system: string;
+  user: string;
+  maxTokens?: number;
+  timeoutMs?: number;
+}): Promise<unknown> {
+  if (cerebrasKeys().length === 0) throw new Error("CEREBRAS_API_KEY is required for callCerebrasJson.");
+  const json = await cerebrasChatCompletion({
+    model: process.env.CEREBRAS_DECISION_MODEL || process.env.CEREBRAS_MODEL || "gpt-oss-120b",
+    messages: [
+      { role: "system", content: input.system },
+      { role: "user", content: input.user }
+    ],
+    temperature: 0.2,
+    reasoning_effort: "low",
+    max_completion_tokens: input.maxTokens ?? 700,
+    stream: false
+  }, { timeoutMs: input.timeoutMs ?? 8_000 });
+  const text = json.choices?.[0]?.message?.content?.trim();
+  if (!text) throw new Error("Cerebras returned an empty response.");
+  return parseJsonObject(text);
+}
+
+// ── Canvas brain (Phase 4) ─────────────────────────────────────────────────────
+
+const DecideCanvasResponseSchema = z.object({
+  actions: z.array(z.unknown())
+});
+
+/**
+ * LLM canvas decider — async, slow-lane (1–3s budget).
+ *
+ * Asks MiniMax to choose 0–3 CanvasActions from the tool catalog given the
+ * current shopper message, the live ViewState, and per-image metadata. Returns
+ * [] on any parse failure so the heuristic first-paint stays up. Never throws.
+ *
+ * VOX_PROVIDER_MODE=mock → returns [] immediately (no API call).
+ */
+export async function decideCanvasActions(input: {
+  message: string;
+  viewState: ViewState;
+  car: Car;
+  images: CarImage[];
+  recentTurns?: { role: string; text: string }[];
+}): Promise<CanvasAction[]> {
+  // Mock mode: no-op. The heuristic first-paint already painted the screen.
+  if (process.env.VOX_PROVIDER_MODE === "mock") return [];
+
+  const allowedImageIds = new Set(input.images.map((img) => img.id));
+
+  // Compact image option list for the prompt — id, role, caption, visible features.
+  const imageOptions = input.images.map((img) => ({
+    id: img.id,
+    role: img.role,
+    caption: img.caption,
+    visibleFeatures: img.visibleFeatures.slice(0, 6)
+  }));
+
+  // Compact current-view summary so the LLM knows what's already on screen.
+  const currentViewSummary = {
+    layout: input.viewState.layout,
+    itemCount: input.viewState.items.length,
+    items: input.viewState.items.map((item) => {
+      if (item.kind === "image") return { kind: "image", imageId: item.imageId };
+      if (item.kind === "generated") return { kind: "generated", status: item.status };
+      return { kind: item.kind };
+    })
+  };
+
+  const systemPrompt = [
+    "You are the canvas brain for Vox, a BMW M4 sales specialist agent.",
+    "Your job: given the shopper's latest message and the current canvas state, choose the MINIMAL set of canvas actions (0–3) that best illustrates what the shopper wants to see.",
+    "Return STRICT JSON only: { \"actions\": [ ...action objects... ] }",
+    "Each action must conform to one of these schemas (pick op from: showImage, showImages, zoom, compare, annotate, focusCar — NOT generate):",
+    "  showImage: { op: \"showImage\", carId: string, imageId: string }",
+    "  showImages: { op: \"showImages\", carId?: string, imageIds?: string[], filter?: { role?: string }, limit?: number (max 4) }",
+    "  zoom: { op: \"zoom\", itemRef: { carId: string, imageId: string } | { index: number }, region: [x,y,w,h] | \"named-target\" }",
+    "  compare: { op: \"compare\", itemRefs: [itemRefA, itemRefB] }",
+    "  annotate: { op: \"annotate\", itemRef: itemRef, marks: [{ box: [x,y,w,h], label: string }] }",
+    "  focusCar: { op: \"focusCar\", carId: string }",
+    "RULES:",
+    "- imageId values MUST come from IMAGE_OPTIONS.id. Never invent ids.",
+    "- carId is always the image's vin field (use it from IMAGE_OPTIONS).",
+    "- If no canvas change is needed (e.g. greeting, pure spec question), return { \"actions\": [] }.",
+    "- Keep the list to 0–3 actions. More is not better.",
+    "- Choose actions that feel natural and helpful — if the shopper asks to see wheels, showImage the wheel photo.",
+    "- For compare/multi-view requests, prefer showImages or compare with explicit imageIds.",
+    "- Do not change the canvas unnecessarily if the current view already answers the question.",
+    `car: { make: "${input.car.make}", model: "${input.car.model}", vin: "${input.car.vin}" }`
+  ].join(" ");
+
+  const userPayload = JSON.stringify({
+    shopperMessage: input.message,
+    currentCanvas: currentViewSummary,
+    recentTurns: (input.recentTurns ?? []).slice(-4),
+    imageOptions
+  });
+
+  let raw: unknown;
+  try {
+    raw = await callMiniMaxJson({
+      system: systemPrompt,
+      user: userPayload,
+      maxTokens: 256,
+      timeoutMs: 10_000
+    });
+  } catch (error) {
+    // LLM call failed — heuristic first-paint is already on screen, stay silent.
+    console.warn(
+      `decideCanvasActions: LLM call failed, returning [] — ${error instanceof Error ? error.message : String(error)}`
+    );
+    return [];
+  }
+
+  // Parse outer envelope.
+  const envelope = DecideCanvasResponseSchema.safeParse(raw);
+  if (!envelope.success) {
+    console.warn(`decideCanvasActions: unexpected response shape, returning []`);
+    return [];
+  }
+
+  // Validate each action individually; drop any that fail schema validation.
+  const validated: CanvasAction[] = [];
+  for (const candidate of envelope.data.actions) {
+    const parsed = CanvasActionSchema.safeParse(candidate);
+    if (!parsed.success) {
+      console.warn(`decideCanvasActions: dropped invalid action — ${parsed.error.message}`);
+      continue;
+    }
+    const action = parsed.data;
+    // Drop any action that references imageIds not in the allowed set.
+    if (action.op === "showImage") {
+      if (!allowedImageIds.has(action.imageId)) {
+        console.warn(`decideCanvasActions: dropped showImage with unknown imageId ${action.imageId}`);
+        continue;
+      }
+    }
+    if (action.op === "showImages" && action.imageIds) {
+      const filtered = action.imageIds.filter((id) => allowedImageIds.has(id));
+      if (filtered.length === 0) {
+        console.warn(`decideCanvasActions: dropped showImages — all imageIds unknown`);
+        continue;
+      }
+      validated.push({ ...action, imageIds: filtered } as CanvasAction);
+      continue;
+    }
+    if (action.op === "zoom") {
+      // Validate the itemRef image exists if it's a carId+imageId ref.
+      if ("imageId" in action.itemRef && !allowedImageIds.has(action.itemRef.imageId)) {
+        console.warn(`decideCanvasActions: dropped zoom with unknown imageId ${action.itemRef.imageId}`);
+        continue;
+      }
+    }
+    if (action.op === "compare") {
+      // Validate both refs.
+      const [refA, refB] = action.itemRefs;
+      const aOk = "index" in refA || allowedImageIds.has((refA as { imageId: string }).imageId);
+      const bOk = "index" in refB || allowedImageIds.has((refB as { imageId: string }).imageId);
+      if (!aOk || !bOk) {
+        console.warn(`decideCanvasActions: dropped compare with unknown imageId`);
+        continue;
+      }
+    }
+    validated.push(action);
+    if (validated.length >= 3) break; // cap at 3
+  }
+
+  return validated;
+}
+
+const DecideTurnResponseSchema = z.object({
+  reply: z.string().min(1),
+  actions: z.array(z.unknown()).optional().default([])
+});
+
+// Valid role strings for the ImageRole enum (sourced from @vox/core ImageRoleSchema).
+const VALID_IMAGE_ROLES = new Set([
+  "exterior_front", "exterior_rear", "interior_front", "interior_rear",
+  "dashboard", "trunk", "wheel", "detail", "unknown"
+]);
+
+/**
+ * Pre-repair a raw candidate action object before schema parsing so that small
+ * model errors don't silently drop a whole action.
+ *
+ * Repairs applied (with console.warn):
+ *  - showImages: filter.role invalid (e.g. "all" / "mixed") → strip the role so
+ *    the filter still renders (by imageIds or unfiltered); clamp limit to ≤ 4.
+ *  - showImage / showImages: carId wrong / missing → look up the image by
+ *    imageId and use its real vin (the model frequently emits a wrong carId).
+ */
+function repairCandidateAction(
+  candidate: unknown,
+  images: CarImage[]
+): unknown {
+  if (typeof candidate !== "object" || candidate === null) return candidate;
+  const c = candidate as Record<string, unknown>;
+  const imageById = new Map(images.map((img) => [img.id, img]));
+
+  // Repair showImage — fix carId from real image vin.
+  if (c["op"] === "showImage") {
+    const imageId = typeof c["imageId"] === "string" ? c["imageId"] : undefined;
+    if (imageId) {
+      const img = imageById.get(imageId);
+      if (img && c["carId"] !== img.vin) {
+        console.warn(`validateCanvasActions: repaired showImage carId "${String(c["carId"])}" → "${img.vin}" for imageId ${imageId}`);
+        return { ...c, carId: img.vin };
+      }
+    }
+    return c;
+  }
+
+  // Repair showImages — fix bad filter.role and clamp limit.
+  if (c["op"] === "showImages") {
+    let repaired = { ...c };
+    // Fix carId from first known imageId if present.
+    const imageIds = Array.isArray(repaired["imageIds"]) ? repaired["imageIds"] as string[] : [];
+    if (imageIds.length > 0) {
+      const firstImg = imageById.get(imageIds[0] ?? "");
+      if (firstImg && repaired["carId"] !== firstImg.vin) {
+        console.warn(`validateCanvasActions: repaired showImages carId "${String(repaired["carId"])}" → "${firstImg.vin}"`);
+        repaired = { ...repaired, carId: firstImg.vin };
+      }
+    }
+    // Fix invalid filter.role.
+    if (
+      repaired["filter"] !== null &&
+      typeof repaired["filter"] === "object" &&
+      !Array.isArray(repaired["filter"])
+    ) {
+      const filter = repaired["filter"] as Record<string, unknown>;
+      if (filter["role"] !== undefined && !VALID_IMAGE_ROLES.has(String(filter["role"]))) {
+        console.warn(`validateCanvasActions: stripped invalid showImages filter.role "${String(filter["role"])}"`);
+        // Remove role key; keep other filter fields (carId, feature, tags).
+        const { role: _dropped, ...restFilter } = filter;
+        void _dropped;
+        repaired = { ...repaired, filter: Object.keys(restFilter).length > 0 ? restFilter : undefined };
+      }
+    }
+    // Clamp limit to 4.
+    if (typeof repaired["limit"] === "number" && repaired["limit"] > 4) {
+      console.warn(`validateCanvasActions: clamped showImages limit ${repaired["limit"]} → 4`);
+      repaired = { ...repaired, limit: 4 };
+    }
+    return repaired;
+  }
+
+  return c;
+}
+
+/**
+ * Validate raw candidate canvas actions: repair repairable issues (bad role,
+ * wrong carId, over-limit), drop any that still fail schema or reference unknown
+ * image ids, then cap at 3. Shared by the single-brain and streaming paths.
+ */
+function validateCanvasActions(
+  candidates: unknown[],
+  allowedImageIds: Set<string>,
+  images: CarImage[] = []
+): CanvasAction[] {
+  const validated: CanvasAction[] = [];
+  for (const rawCandidate of candidates) {
+    const candidate = repairCandidateAction(rawCandidate, images);
+    const parsed = CanvasActionSchema.safeParse(candidate);
+    if (!parsed.success) {
+      console.warn(`validateCanvasActions: dropped invalid action — ${parsed.error.message}`);
+      continue;
+    }
+    const action = parsed.data;
+    if (action.op === "showImage" && !allowedImageIds.has(action.imageId)) {
+      console.warn(`validateCanvasActions: dropped showImage with unknown imageId ${action.imageId}`);
+      continue;
+    }
+    if (action.op === "showImages" && action.imageIds) {
+      const filtered = action.imageIds.filter((id) => allowedImageIds.has(id));
+      if (filtered.length === 0) {
+        console.warn(`validateCanvasActions: dropped showImages — all imageIds unknown`);
+        continue;
+      }
+      validated.push({ ...action, imageIds: filtered } as CanvasAction);
+      if (validated.length >= 3) break;
+      continue;
+    }
+    if (action.op === "zoom" && "imageId" in action.itemRef && !allowedImageIds.has(action.itemRef.imageId)) {
+      console.warn(`validateCanvasActions: dropped zoom with unknown imageId ${action.itemRef.imageId}`);
+      continue;
+    }
+    if (action.op === "compare") {
+      const [refA, refB] = action.itemRefs;
+      const aOk = "index" in refA || allowedImageIds.has((refA as { imageId: string }).imageId);
+      const bOk = "index" in refB || allowedImageIds.has((refB as { imageId: string }).imageId);
+      if (!aOk || !bOk) {
+        console.warn(`validateCanvasActions: dropped compare with unknown imageId`);
+        continue;
+      }
+    }
+    validated.push(action);
+    if (validated.length >= 3) break;
+  }
+  return validated;
+}
+
+/**
+ * SINGLE-BRAIN turn decider. One LLM call returns BOTH the spoken reply and the
+ * canvas actions, so voice and canvas come from one decision and can never
+ * disagree. Throws on hard failure (LLM/parse) so the caller can fall back to
+ * the fast heuristic + a generic reply.
+ */
+export async function decideTurn(input: {
+  message: string;
+  viewState: ViewState;
+  car: Car;
+  images: CarImage[];
+  recentTurns?: { role: string; text: string }[];
+}): Promise<{ reply: string; actions: CanvasAction[] }> {
+  if (process.env.VOX_PROVIDER_MODE === "mock") {
+    return { reply: mockReply(input.message), actions: [] };
+  }
+
+  const allowedImageIds = new Set(input.images.map((img) => img.id));
+  // Keep the payload SMALL — sending all 46 full captions + feature lists every
+  // turn (~6k tokens) blew the Cerebras tokens-per-minute limit, forcing the
+  // slow MiniMax fallback (the 6–7s lag). Role + a short caption is enough to
+  // pick the right image.
+  const imageOptions = input.images.map((img) => ({
+    id: img.id,
+    role: img.role,
+    caption: img.caption.split(/\s+/).slice(0, 14).join(" ")
+  }));
+  const currentViewSummary = {
+    layout: input.viewState.layout,
+    items: input.viewState.items.map((item) =>
+      item.kind === "image" ? { kind: "image", imageId: item.imageId } : { kind: item.kind }
+    )
+  };
+
+  const systemPrompt = [
+    `You are Vox, a warm, sharp BMW ${input.car.make} ${input.car.model} sales specialist talking with a customer by VOICE. You sell by being genuinely helpful, never pushy.`,
+    'You control BOTH what you say and what a screen beside you shows. Return STRICT JSON only: { "reply": string, "actions": [...] }.',
+    "reply = exactly what you say out loud: one or two short, natural spoken sentences, under ~30 words, conversational. No markdown, bullets, asterisks, or emojis — it is read aloud.",
+    "actions = 0 to 3 canvas actions that put the right photo(s) on screen.",
+    "CRITICAL — reply and actions describe the SAME image(s): your spoken words must describe exactly the photo your actions put on screen. If actions is empty, your words must match what is ALREADY on screen (see currentCanvas in the input) — never describe a part/area that is not in the image being shown (e.g. do not say 'the front, kidney grille' when the image on screen is the interior).",
+    "Decide by intent:",
+    "- Greeting / small talk: reply warmly in one line; actions = []. Do not describe a photo.",
+    "- Spec or fact (price, mileage, 0-60, horsepower, mpg, transmission, packages): answer straight from the catalog; usually actions = [] and don't mention the screen.",
+    "- They name a specific PART or control (gear shifter/selector, badge, button, vent, screen, stitching, caliper, mirror): show it AND auto-zoom to it. Emit TWO actions: a showImage of the best photo, then a zoom with itemRef {\"index\":0} and a region [x,y,w,h] (0..1) estimating where that part sits so it fills the view. The shopper should NOT have to ask to zoom — a specific part request auto-zooms. Example regions: center-console gear selector ≈ [0.26,0.45,0.42,0.45]; a badge ≈ [0.30,0.30,0.30,0.30]; a button cluster ≈ [0.30,0.55,0.40,0.35].",
+    "- They want to SEE a whole area/view (the interior, the front, the seats, the dashboard): ONE showImage of the best photo, no zoom.",
+    "- They want MULTIPLE views ('show me everything', 'all the X', 'the interior shots', 'a few angles'): use showImages (grid, up to 4). ONLY use a grid for explicitly plural/overview requests — never for a single part or a zoom.",
+    "- 'Zoom in' / 'closer' / 'get closer' / 'look closer': ALWAYS a zoom action on the image CURRENTLY on screen via itemRef {\"index\":0}, NEVER a grid or a category switch. Use a tight centered region like [0.28,0.3,0.44,0.44], and describe what is actually in THAT image.",
+    "- A zoom region must be tight enough to be an obvious close-up (w and h roughly 0.3–0.5), not the whole frame.",
+    "- Ambiguous: ask ONE short question; actions = []; don't guess.",
+    "Use ONLY the catalog facts and image data below — never invent specs, prices, features, or what is visible. If you lack a fact, say so casually.",
+    "The shopper's words reach you as a live speech-to-text transcript, so expect occasional recognition errors — misheard model names, trims, or numbers (e.g. 'i4' vs 'M4'). Interpret charitably in the context of selling this M4; if a misheard word would change your answer and you're unsure, ask one quick clarifying question instead of guessing.",
+    "Automotive shopper language: 'stick'/'shifter' = gear selector / center-console transmission selector; 'whole/entire car' = wide exterior overview.",
+    "Action schemas (prefer showImage / showImages / zoom / compare):",
+    '  showImage: { "op":"showImage", "carId":string, "imageId":string }',
+    '  showImages: { "op":"showImages", "imageIds":string[], "filter":{"role":string}, "limit":number<=4 }',
+    '  zoom: { "op":"zoom", "itemRef":{"carId":string,"imageId":string}, "region":[x,y,w,h] }  (x,y,w,h are 0..1)',
+    '  compare: { "op":"compare", "itemRefs":[ref,ref] }',
+    "imageId MUST come from IMAGE_OPTIONS.id; carId is the image's vin.",
+    "HARD RULE: if your reply says or implies you are showing, pulling up, highlighting, or zooming ANYTHING ('here's…', 'take a look', 'closer look', 'highlighted for you'), then actions MUST be non-empty with the matching action(s). Never narrate a visual with empty actions. If you are NOT changing the screen, do not use show/here/look language.",
+    "Examples (use REAL ids from IMAGE_OPTIONS):",
+    '  "show me the wheels" -> {"reply":"Here are the M wheels with the blue calipers.","actions":[{"op":"showImage","carId":"<vin>","imageId":"<a wheel id>"}]}',
+    '  "show me the gear shifter" -> {"reply":"Here\'s the gear selector on the center console.","actions":[{"op":"showImage","carId":"<vin>","imageId":"<an interior id>"},{"op":"zoom","itemRef":{"index":0},"region":[0.26,0.45,0.42,0.45]}]}',
+    '  "zoom in" -> {"reply":"Here\'s a closer look.","actions":[{"op":"zoom","itemRef":{"index":0},"region":[0.28,0.3,0.44,0.44]}]}',
+    '  "how fast is it" -> {"reply":"Zero to sixty in about 3.8 seconds.","actions":[]}',
+    '  "hey there" -> {"reply":"Hey! Want me to walk you through it?","actions":[]}',
+    `Catalog: ${carFactSheet(input.car)}`
+  ].join(" ");
+
+  const userPayload = JSON.stringify({
+    shopperMessage: input.message,
+    currentCanvas: currentViewSummary,
+    recentTurns: (input.recentTurns ?? []).slice(-4),
+    imageOptions
+  });
+
+  // Prefer Cerebras (fast inference → ~1s) for the single-brain decision; fall
+  // back to MiniMax JSON if Cerebras errors or has no key, so a turn never dies.
+  let raw: unknown;
+  if (process.env.CEREBRAS_API_KEY) {
+    try {
+      raw = await callCerebrasJson({ system: systemPrompt, user: userPayload, maxTokens: 700, timeoutMs: 8_000 });
+    } catch (error) {
+      console.warn(`decideTurn: Cerebras failed, falling back to MiniMax — ${error instanceof Error ? error.message : String(error)}`);
+      raw = await callMiniMaxJson({ system: systemPrompt, user: userPayload, maxTokens: 320, timeoutMs: 12_000 });
+    }
+  } else {
+    raw = await callMiniMaxJson({ system: systemPrompt, user: userPayload, maxTokens: 320, timeoutMs: 12_000 });
+  }
+  const parsed = DecideTurnResponseSchema.parse(raw);
+  return {
+    reply: compactReply(parsed.reply),
+    actions: validateCanvasActions(parsed.actions, allowedImageIds, input.images)
+  };
+}
+
+// ── Two-call architecture: speech and canvas as INDEPENDENT Cerebras calls ────
+// One call talks, one call drives the canvas. They run in parallel — each picks
+// its own key via the revolver — so a canvas hiccup never affects speech and
+// vice-versa. Replaces the fragile marker-split single call (streamDecideTurn).
+
+/**
+ * SPEECH call — returns ONLY the spoken reply (no canvas). Short, conversational,
+ * voice-first. Throws on total Cerebras failure so the caller can fall back.
+ */
+export async function generateSpokenReply(input: {
+  message: string;
+  car: Car;
+  recentTurns?: { role: string; text: string }[];
+}): Promise<string> {
+  if (process.env.VOX_PROVIDER_MODE === "mock") return mockReply(input.message);
+  if (cerebrasKeys().length === 0) throw new Error("CEREBRAS_API_KEY is required for generateSpokenReply.");
+
+  const system = [
+    `You are Vox, a warm, sharp BMW ${input.car.make} ${input.car.model} sales specialist talking with a customer by VOICE. Sell by being genuinely helpful, never pushy — talk like a knowledgeable friend, not a brochure.`,
+    "Reply in ONE or two short, natural spoken sentences, UNDER ~30 words total. No markdown, bullets, asterisks, lists, or emojis — your words are read aloud by text-to-speech.",
+    "A separate screen shows the photos, so when they ask to SEE something, say a quick natural line about it ('here's the rear — love those quad tips'), but never list more than one or two features and never read specs like a brochure.",
+    "For a price/spec/mileage question, answer the one fact they asked, straight from the catalog. Don't enumerate everything.",
+    "Use ONLY the catalog facts below; never invent specs, prices, or availability. If you lack a fact, say so casually.",
+    "This M4 is CURRENTLY AVAILABLE for sale. NEVER say it is sold, reserved, gone, or unavailable, and do NOT bring up or pitch any other vehicle unless the shopper explicitly asks for alternatives.",
+    "The shopper's words are a live speech-to-text transcript and may contain recognition errors (e.g. 'i4'↔'M4', misheard trims/numbers); interpret charitably in the context of selling this M4.",
+    `Catalog: ${carFactSheet(input.car)}`
+  ].join(" ");
+
+  const userPayload = JSON.stringify({
+    shopperMessage: input.message,
+    recentTurns: (input.recentTurns ?? []).slice(-4)
+  });
+
+  const json = await cerebrasChatCompletion({
+    model: process.env.CEREBRAS_SPEECH_MODEL || process.env.CEREBRAS_MODEL || "gpt-oss-120b",
+    messages: [
+      { role: "system", content: system },
+      { role: "user", content: userPayload }
+    ],
+    temperature: 0.4,
+    reasoning_effort: "low",
+    max_completion_tokens: 300,
+    stream: false
+  }, { timeoutMs: 12_000 });
+
+  const text = json.choices?.[0]?.message?.content?.trim() ?? "";
+  console.log(`[speech] LLM reply → ${JSON.stringify(text)}`);
+  return compactReply(text);
+}
+
+/**
+ * CANVAS call — returns ONLY validated canvas actions (0–3). NEVER throws;
+ * returns [] on any failure (a missing canvas is non-fatal). Defaults to a
+ * SINGLE image; only grids on an explicit category / multi-view ask.
+ */
+export async function decideCanvas(input: {
+  message: string;
+  viewState: ViewState;
+  car: Car;
+  images: CarImage[];
+  recentTurns?: { role: string; text: string }[];
+}): Promise<CanvasAction[]> {
+  if (process.env.VOX_PROVIDER_MODE === "mock") return [];
+  if (cerebrasKeys().length === 0) return [];
+
+  const allowedImageIds = new Set(input.images.map((img) => img.id));
+  const imageOptions = input.images.map((img) => ({
+    id: img.id,
+    role: img.role,
+    caption: img.caption.split(/\s+/).slice(0, 12).join(" ")
+  }));
+
+  const system = [
+    "You decide what the BMW M4 showroom SCREEN shows for the shopper's latest message. You do NOT speak — another system handles the talking.",
+    'Return STRICT JSON only: { "actions": [ ...0 to 3 actions... ] }. No prose, no markdown.',
+    "ACTION SCHEMAS:",
+    '  showImage:  {"op":"showImage","carId":"<vin>","imageId":"<id from IMAGE_OPTIONS>"}',
+    '  showImages: {"op":"showImages","filter":{"role":"<role>"},"limit":<1-4>}',
+    '  zoom:       {"op":"zoom","itemRef":{"index":0},"region":[x,y,w,h]}   (x,y,w,h are 0..1 fractions of the current image)',
+    '  compare:    {"op":"compare","itemRefs":[{"index":0},{"index":1}]}',
+    "RULES (follow strictly):",
+    "- DEFAULT to a SINGLE photo: one showImage of the most relevant image. Use showImages (a grid) ONLY when the shopper clearly asks for a CATEGORY or MULTIPLE views — 'show me the interior', 'a few angles', 'all the exterior shots', 'everything'.",
+    "- A specific PART/control named (gear shifter, badge, caliper, vent, screen, mirror): emit TWO actions — showImage the best photo, THEN zoom {\"index\":0} over that part. Regions: gear selector ≈ [0.26,0.45,0.42,0.45]; badge ≈ [0.30,0.30,0.30,0.30]; caliper ≈ [0.35,0.40,0.30,0.35]; mirror ≈ [0.05,0.25,0.25,0.35]; screen ≈ [0.20,0.15,0.55,0.40].",
+    "- 'zoom in' / 'closer': zoom the CURRENT image, itemRef {\"index\":0}, region ≈ [0.28,0.30,0.44,0.44]. Do NOT switch image.",
+    "- Greeting, chit-chat, or a pure spec/price/mileage question with no visual intent: return { \"actions\": [] } (leave the screen as-is).",
+    "- imageId MUST come from IMAGE_OPTIONS.id; carId is the image's vin. NEVER invent ids.",
+    "VALID filter.role values: exterior_front, exterior_rear, interior_front, interior_rear, dashboard, trunk, wheel, detail.",
+    "Map shopper words → role: front → exterior_front; rear/back → exterior_rear; interior/seats/cabin → interior_front; dashboard/cockpit → dashboard; wheels/rims → wheel; trunk → trunk.",
+    `IMAGE_OPTIONS: ${JSON.stringify(imageOptions)}`,
+    `CURRENT_CANVAS layout: ${input.viewState.layout}`,
+    `car vin: "${input.car.vin}"`
+  ].join("\n");
+
+  const userPayload = JSON.stringify({
+    shopperMessage: input.message,
+    recentTurns: (input.recentTurns ?? []).slice(-3)
+  });
+
+  let json: { choices?: Array<{ message?: { content?: string } }> };
+  try {
+    json = await cerebrasChatCompletion({
+      model: process.env.CEREBRAS_CANVAS_MODEL || process.env.CEREBRAS_MODEL || "gpt-oss-120b",
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: userPayload }
+      ],
+      temperature: 0.2,
+      reasoning_effort: "low",
+      max_completion_tokens: 400,
+      stream: false
+    }, { timeoutMs: 10_000 });
+  } catch (error) {
+    console.warn(`decideCanvas: Cerebras failed, returning [] — ${error instanceof Error ? error.message : String(error)}`);
+    return [];
+  }
+
+  const text = json.choices?.[0]?.message?.content?.trim();
+  console.log(`[canvas] LLM raw → ${text ? text.slice(0, 400) : "(empty)"}`);
+  if (!text) return [];
+  try {
+    const raw = parseJsonObject(text);
+    const envelope = DecideCanvasResponseSchema.safeParse(raw);
+    if (!envelope.success) {
+      console.warn("decideCanvas: unexpected response shape, returning []");
+      return [];
+    }
+    const acts = validateCanvasActions(envelope.data.actions, allowedImageIds, input.images);
+    console.log(`[canvas] parsed → ${acts.length} action(s): ${JSON.stringify(acts)}`);
+    return acts;
+  } catch (error) {
+    console.warn(`decideCanvas: JSON parse failed, returning [] — ${error instanceof Error ? error.message : String(error)}`);
+    return [];
+  }
+}
+
+// ── Streaming decision core (new architecture) ────────────────────────────────
+//
+// ONE Cerebras streaming call per turn:
+//   1. The model emits the spoken reply first — streamed token-by-token to TTS
+//      for real-time voice.
+//   2. After the reply the model emits a literal line "<<<CANVAS>>>".
+//   3. After the marker the model emits the canvas JSON: {"actions":[...]}.
+//
+// The state machine in streamDecideTurn intercepts the marker and splits the
+// stream: tokens before the marker flow to the caller's ReadableStream<string>
+// (which feeds TTS); tokens after the marker are buffered and parsed into
+// CanvasAction[] via the same validateCanvasActions path.
+//
+// Cerebras is the ONLY provider here. On any non-OK response (including 429),
+// we THROW immediately so the agent can fall back to its instant heuristic —
+// no MiniMax in this path.
+
+const CANVAS_MARKER = "<<<CANVAS>>>";
+
+/**
+ * Strip obvious markdown that the model might emit despite prompt instructions.
+ * Best-effort: the prompt already forbids it, but defensive stripping prevents
+ * asterisks and heading hashes from being read aloud by TTS.
+ */
+function stripMarkdownToken(token: string): string {
+  return token
+    .replace(/\*+/g, "")           // bold/italic asterisks
+    .replace(/`+/g, "")            // inline code backticks
+    .replace(/^#{1,6}\s*/gm, "")   // heading hashes at line start
+    .replace(/^\s*\d+\.\s+/gm, ""); // "1. " numbered list markers
+}
+
+/**
+ * If the text ends with a non-empty PREFIX of CANVAS_MARKER, drop it. This is
+ * the held-back suffix from processReplyDelta — if the stream dies mid-marker,
+ * the leftover could be "<<<CAN" / "<<<CANVAS>>"; without this it would be
+ * spoken aloud. Prose never legitimately ends with a marker prefix.
+ */
+function stripTrailingPartialMarker(text: string): string {
+  for (let n = Math.min(CANVAS_MARKER.length - 1, text.length); n > 0; n -= 1) {
+    if (text.endsWith(CANVAS_MARKER.slice(0, n))) return text.slice(0, text.length - n);
+  }
+  return text;
+}
+
+/** Final-flush cleanup for any leftover reply text at stream end. */
+function flushReplyText(text: string): string {
+  return stripMarkdownToken(stripTrailingPartialMarker(text));
+}
+
+/**
+ * Build the system prompt for streamDecideTurn. Extracted so it's testable and
+ * readable independently of the streaming machinery.
+ */
+function buildStreamDecidePrompt(input: {
+  car: Car;
+  images: CarImage[];
+  viewState: ViewState;
+}): string {
+  // Compact image list: id, role, short caption only. Full captions blow token budget.
+  const imageOptions = input.images.map((img) => ({
+    id: img.id,
+    role: img.role,
+    caption: img.caption.split(/\s+/).slice(0, 14).join(" ")
+  }));
+
+  const currentViewSummary = {
+    layout: input.viewState.layout,
+    items: input.viewState.items.map((item) =>
+      item.kind === "image" ? { kind: "image", imageId: item.imageId } : { kind: item.kind }
+    )
+  };
+
+  return [
+    // ── Persona ──────────────────────────────────────────────────────────────
+    `You are Vox, a warm, sharp BMW ${input.car.make} ${input.car.model} sales specialist talking with a customer by VOICE. Sell by being genuinely helpful, never pushy — talk like a knowledgeable friend, never a brochure.`,
+
+    // ── Output format (CRITICAL — the marker must appear exactly) ────────────
+    "OUTPUT FORMAT — you MUST follow this exactly or the system breaks:",
+    "Line 1+: your spoken reply (one or two short natural sentences, under ~30 words, conversational plain prose).",
+    "Then a blank line, then exactly: <<<CANVAS>>>",
+    "Then a blank line, then the JSON object: {\"actions\":[...]}",
+    "No text before the reply. No text after the JSON. No markdown/bullets/asterisks/numbered lists anywhere — this is read aloud by text-to-speech.",
+    "Example output format:",
+    "Here are the front seats and center console — really clean stitching on these.",
+    "",
+    "<<<CANVAS>>>",
+    "",
+    "{\"actions\":[{\"op\":\"showImages\",\"filter\":{\"role\":\"interior_front\"},\"limit\":4}]}",
+
+    // ── Canvas action schemas ─────────────────────────────────────────────────
+    "CANVAS ACTION SCHEMAS (use ONLY these ops):",
+    "  showImage: {\"op\":\"showImage\",\"carId\":\"<vin>\",\"imageId\":\"<id from IMAGE_OPTIONS>\"}",
+    "  showImages: {\"op\":\"showImages\",\"filter\":{\"role\":\"<role>\"},\"limit\":<1-4>}  OR  {\"op\":\"showImages\",\"imageIds\":[\"<id>\",...]},\"limit\":<1-4>}",
+    "  zoom: {\"op\":\"zoom\",\"itemRef\":{\"index\":0},\"region\":[x,y,w,h]}  (x,y,w,h are 0..1 fractions of image)",
+    "  compare: {\"op\":\"compare\",\"itemRefs\":[{\"index\":0},{\"index\":1}]}",
+    "imageId MUST come from IMAGE_OPTIONS.id — never invent ids. carId is always the image's vin field.",
+
+    // ── Valid role strings ────────────────────────────────────────────────────
+    "VALID filter.role strings (9 total — use exactly one of these, never \"all\" or \"mixed\"):",
+    "exterior_front, exterior_rear, interior_front, interior_rear, dashboard, trunk, wheel, detail, unknown.",
+
+    // ── Routing rules (P0 fixes) ──────────────────────────────────────────────
+    "ROUTING RULES — follow these strictly:",
+
+    // Rule 1: area/category → grid of up to 4
+    "1. Bare AREA or CATEGORY ask (\"the interior\", \"the seats\", \"the front\", \"the dashboard\", \"the exterior\", \"the rear\"): use showImages with filter.role matching that area and limit 4. A 4-image GRID, NOT a single image. Map: interior/seats → interior_front; dashboard/cockpit → dashboard; front → exterior_front; rear/back → exterior_rear; wheels/rims → wheel; trunk/cargo → trunk.",
+
+    // Rule 2: specific part → showImage + zoom
+    "2. SPECIFIC PART or control named (gear shifter/selector, badge, button, vent, screen, stitching, caliper, mirror, emblem, knob): emit TWO actions — a showImage of the best photo THEN a zoom with itemRef {\"index\":0} and a region [x,y,w,h] (0..1) estimating where that part sits so it auto-zooms. Never make the shopper ask to zoom. Estimated regions: gear selector/shifter ≈ [0.26,0.45,0.42,0.45]; badge/emblem ≈ [0.30,0.30,0.30,0.30]; button cluster ≈ [0.30,0.55,0.40,0.35]; brake caliper ≈ [0.35,0.40,0.30,0.35]; side mirror ≈ [0.05,0.25,0.25,0.35]; interior screen ≈ [0.20,0.15,0.55,0.40].",
+
+    // Rule 3: explicit plural/overview → grid
+    "3. \"Show me everything\" / \"all the X\" / \"a few angles\" / \"show me four images\" / \"N pictures\": use showImages grid (limit 4).",
+
+    // Rule 4: zoom command
+    "4. \"Zoom in\" / \"closer\" / \"get closer\" / \"look closer\": ALWAYS zoom the CURRENT image via itemRef {\"index\":0}, region ≈ [0.28,0.3,0.44,0.44]. NEVER switch image or use a grid. Reply must describe what is actually in the current image.",
+
+    // Rule 5: greeting / spec-fact
+    "5. Greeting or pure spec/fact question (price, 0-60, mpg, horsepower, transmission, mileage): actions: []. Do not say \"here\" or \"look\" or mention the screen.",
+
+    // ── Reply consistency ─────────────────────────────────────────────────────
+    "REPLY CONSISTENCY: your spoken words must describe exactly the photo your actions put on screen. If actions is [], do not claim to show anything — describe specs or chat naturally. Never say \"here's\" or \"take a look\" when actions is empty.",
+
+    // ── Grounding ─────────────────────────────────────────────────────────────
+    "GROUNDING: answer specs, price, mileage exactly from Catalog below. Never invent facts. If a fact is missing, say so casually.",
+
+    // ── Examples (compact) ────────────────────────────────────────────────────
+    "EXAMPLES (shopper → reply + actions):",
+    "\"show me the interior\" → reply: \"Here's the cabin — nice sport seats and the M-specific center console.\" + showImages filter.role interior_front limit 4",
+    "\"show me the gear shifter\" → reply: \"Here's the gear selector on the center console.\" + showImage (best interior id) + zoom {index:0} [0.26,0.45,0.42,0.45]",
+    "\"zoom in\" → reply: \"Closer look.\" + zoom {index:0} [0.28,0.3,0.44,0.44]",
+    "\"show me everything\" → reply: \"Here's a full rundown of the M4.\" + showImages limit 4 (no filter)",
+    "\"what's the 0-60?\" → reply: \"Zero to sixty in about 3.8 seconds flat.\" + actions:[]",
+    "\"hey there\" → reply: \"Hey! What do you want to see on this M4?\" + actions:[]",
+
+    // ── Data ─────────────────────────────────────────────────────────────────
+    `IMAGE_OPTIONS: ${JSON.stringify(imageOptions)}`,
+    `CURRENT_CANVAS: ${JSON.stringify(currentViewSummary)}`,
+    `Catalog: ${carFactSheet(input.car)}`
+  ].join("\n");
+}
+
+/**
+ * STREAMING decision core — ONE Cerebras call per turn.
+ *
+ * Returns immediately with:
+ *   reply   — ReadableStream<string> that emits spoken reply tokens as they
+ *             stream (stops at <<<CANVAS>>> marker). Tokens are markdown-stripped.
+ *   actions — Promise<CanvasAction[]> that resolves after the stream ends with
+ *             the validated canvas actions parsed from the tail. Resolves [] on
+ *             any parse failure (a missing canvas is non-fatal).
+ *
+ * Throws on non-OK Cerebras response (including 429) — caller must handle fallback.
+ * NO MiniMax in this path.
+ */
+export async function streamDecideTurn(input: {
+  message: string;
+  viewState: ViewState;
+  car: Car;
+  images: CarImage[];
+  recentTurns?: { role: string; text: string }[];
+}): Promise<{ reply: ReadableStream<string>; actions: Promise<CanvasAction[]> }> {
+  // Mock mode: canned reply stream + empty actions.
+  if (process.env.VOX_PROVIDER_MODE === "mock") {
+    const cannedReply = mockReply(input.message);
+    const replyStream = new ReadableStream<string>({
+      start(controller) {
+        controller.enqueue(cannedReply);
+        controller.close();
+      }
+    });
+    return { reply: replyStream, actions: Promise.resolve([]) };
+  }
+
+  if (cerebrasKeys().length === 0) throw new Error("CEREBRAS_API_KEY is required for streamDecideTurn.");
+
+  const systemPrompt = buildStreamDecidePrompt({
+    car: input.car,
+    images: input.images,
+    viewState: input.viewState
+  });
+
+  const userPayload = JSON.stringify({
+    shopperMessage: input.message,
+    recentTurns: (input.recentTurns ?? []).slice(-4)
+  });
+
+  // Single NON-STREAMING Cerebras call through the key revolver (round-robin +
+  // on-429 failover). The previous token-streaming state machine intermittently
+  // failed to close (pooled-connection / backpressure fragility), which left
+  // `actions` unresolved and FROZE the canvas while the spoken reply still
+  // played. A plain request is reliable and, for a ~30-word reply, only ~300ms
+  // slower to first audio. We THROW when every key fails (incl. 429) so the
+  // caller's heuristic fallback can take over — no MiniMax in this path.
+  const allowedImageIds = new Set(input.images.map((img) => img.id));
+  const json = await cerebrasChatCompletion({
+    model: process.env.CEREBRAS_DECISION_MODEL || process.env.CEREBRAS_MODEL || "gpt-oss-120b",
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPayload }
+    ],
+    temperature: 0.3,
+    reasoning_effort: "low",
+    max_completion_tokens: 700,
+    stream: false
+  }, { timeoutMs: 20_000 });
+  const full = json.choices?.[0]?.message?.content ?? "";
+
+  // Split the spoken reply (before the marker) from the canvas JSON tail (after
+  // it). The model is told to always emit the marker; if it doesn't, the whole
+  // output is treated as spoken reply and actions resolve to [].
+  const markerIdx = full.indexOf(CANVAS_MARKER);
+  const replyText = flushReplyText((markerIdx === -1 ? full : full.slice(0, markerIdx)).trim());
+  const canvasTail = markerIdx === -1 ? "" : full.slice(markerIdx + CANVAS_MARKER.length);
+  const actions = canvasTail.trim()
+    ? parseCanvasTail(canvasTail, allowedImageIds, input.images)
+    : [];
+
+  // Reply is returned as a single chunk; the agent tees it to TTS + chat. Actions
+  // are already parsed, so the canvas updates as soon as the reply is ready.
+  const replyStream = new ReadableStream<string>({
+    start(streamController) {
+      if (replyText) streamController.enqueue(replyText);
+      streamController.close();
+    }
+  });
+
+  return { reply: replyStream, actions: Promise.resolve(actions) };
+}
+
+/**
+ * Parse the canvas tail (text after <<<CANVAS>>>) into validated CanvasAction[].
+ * Resolves to [] on any parse or validation failure — a missing canvas is non-fatal.
+ */
+function parseCanvasTail(
+  tail: string,
+  allowedImageIds: Set<string>,
+  images: CarImage[]
+): CanvasAction[] {
+  try {
+    const raw = parseJsonObject(tail.trim());
+    const envelope = DecideCanvasResponseSchema.safeParse(raw);
+    if (!envelope.success) {
+      console.warn(`streamDecideTurn: canvas tail parse failed — ${envelope.error.message}`);
+      return [];
+    }
+    return validateCanvasActions(envelope.data.actions, allowedImageIds, images);
+  } catch (error) {
+    console.warn(`streamDecideTurn: canvas tail JSON error — ${error instanceof Error ? error.message : String(error)}`);
+    return [];
+  }
 }

@@ -268,109 +268,6 @@ button, input, textarea { font: inherit; }
   min-width: 0;
 }
 
-/* ---- model selector bar ----------------------------------- */
-
-.model-selector {
-  position: relative;
-  display: inline-flex;
-}
-
-.model-selector-trigger {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 10px 4px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
-  color: var(--text-muted);
-  font-size: 12.5px;
-  font-weight: 600;
-  letter-spacing: -0.005em;
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
-}
-.model-selector-trigger:hover {
-  background: var(--surface-2);
-  border-color: var(--muted-2);
-  color: var(--ink);
-}
-
-.model-selector-label { line-height: 1; }
-
-.model-selector-chevron {
-  flex: none;
-  transition: transform 0.15s ease;
-}
-.model-selector-chevron.open { transform: rotate(180deg); }
-
-/* Dropdown panel */
-.model-selector-dropdown {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  z-index: 40;
-  min-width: 220px;
-  padding: 5px;
-  background: #ffffff;
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-  box-shadow: var(--shadow-md);
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  animation: vox-pop 0.14s cubic-bezier(0.2, 0.9, 0.3, 1);
-}
-
-/* Option row */
-.model-selector-option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 9px 10px;
-  border: 0;
-  border-radius: calc(var(--r-md) - 4px);
-  background: transparent;
-  color: var(--ink);
-  cursor: pointer;
-  text-align: left;
-  transition: background 0.1s ease;
-}
-.model-selector-option:hover { background: var(--surface-2); }
-.model-selector-option.active { background: var(--surface-2); }
-
-.model-option-check {
-  flex: none;
-  width: 18px;
-  display: grid;
-  place-items: center;
-  color: var(--brand);
-}
-
-.model-option-text {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
-}
-
-.model-option-label {
-  font-size: 13.5px;
-  font-weight: 650;
-  letter-spacing: -0.01em;
-  color: var(--ink);
-  line-height: 1.2;
-}
-
-.model-option-desc {
-  font-size: 12px;
-  color: var(--text-muted);
-  font-weight: 450;
-  line-height: 1.35;
-}
-
 /* ---- 3-dot connecting loader in the voice button ---------- */
 
 .connecting-dots {
@@ -450,22 +347,25 @@ button, input, textarea { font: inherit; }
 .status-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  margin-left: 4px;
-  padding: 4px 11px;
+  gap: 7px;
+  margin-left: 3px;
+  padding: 5px 12px;
   border-radius: 999px;
-  background: var(--good-soft);
-  color: var(--good);
-  font-size: 12.5px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  color: var(--ink-soft);
+  font-size: 11.5px;
   font-weight: 650;
-  letter-spacing: -0.005em;
+  text-transform: uppercase;
+  letter-spacing: 0.045em;
 }
 .status-pill::before {
   content: "";
   width: 6px;
   height: 6px;
   border-radius: 999px;
-  background: currentColor;
+  background: var(--good);
+  box-shadow: 0 0 0 3px rgba(10, 123, 83, 0.16);
 }
 
 .specialist-avatar {
@@ -489,6 +389,11 @@ button, input, textarea { font: inherit; }
   width: 100%;
   min-height: 0;
   display: grid;
+  /* one BOUNDED cell — minmax(0,1fr) gives the grid/compare child a definite
+     height to fill, instead of growing to its content and overflowing (which
+     clipped the bottom row). Single images still center via place-items. */
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   place-items: center;
   padding: clamp(20px, 2.2vw, 38px);
   overflow: hidden;
@@ -575,6 +480,305 @@ button, input, textarea { font: inherit; }
   animation: vox-spin 0.7s linear infinite;
 }
 @keyframes vox-spin { to { transform: rotate(360deg); } }
+
+/* ---- canvas outer wrapper (hosts Canvas + dev harness) ---- */
+
+.canvas-outer {
+  position: relative;
+  align-self: stretch;
+  width: 100%;
+  min-height: 0;
+  /* Stretch to fill the image-stage grid row */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Canvas itself fills the outer wrapper */
+.canvas-outer > .image-canvas {
+  position: static; /* already positioned by .image-canvas rules */
+  height: 100%;
+}
+
+/* ---- canvas item wrapper (zoom + mark target) ------------- */
+
+.canvas-item-wrapper {
+  position: relative;
+  display: contents; /* transparent wrapper for single layout */
+}
+
+/* In grid/compare contexts it becomes a real box */
+.canvas-grid-cell.canvas-item-wrapper,
+.canvas-compare-cell .canvas-item-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: var(--r-lg);
+}
+
+/* Zoom: the figure inside transitions smoothly */
+.canvas-item-wrapper.is-zoomed > .canvas-figure {
+  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+              transform-origin 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* When zoom is active on a single-layout item, the wrapper is a real block */
+.image-canvas > .canvas-item-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.image-canvas > .canvas-item-wrapper.is-zoomed {
+  overflow: hidden;
+  border-radius: var(--r-lg);
+}
+
+/* ---- grid layout ------------------------------------------- */
+
+.canvas-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 10px;
+  width: 100%;
+  height: 100%;
+  /* image-canvas uses place-items:center, which would size this grid to its
+     content and overflow the canvas (bottom row clipped). Stretch + cap to the
+     canvas box so the 2 rows divide the available height and images shrink. */
+  align-self: stretch;
+  justify-self: stretch;
+  max-height: 100%;
+  max-width: 100%;
+  padding: clamp(14px, 1.6vw, 28px);
+  box-sizing: border-box;
+}
+
+.canvas-grid-cell {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: var(--r-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Grid cells: figures fill the cell */
+.canvas-grid-cell .canvas-figure {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+}
+
+.canvas-grid-cell .hero-image {
+  width: 100%;
+  height: 100%;
+  /* contain, not cover — show the whole photo in each cell, never crop it */
+  object-fit: contain;
+}
+
+/* ---- compare layout --------------------------------------- */
+
+.canvas-compare {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  width: 100%;
+  height: 100%;
+  padding: clamp(14px, 1.6vw, 28px);
+  gap: 0;
+  box-sizing: border-box;
+}
+
+.canvas-compare-cell {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.canvas-compare-cell .canvas-figure {
+  width: 100%;
+  max-height: calc(100% - 36px);
+  overflow: hidden;
+  border-radius: var(--r-lg);
+  box-shadow: 0 18px 44px -20px rgba(12, 14, 18, 0.38);
+}
+
+.canvas-compare-cell .hero-image {
+  width: 100%;
+  height: 100%;
+  /* contain, not cover — show the whole photo, never crop it */
+  object-fit: contain;
+}
+
+.canvas-compare-label {
+  flex: none;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--line-strong);
+  backdrop-filter: blur(8px);
+}
+
+.canvas-compare-divider {
+  flex: none;
+  width: 1px;
+  align-self: stretch;
+  margin: 0 10px;
+  background: var(--line-strong);
+  border-radius: 999px;
+}
+
+/* ---- annotation marks ------------------------------------- */
+
+.canvas-mark {
+  position: absolute;
+  border: 2px solid var(--brand);
+  border-radius: 6px;
+  background: rgba(47, 107, 255, 0.08);
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+.canvas-mark-label {
+  position: absolute;
+  top: -1px;
+  left: 0;
+  transform: translateY(-100%);
+  background: var(--brand);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 2px 8px;
+  border-radius: 999px 999px 999px 2px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ---- shimmer tile (pending generated item) ---------------- */
+
+.canvas-shimmer {
+  width: 100%;
+  height: 100%;
+  min-height: 120px;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: var(--surface-3);
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.canvas-shimmer-inner {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: vox-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes vox-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.canvas-shimmer-label {
+  position: relative;
+  z-index: 1;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: -0.005em;
+}
+
+/* ---- empty tile (unresolvable item) ----------------------- */
+
+.canvas-empty-tile {
+  width: 100%;
+  height: 100%;
+  min-height: 80px;
+  display: grid;
+  place-items: center;
+  color: var(--muted-2);
+  border-radius: var(--r-lg);
+  background: var(--surface-2);
+}
+
+/* ---- Phase-1 dev harness (?canvas=demo) ------------------- */
+
+.canvas-demo-controls {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px 6px 14px;
+  border-radius: 999px;
+  background: rgba(12, 14, 18, 0.72);
+  backdrop-filter: blur(12px);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  user-select: none;
+  pointer-events: auto;
+}
+
+.canvas-demo-label {
+  opacity: 0.85;
+}
+
+.canvas-demo-btn {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.canvas-demo-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
 
 /* ---- chat panel (ChatGPT-style, right) -------------------- */
 
