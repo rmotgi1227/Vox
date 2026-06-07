@@ -77,6 +77,20 @@ export async function ingestImage(id: string): Promise<CarImage> {
   return data.image;
 }
 
+export type InventoryCar = Car & { photos: string[] };
+
+export async function getInventory(): Promise<InventoryCar[]> {
+  const res = await fetch(`${API_BASE}/api/inventory`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`Inventory failed: ${res.status}`);
+  return (await res.json()).cars;
+}
+
+export async function getCarDetail(vin: string): Promise<{ car: Car; photos: string[] }> {
+  const res = await fetch(`${API_BASE}/api/inventory/${encodeURIComponent(vin)}`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`Car failed: ${res.status}`);
+  return res.json();
+}
+
 export type MossConfig = {
   projectId: string;
   projectKey: string;

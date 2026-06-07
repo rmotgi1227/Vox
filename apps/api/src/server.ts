@@ -1,4 +1,5 @@
 import { existsSync } from "node:fs";
+import { readdir } from "node:fs/promises";
 import path from "node:path";
 import { config } from "dotenv";
 import { serve } from "@hono/node-server";
@@ -289,6 +290,40 @@ app.post("/api/livekit/token", async (c) => {
 });
 
 app.get("/api/catalog", async (c) => c.json({ cars: await readCatalog() }));
+
+// Resolve the repo's public/cars dir and list a car's photos for the inventory UI.
+function repoRoot(start: string): string {
+  let dir = start;
+  while (true) {
+    if (existsSync(path.join(dir, "public", "cars"))) return dir;
+    const parent = path.dirname(dir);
+    if (parent === dir) return start;
+    dir = parent;
+  }
+}
+const PUBLIC_CARS = path.join(repoRoot(process.cwd()), "public", "cars");
+
+async function listCarPhotos(vin: string): Promise<string[]> {
+  const dir = path.join(PUBLIC_CARS, vin);
+  if (!existsSync(dir)) return [];
+  const files = (await readdir(dir)).filter((f) => /\.(jpe?g|png|webp)$/i.test(f)).sort();
+  return files.map((f) => `/cars/${vin}/${f}`);
+}
+
+// Full lot for the inventory browse page: every car + its photos.
+app.get("/api/inventory", async (c) => {
+  const cars = await readCatalog();
+  const items = await Promise.all(cars.map(async (car) => ({ ...car, photos: await listCarPhotos(car.vin) })));
+  return c.json({ cars: items });
+});
+
+// One vehicle's detail (photos + specs) for the detail page.
+app.get("/api/inventory/:vin", async (c) => {
+  const vin = c.req.param("vin");
+  const car = await getCar(vin);
+  if (!car) return c.json({ error: "car not found" }, 404);
+  return c.json({ car, photos: await listCarPhotos(vin) });
+});
 
 // Moss browser config — credentials + index names so the flagship @inferedge/moss
 // SDK can run loadIndex()/query() in-browser (client-first, sub-10ms).
