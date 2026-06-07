@@ -486,8 +486,9 @@ class VoxSpecialistVoiceAgent extends voice.Agent {
           console.warn(`Vox turn #${turnId} canvas lane error: ${err instanceof Error ? err.message : String(err)}`);
         });
 
-      // VOICE LANE — await the spoken reply and return ASAP (low latency). This
-      // is a separate Cerebras call from the canvas, so voice never waits on it.
+      // VOICE LANE — Cerebras spoken reply (~1s), separate from the canvas call so
+      // voice never waits on it. TTS turns this into the agent's audio track,
+      // which the browser pipes into Simli for lip-sync.
       const replyText = await generateSpokenReply({ message, car: resolvedCar, recentTurns });
       const spoken = replyText.trim() || FALLBACK_REPLY;
       publishSpecialistDataAsync(this.ctx, { type: "reply_delta", text: spoken });

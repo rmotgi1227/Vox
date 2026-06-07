@@ -2259,15 +2259,9 @@ export async function generateVisualization(input: {
  * SPEECH call — returns ONLY the spoken reply (no canvas). Short, conversational,
  * voice-first. Throws on total Cerebras failure so the caller can fall back.
  */
-export async function generateSpokenReply(input: {
-  message: string;
-  car: Car;
-  recentTurns?: { role: string; text: string }[];
-}): Promise<string> {
-  if (process.env.VOX_PROVIDER_MODE === "mock") return mockReply(input.message);
-
-  const system = [
-    `You are Vox, a warm, sharp BMW ${input.car.make} ${input.car.model} sales specialist talking with a customer by VOICE. Sell by being genuinely helpful, never pushy — talk like a knowledgeable friend, not a brochure.`,
+function buildSpokenSystem(car: Car): string {
+  return [
+    `You are Vox, a warm, sharp BMW ${car.make} ${car.model} sales specialist talking with a customer by VOICE. Sell by being genuinely helpful, never pushy — talk like a knowledgeable friend, not a brochure.`,
     "CRITICAL — NO REPETITION: Never open two replies the same way. Do NOT start with a restatement like 'The trunk on the M4 Competition is…' — lead straight into the answer with fresh wording every single turn. Vary sentence shape.",
     "CRITICAL — NO REFLEX HOOK: Do NOT end with 'would you like to come in / see it in person / check it out / test drive' unless the shopper THIS turn raised buying, pricing, financing, scheduling, or a visit. The vast majority of replies must simply answer and stop. Repeating the same invitation every turn is the #1 thing to avoid.",
     "Bring real energy: upbeat, confident, a little enthusiastic — the tone of a top salesperson who clearly loves this car. Lead with the answer. Never robotic, never a list of specs.",
@@ -2280,24 +2274,65 @@ export async function generateSpokenReply(input: {
     "For a DISCOUNTS question ('what discounts', 'any rebates', 'how low can you go', 'best you can do'): do NOT quote exact discount figures — warmly steer to an in-person visit, e.g. 'I'd love to walk you through all the discounts in person. Want to book a time to come in?'",
     "Stay on the shopper's topic. Read indirect cues like a pro: a concern or offhand remark about a part or capacity ('a little heavy on trunk space', 'is the back tight', 'how are the brakes') is what they want to talk about — speak to THAT, honestly, and never drift to an unrelated feature.",
     "Use ONLY the catalog facts below; never invent specs, prices, or availability. If you lack a fact, say so casually.",
-    input.car.availability === "sold"
-      ? `IMPORTANT: This ${input.car.make} ${input.car.model} has just been SOLD and is no longer available. Do NOT try to sell it or talk it up. If the shopper asks about it, warmly tell them it just sold, then offer to show them something similar from inventory. Keep it brief and helpful.`
+    car.availability === "sold"
+      ? `IMPORTANT: This ${car.make} ${car.model} has just been SOLD and is no longer available. Do NOT try to sell it or talk it up. If the shopper asks about it, warmly tell them it just sold, then offer to show them something similar from inventory. Keep it brief and helpful.`
       : "This M4 is CURRENTLY AVAILABLE for sale. NEVER say it is sold, reserved, gone, or unavailable, and do NOT bring up or pitch any other vehicle unless the shopper explicitly asks for alternatives.",
     "The shopper's words are a live speech-to-text transcript and may contain recognition errors (e.g. 'i4'↔'M4', misheard trims/numbers); interpret charitably in the context of selling this M4.",
-    `Catalog: ${carFactSheet(input.car)}`
+    `Catalog: ${carFactSheet(car)}`
   ].join(" ");
+}
 
-  const userPayload = JSON.stringify({
-    shopperMessage: input.message,
-    recentTurns: (input.recentTurns ?? []).slice(-4)
-  });
+function spokenUserPayload(message: string, recentTurns?: { role: string; text: string }[]): string {
+  return JSON.stringify({ shopperMessage: message, recentTurns: (recentTurns ?? []).slice(-4) });
+}
 
-  // MiniMax for the spoken reply — this env has MINIMAX_API_KEY (no Cerebras key),
-  // and MiniMax is the chosen demo LLM. System prompt above is unchanged
-  // (including the sold-awareness conditional). generateMiniMaxReply compacts.
-  const text = await generateMiniMaxReply({ system, user: userPayload });
+export async function generateSpokenReply(input: {
+  message: string;
+  car: Car;
+  recentTurns?: { role: string; text: string }[];
+}): Promise<string> {
+  if (process.env.VOX_PROVIDER_MODE === "mock") return mockReply(input.message);
+  // Cerebras for the spoken reply — ~1s inference (the architecture's fast path).
+  // Falls back to MiniMax only if no Cerebras key is configured.
+  if (cerebrasKeys().length === 0) {
+    const text = await generateMiniMaxReply({
+      system: buildSpokenSystem(input.car),
+      user: spokenUserPayload(input.message, input.recentTurns)
+    });
+    console.log(`[speech] LLM reply (minimax) → ${JSON.stringify(text)}`);
+    return text;
+  }
+  const json = await cerebrasChatCompletion({
+    model: process.env.CEREBRAS_SPEECH_MODEL || process.env.CEREBRAS_MODEL || "gpt-oss-120b",
+    messages: [
+      { role: "system", content: buildSpokenSystem(input.car) },
+      { role: "user", content: spokenUserPayload(input.message, input.recentTurns) }
+    ],
+    temperature: 0.4,
+    reasoning_effort: "low",
+    max_completion_tokens: 300,
+    stream: false
+  }, { timeoutMs: 12_000 });
+  const text = json.choices?.[0]?.message?.content?.trim() ?? "";
   console.log(`[speech] LLM reply → ${JSON.stringify(text)}`);
-  return text;
+  return compactReply(text);
+}
+
+// Streaming spoken reply — yields tokens as MiniMax produces them so TTS can
+// start on the first words instead of waiting for the whole reply. This is the
+// latency fix: non-streaming MiniMax-Text-01 took ~10s (and sometimes timed out)
+// before TTS even began. maxTokens kept tight to keep replies short.
+export async function streamSpokenReply(input: {
+  message: string;
+  car: Car;
+  recentTurns?: { role: string; text: string }[];
+}): Promise<ReadableStream<string>> {
+  return streamMiniMaxChat({
+    system: buildSpokenSystem(input.car),
+    user: spokenUserPayload(input.message, input.recentTurns),
+    maxTokens: 90,
+    timeoutMs: 15_000
+  });
 }
 
 /**
