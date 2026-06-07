@@ -98,7 +98,7 @@ export type MossConfig = {
   imagesIndex: string | null;
 };
 
-// Browser Moss config — credentials + index names for in-browser @inferedge/moss.
+// Browser Moss config — credentials + index names for in-browser @moss-dev/moss.
 export async function getMossConfig(): Promise<MossConfig> {
   const res = await fetch(`${API_BASE}/api/moss/config`, { cache: "no-store" });
   if (!res.ok) throw new Error(`Moss config failed: ${res.status}`);

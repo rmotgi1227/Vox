@@ -11,7 +11,6 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
-    "@inferedge/moss": "^1.0.0-beta.8",
     "@vox/core": "*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

@@ -1479,16 +1479,14 @@ async function getLoadedMossClient(
     return mossClientCache.client;
   }
 
-  // Flagship @inferedge/moss (Rust+WASM, on-device embeddings) — same client API
-  // as the old @moss-dev/moss, so loadIndex/query are drop-in. It nests its own
-  // cache under <cachePath>/<indexName>/, so we pass a single per-project base
-  // dir (kept separate from the old SDK's cache to avoid format collisions).
-  const { MossClient } = await import("@inferedge/moss");
+  // Current Moss TS SDK is @moss-dev/moss (the `inferedge` packages are legacy and
+  // route to a rate-limited endpoint → 429s, per the Moss team). Per-index cache dir.
+  const { MossClient } = await import("@moss-dev/moss");
   const client = new MossClient(pid, key) as MossClientLike;
-  const cacheBase = path.join(mossCachePath, "inferedge", pid);
+  const cacheBase = path.join(mossCachePath, pid);
   const loaded = Promise.all([
-    client.loadIndex(catalogIndex, { cachePath: cacheBase }),
-    client.loadIndex(imagesIndex, { cachePath: cacheBase })
+    client.loadIndex(catalogIndex, { cachePath: path.join(cacheBase, catalogIndex) }),
+    client.loadIndex(imagesIndex, { cachePath: path.join(cacheBase, imagesIndex) })
   ]).then(() => undefined);
 
   const nextCache: MossClientCache = { signature, client, loaded };

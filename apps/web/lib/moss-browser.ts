@@ -1,10 +1,10 @@
 // ---------------------------------------------------------------------------
-// Browser-side Moss search (Steps 2/3 + mark-sold replacement).
+// Browser-side Moss search (mark-sold replacement + visual grounding).
 //
-// Loads the flagship @inferedge/moss image AND catalog indexes entirely in the
-// browser, then answers sub-10ms queries with ZERO network calls:
-//   - queryImages: per-token / speculative visual grounding (Steps 2 & 3)
-//   - queryCatalog: instant "next car" replacement when a car is marked sold
+// Uses @moss-dev/moss (the current Moss TS SDK; `inferedge` packages are legacy
+// and rate-limited). Loads the image + catalog indexes and answers queries:
+//   - queryImages: visual grounding
+//   - queryCatalog: "next car" replacement when a car is marked sold
 // ---------------------------------------------------------------------------
 
 import { getMossConfig } from "@/lib/api";
@@ -52,7 +52,7 @@ export function loadBrowserMoss(): Promise<BrowserMoss | null> {
 
 async function build(): Promise<BrowserMoss | null> {
   const cfg = await getMossConfig();
-  const mod = (await import("@inferedge/moss")) as unknown as {
+  const mod = (await import("@moss-dev/moss")) as unknown as {
     MossClient: new (id: string, key: string) => MossClientLike;
   };
   const client = new mod.MossClient(cfg.projectId, cfg.projectKey);

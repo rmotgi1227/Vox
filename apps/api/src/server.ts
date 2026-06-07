@@ -325,8 +325,8 @@ app.get("/api/inventory/:vin", async (c) => {
   return c.json({ car, photos: await listCarPhotos(vin) });
 });
 
-// Moss browser config — credentials + index names so the flagship @inferedge/moss
-// SDK can run loadIndex()/query() in-browser (client-first, sub-10ms).
+// Moss browser config — credentials + index names so the @moss-dev/moss SDK can
+// run loadIndex()/query() in-browser (client-first).
 app.get("/api/moss/config", (c) => {
   const projectId = process.env.MOSS_PROJECT_ID;
   const projectKey = process.env.MOSS_PROJECT_KEY;
