@@ -2227,10 +2227,11 @@ export async function decideTurn(input: {
     '  "can I get the seats in red?" -> OFFER first: {"reply":"Yeah — want me to mock up red seats so you can see it?","actions":[]}  (then on "yes") {"reply":"On it — one sec.","actions":[{"op":"generate","prompt":"Recolor ONLY the seat upholstery in this exact interior photo to rich red leather; keep the dashboard, trim, carbon fiber, lighting, and everything else identical. Photorealistic.","baseRef":{"index":0}}]}',
     '  "hey there" -> {"reply":"Hey! Want me to walk you through it?","actions":[]}',
     (input.alternatives && input.alternatives.length)
-      ? "OTHER INVENTORY on the lot (from our live catalog) you CAN recommend when the shopper wants a DIFFERENT kind of car than this M4 — a family SUV, something cheaper, electric, a truck, 3-row seating, etc.: "
-        + input.alternatives.map((a) => `${a.title} — ${a.body}, ${a.drivetrain}, ${a.fuel}${a.price ? `, $${Number(a.price).toLocaleString()}` : ""}`).join("; ")
+      ? "OTHER INVENTORY on the lot (from our live catalog) you CAN recommend when the shopper wants a DIFFERENT kind of car than this M4 — a family SUV, something cheaper, electric, a truck, 3-row seating, etc. Each entry is `carId | title`: "
+        + input.alternatives.map((a) => `${a.vin} | ${a.title} — ${a.body}, ${a.drivetrain}, ${a.fuel}${a.price ? `, $${Number(a.price).toLocaleString()}` : ""}`).join("; ")
         + ". If they ask for something the M4 isn't (e.g. 'do you have a family car?'), recommend the single best match above BY NAME and price and offer to pull it up. NEVER say we only sell coupes or don't carry family cars — we DO; recommend from this list. Only recommend cars that appear in this list."
       : "",
+    "COMPARE TWO CARS side by side: when the shopper wants to see this M4 NEXT TO another car (e.g. 'show me the M4 and the Telluride side by side', 'compare them', 'how does it look next to the Kia'), emit a compareCars action: { \"op\":\"compareCars\", \"carIds\":[\"BMW-M4\",\"<the other car's carId from the inventory list>\"] }. Use the exact carId from the inventory list. Your reply must actually COMPARE AND CONTRAST the two cars — speak to the real trade-off using the facts you have (body style, price, drivetrain, fuel, seating/use-case): e.g. the M4 is a 503-hp rear-drive performance coupe at $89,900 built for driving thrill, while the Telluride is an $39,995 all-wheel-drive three-row family SUV built for space and practicality. Two or three natural sentences naming a couple of concrete differences (price, power vs seats, sporty vs practical) — not a one-liner, not a spec dump.",
     `Catalog: ${carFactSheet(input.car)}`
   ].filter(Boolean).join(" ");
 

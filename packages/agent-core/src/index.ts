@@ -901,6 +901,18 @@ export function applyAction(state: ViewState, action: CanvasAction, catalog: Cat
       return { layout: "compare", items: [itemA, itemB] };
     }
 
+    case "compareCars": {
+      // Two DIFFERENT cars side by side — resolve each car's hero (front exterior)
+      // image from the catalog. Falls back to a car card if a car has no images.
+      const heroFor = (vin: string): CanvasItem => {
+        const imgs = catalog.images.filter((i) => i.vin === vin && i.status === "processed");
+        const hero = imgs.find((i) => i.role === "exterior_front") ?? imgs[0];
+        return hero ? { kind: "image", carId: vin, imageId: hero.id } : { kind: "car", carId: vin };
+      };
+      const [vinA, vinB] = action.carIds;
+      return { layout: "compare", items: [heroFor(vinA), heroFor(vinB)] };
+    }
+
     case "focusCar": {
       // Switch focus to the given car. Default view = that car's first image.
       const firstImage = catalog.images.find(

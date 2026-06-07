@@ -9,7 +9,7 @@ import {
   PhoneOff,
   User,
 } from "lucide-react";
-import type { ModelProfile, ModelProfileId, SpecialistState, ViewState } from "@vox/core";
+import type { CarImage, ModelProfile, ModelProfileId, SpecialistState, ViewState } from "@vox/core";
 import {
   DEFAULT_MODEL_PROFILE_ID,
   DEFAULT_VIN,
@@ -143,6 +143,10 @@ export default function SpecialistPage() {
     layout: "single",
     items: [],
   });
+  // Images for OTHER cars (loaded on demand when a view_update references them,
+  // e.g. a BMW↔Kia compareCars), so the canvas can render a second car.
+  const [extraImages, setExtraImages] = useState<CarImage[]>([]);
+  const loadedVinsRef = useRef<Set<string>>(new Set([DEFAULT_VIN]));
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
@@ -757,6 +761,16 @@ export default function SpecialistPage() {
               console.warn("[vox] view_update REJECTED by schema:", JSON.stringify(parsed.error.issues).slice(0, 500));
             } else {
               const view = parsed.data.view;
+              // If the view references another car's images (e.g. a BMW↔Kia
+              // compareCars), load that car's images so the canvas can render it.
+              for (const it of view.items ?? []) {
+                const cid = (it.kind === "image" || it.kind === "car") ? it.carId : undefined;
+                if (!cid || loadedVinsRef.current.has(cid)) continue;
+                loadedVinsRef.current.add(cid);
+                getSpecialistState(cid)
+                  .then((s) => setExtraImages((prev) => [...prev, ...s.images]))
+                  .catch(() => loadedVinsRef.current.delete(cid));
+              }
               console.log("[vox] applying view_update → setViewState", view.layout, view.zoom ? "(zoom)" : "");
               if (view.zoom) {
                 // Live zoom: show the FULL image first, then apply the zoom a beat
@@ -1000,7 +1014,7 @@ export default function SpecialistPage() {
           <div className="canvas-outer" style={{ position: "relative" }}>
             <Canvas
               viewState={viewState}
-              images={state.images}
+              images={extraImages.length ? [...state.images, ...extraImages] : state.images}
               imageBusy={imageBusy}
             />
 

@@ -414,6 +414,14 @@ class VoxSpecialistVoiceAgent extends voice.Agent {
       // queries the Moss catalog index (keyword fallback if the cloud is down).
       const alternatives = await searchCatalog(message, { excludeVin: resolvedCar.vin, topK: 4 }).catch(() => []);
 
+      // Load the alternatives' images + car records so a compareCars action can
+      // resolve a SECOND car's hero image (BMW ↔ Kia side by side) and the canvas
+      // can render it. Cached reads — cheap.
+      const altVins = [...new Set(alternatives.map((a) => a.vin))];
+      const altImages = (await Promise.all(altVins.map((v) => listImages(v).catch(() => [] as CarImage[])))).flat();
+      const altCars = (await Promise.all(altVins.map((v) => getCar(v)))).filter((c): c is Car => Boolean(c));
+      const fullCatalog = { images: [...resolvedImages, ...altImages], cars: [resolvedCar, ...altCars] };
+
       // ── SINGLE BRAIN (default) ───────────────────────────────────────────
       // ONE Cerebras call decides the spoken reply AND the canvas actions
       // together, so the words and the picture come from the same decision and
@@ -440,7 +448,7 @@ class VoxSpecialistVoiceAgent extends voice.Agent {
         const syncActs = finalActs.filter((a) => a.op !== "generate");
         if (syncActs.length > 0) {
           let nextView = this.viewState;
-          const catalog = { images: resolvedImages, cars: [resolvedCar] };
+          const catalog = fullCatalog;
           for (const act of syncActs) nextView = applyAction(nextView, act, catalog);
           this.viewState = nextView;
           this.publishViewUpdate(nextView);

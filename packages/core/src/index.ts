@@ -322,6 +322,12 @@ export const CanvasActionSchema = z.discriminatedUnion("op", [
     op: z.literal("compare"),
     itemRefs: z.tuple([ItemRefSchema, ItemRefSchema])
   }),
+  // Compare TWO DIFFERENT cars side by side (e.g. the M4 next to a Kia Telluride).
+  // carIds are vins; the reducer resolves each car's hero image into a 2-up view.
+  z.object({
+    op: z.literal("compareCars"),
+    carIds: z.tuple([z.string().min(1), z.string().min(1)])
+  }),
   z.object({
     op: z.literal("focusCar"),
     carId: z.string().min(1)
