@@ -81,7 +81,7 @@
   .hoststage { position:fixed; inset:0; z-index:60; background:#0b0c12; display:none; }
   .hoststage.open { display:flex; animation:fade .25s ease both; } @keyframes fade{from{opacity:0}to{opacity:1}}
   .stage-host { position:relative; flex:1; background:#000; overflow:hidden; min-width:0; }
-  .stage-host video, .stage-host .poster { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .stage-host video, .stage-host .poster { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center top; }
   .stage-host video { transition:opacity .5s ease; } #vidIdle{opacity:1} #vidClip{opacity:0}
   .poster { display:none; object-position:44% 28%; } .hoststage.static .poster{ display:block; }
   .stage-top { position:absolute; top:0; left:0; right:0; z-index:3; display:flex; align-items:center; gap:12px; padding:18px 22px; background:linear-gradient(180deg,rgba(0,0,0,.6),transparent); }
@@ -189,6 +189,7 @@
     </div>
   </div>
   <audio id="audio"></audio>
+<script src="https://cdn.jsdelivr.net/npm/livekit-client@2/dist/livekit-client.umd.min.js"></script>
 <script>
 const $=id=>document.getElementById(id);
 const VIN=new URLSearchParams(location.search).get('vin')||'VOX00001000000000';
@@ -233,11 +234,9 @@ $('trust').innerHTML=['Free Carfax — 1 owner, no accidents','150-point inspect
 
 Promise.all([fetch('/manifest').then(r=>r.json()), fetch('/car/'+VIN).then(r=>r.json()), fetch('/inventory').then(r=>r.json())])
   .then(([m,car,inv])=>{ CLIPS=m; CAR=car; renderCar(car); renderSimilar(car,inv);
-    isGT3=(car.model||'').includes('GT3');
-    if(isGT3){ vidIdle.poster='/static/host_gt3.png'; vidClip.poster='/static/host_gt3.png'; }  // instant first frame, no black flash
     const CHIPS=['Walk me through the features','What’s the monthly payment?','Is it still available?','Why should I buy this one?'];
     $('chips').innerHTML=CHIPS.map(c=>`<button>${c}</button>`).join('');
-    $('chips').querySelectorAll('button').forEach(b=>b.onclick=()=>ask(b.textContent));
+    $('chips').querySelectorAll('button').forEach(b=>b.onclick=()=>sendMsg(b.textContent));
     $('nudgeText').textContent = `Want a quick walkthrough of the ${car.year} ${car.model}?`;
     setTimeout(()=>{ if(!opened) $('nudge').classList.add('show'); }, 2500);
     setTimeout(()=>{ $('nudge').classList.remove('show'); }, 13000); });
@@ -275,107 +274,75 @@ function estimate(){ if(!CAR)return; const down=+$('down').value; $('downv').tex
   const p=Math.max(0,CAR.price-down),r=0.065/12,n=60; const mo=p>0?Math.round(p*r/(1-Math.pow(1+r,-n))):0; $('mo').textContent=mo.toLocaleString(); }
 $('down').oninput=estimate;
 
-// ---- A/B crossfade avatar engine (smooth, never a hard cut or freeze) ----
-const layers=[vidIdle, vidClip]; let front=0, curName=null;
-const stageHost=vidIdle.parentElement;   // the box we blur-pulse during a crossfade
+// ---- Live avatar: LiveKit transport · Simli video · MiniMax voice · Moss brain ----
+const LK = LivekitClient;
+vidClip.style.display='none';                 // single live track -> reuse vidIdle
+const stageVideo = vidIdle;
+let room=null, roomReady=null;
 
-// --- blur-pulse (Zo's trick): a symmetric 0->peak->0 blur across the crossfade so the
-// eye can't pick apart the opacity blend / pose mismatch between two clips. -----------
-const BLUR_PEAK_PX=7, BLUR_MS=500; let blurRaf=0, t0=0;
-function blurStage(){
-  if(blurRaf) cancelAnimationFrame(blurRaf);
-  t0=performance.now();
-  const tick=now=>{ const t=Math.max(0,Math.min(1,(now-t0)/BLUR_MS));
-    const px=BLUR_PEAK_PX*Math.sin(t*Math.PI);
-    stageHost.style.filter = px>0.05 ? `blur(${px.toFixed(2)}px)` : 'none';
-    if(t<1){ blurRaf=requestAnimationFrame(tick); } else { stageHost.style.filter='none'; blurRaf=0; } };
-  blurRaf=requestAnimationFrame(tick);
+function chat(who,text,cls){ const d=document.createElement('div'); d.className='msg '+cls;
+  d.innerHTML = cls==='sys' ? text : `<span class="who">${who}</span> ${text}`;
+  $('convo').appendChild(d); $('convo').scrollTop=1e9; return d; }
+
+async function ensureAudio(){ try{ if(room && !room.canPlaybackAudio) await room.startAudio(); }catch(e){} }
+
+function connectHost(){
+  if(roomReady) return roomReady;
+  roomReady = (async ()=>{
+    $('hint').textContent='connecting…';
+    const res = await (await fetch('/token?vin='+encodeURIComponent(VIN))).json();
+    room = new LK.Room({adaptiveStream:true, dynacast:true});
+    const bubbles = {};
+    let greetSent=false;
+    async function signalReady(){ if(greetSent) return; greetSent=true; await ensureAudio();
+      try{ await room.localParticipant.publishData(new TextEncoder().encode('greet'), {reliable:true, topic:'vox-control'}); }catch(e){} }
+    room.on(LK.RoomEvent.TrackSubscribed, (track)=>{
+      if(track.kind==='video'){ track.attach(stageVideo); stageVideo.style.opacity='1'; $('poster').style.display='none'; signalReady(); }
+      if(track.kind==='audio'){ const el=track.attach(); el.autoplay=true; document.body.appendChild(el); ensureAudio(); }
+    });
+    room.on(LK.RoomEvent.AudioPlaybackStatusChanged, ()=>{ if(!room.canPlaybackAudio) $('hint').textContent='tap anywhere to enable sound'; });
+    // Transcriptions stream for BOTH sides; key bubbles by segment id so interim+final reuse one bubble.
+    room.registerTextStreamHandler('lk.transcription', async (reader,info)=>{
+      const mine = info?.identity===room.localParticipant.identity;
+      const who = mine?'You':'Vox', cls = mine?'you':'vox';
+      const key = (reader.info?.attributes||{})['lk.segment_id'] || reader.info?.id;
+      let b = bubbles[key]; if(!b){ b = chat(who,'',cls); bubbles[key]=b; }
+      let full=''; for await(const c of reader){ full+=c; b.innerHTML=`<span class="who">${who}</span> ${full}`; $('convo').scrollTop=1e9; }
+      if(!mine) $('cap').textContent = full;
+    });
+    await room.connect(res.url, res.token);
+    await ensureAudio();
+    $('hint').textContent='Tap the mic to talk, or type';
+  })();
+  return roomReady;
 }
 
-let curUrl=null;
-function show(name, loop, onended){
-  if(name===curName && !onended){ return; }   // already on this loop
-  const want=clipUrl(name);
-  // Different state name but it resolves to the SAME clip (e.g. all GT3 states -> one loop):
-  // keep playing, just update which loop we're on. No re-crossfade, no blip, no seam.
-  if(want===curUrl && !onended){ curName=name; layers[front].loop=!!loop; return; }
-  const back=layers[1-front];
-  back.onended=null; back.loop=!!loop;
-  if(back.getAttribute('src')!==want){ back.src=want; }
-  const start=()=>{ back.play().catch(()=>{});
-    back.style.opacity='1'; layers[front].style.opacity='0'; front=1-front; curName=name; curUrl=want;
-    layers[front].onended = onended ? (()=>onended()) : null;
-    blurStage(); };   // pulse exactly as the 0.5s opacity crossfade begins
-  // Decode-first-frame: seek to t=0 and wait for `seeked` so the EXACT first frame is
-  // ready before we fade in — otherwise the crossfade lands on a half-decoded frame (the jump).
-  const armed=()=>{ const go=()=>{ back.onseeked=null; start(); };
-    back.onseeked=go; try{ back.currentTime=0; }catch(e){ go(); }
-    // currentTime=0 when already at 0 fires no `seeked` — fall back next tick.
-    setTimeout(()=>{ if(back.onseeked){ back.onseeked=null; start(); } }, 60); };
-  if(back.readyState>=2) armed(); else { back.oncanplay=()=>{ back.oncanplay=null; armed(); }; }
-}
-function idleClip(){ show('idle_loop', true); }
-function thinking(){ const my=++gen; show('bridge_thinking', true); return my; }
-function answerClips(plan, my){   // brief gesture, then settle into a natural talking loop
-  const op=plan&&plan.opener, su=(plan&&plan.sustain)||'speaking_a';
-  // If the opener resolves to the same clip as the sustain (GT3 single-loop), don't bother
-  // crossfading — just keep the loop running. Avoids a pointless restart mid-answer.
-  if(op && op!==su && clipUrl(op)!==clipUrl(su) && /present|point|holdup|buy|nod|shelf/.test(op)){
-    show(op, false, ()=>{ if(my===gen) show(su, true); });
-  } else { show(su, true); }
-}
-function chat(who,text,cls){ const d=document.createElement('div'); d.className='msg '+cls; d.innerHTML=cls==='sys'?text:`<span class="who">${who}</span> ${text}`; $('convo').appendChild(d); $('convo').scrollTop=1e9; }
-function showAlts(cards){ const w=$('alts'); w.innerHTML=''; (cards||[]).slice(0,3).forEach(c=>{ if(c.variant_id===VIN)return; const pct=Math.round((c.score||0)*100);
-  const el=document.createElement('div'); el.className='alt'; el.innerHTML=`<div><div class="t">${c.title}</div><div class="m">${c.variant||''}</div><div class="moss">Moss match ${pct}%</div></div><div class="p">${money(c.price)}</div>`;
-  el.onclick=()=>location.href='/vdp?vin='+encodeURIComponent(c.variant_id); w.appendChild(el); }); }
+async function disconnectHost(){ try{ if(room) await room.disconnect(); }catch(e){} room=null; roomReady=null; }
 
-let busy=false, ac=null, nextTime=0, srcs=[], abortCtrl=null;
-function ensureAC(){ if(!ac) ac=new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==='suspended') ac.resume(); return ac; }
-function stopStream(){ if(abortCtrl){ try{abortCtrl.abort();}catch(e){} abortCtrl=null; } srcs.forEach(s=>{try{s.stop();}catch(e){}}); srcs=[]; nextTime=0; }
-function pcmChunk(bytes,sr){ const a=ensureAC(); const n=bytes.length>>1; if(!n)return; const buf=a.createBuffer(1,n,sr); const ch=buf.getChannelData(0);
-  const dv=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength); for(let i=0;i<n;i++) ch[i]=dv.getInt16(i*2,true)/32768;
-  const s=a.createBufferSource(); s.buffer=buf; s.connect(a.destination); const t=Math.max(a.currentTime+0.03,nextTime); s.start(t); nextTime=t+buf.duration; srcs.push(s); }
-function b64bytes(b64){ const bin=atob(b64); const u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i); return u; }
+async function sendMsg(text){ text=(text||'').trim(); if(!text) return; openHost(); await connectHost();
+  chat('You',text,'you'); try{ await room.localParticipant.sendText(text,{topic:'lk.chat'}); }catch(e){} }
 
-async function ask(text){
-  text=(text||'').trim(); if(!text||busy) return; busy=true;
-  if(!text.startsWith('Greet')) chat('You',text,'you');
-  $('hint').textContent='…'; const my=thinking(); stopStream(); ensureAC(); abortCtrl=new AbortController();
-  let res; try{ res=await fetch('/ask_stream',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({comment:text,vin:VIN}),signal:abortCtrl.signal}); }
-  catch(e){ if(my===gen){chat('','(connection issue)','sys'); busy=false;} return; }
-  if(my!==gen){ busy=false; return; }
-  const reader=res.body.getReader(), dec=new TextDecoder(); let sbuf='', sr=32000;
-  while(true){ let r; try{ r=await reader.read(); }catch(e){ break; } if(r.done) break;
-    sbuf+=dec.decode(r.value,{stream:true}); let i;
-    while((i=sbuf.indexOf('\n\n'))>=0){ const block=sbuf.slice(0,i); sbuf=sbuf.slice(i+2);
-      const ev=(block.match(/event: (.*)/)||[])[1]; const dm=block.match(/data: ([\s\S]*)/); if(!dm) continue;
-      if(ev==='meta'){ const m=JSON.parse(dm[1]); if(my!==gen) return; chat('Vox',m.reply,'vox'); $('cap').textContent=m.reply; showAlts(m.cards); sr=m.sample_rate||32000; answerClips(m.clip||{opener:'speaking_a',sustain:'speaking_a'},my); }
-      else if(ev==='audio'){ if(my!==gen) return; pcmChunk(b64bytes(dm[1]),sr); } }
-    if(my!==gen) return; }
-  const a=ensureAC(); const wait=Math.max(0,(nextTime-a.currentTime))*1000+200;
-  setTimeout(()=>{ if(my!==gen) return; idleClip(); $('cap').textContent=''; $('hint').textContent='Tap to talk, or ask anything'; busy=false; }, wait);
-}
-
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition; let rec=null, listening=false;
-if(SR){ rec=new SR(); rec.lang='en-US'; rec.interimResults=true; rec.continuous=false; let ft='';
-  rec.onresult=e=>{ let interim=''; ft=''; for(let i=0;i<e.results.length;i++){ const t=e.results[i][0].transcript; if(e.results[i].isFinal)ft+=t; else interim+=t; } $('hint').textContent=(ft||interim||'listening…'); };
-  rec.onend=()=>{ listening=false; $('mic').classList.remove('listening'); if(ft.trim())ask(ft); };
-  rec.onerror=()=>{ listening=false; $('mic').classList.remove('listening'); }; }
-function startListening(){ if(!rec){ toText(); return; } ensureAC(); if(busy){ stopStream(); idleClip(); gen++; busy=false; }
-  try{ rec.start(); listening=true; $('mic').classList.add('listening'); $('hint').textContent='listening…'; }catch(e){} }
-$('mic').onclick=()=>{ if(listening){ rec&&rec.stop(); } else startListening(); };
+$('mic').onclick = async ()=>{ openHost(); await connectHost(); await ensureAudio();
+  const on = !room.localParticipant.isMicrophoneEnabled;
+  await room.localParticipant.setMicrophoneEnabled(on);
+  $('mic').classList.toggle('listening', on);
+  $('hint').textContent = on ? 'listening… tap mic to stop' : 'Tap the mic to talk, or type'; };
 function toText(){ $('textIn').style.display='block'; $('hint').style.display='none'; $('textIn').focus(); }
-$('toText').onclick=toText; $('textIn').addEventListener('keydown',e=>{ if(e.key==='Enter'){ const v=$('textIn').value; $('textIn').value=''; ask(v); } });
+$('toText').onclick=toText;
+$('textIn').addEventListener('keydown', e=>{ if(e.key==='Enter'){ const v=$('textIn').value; $('textIn').value=''; sendMsg(v); } });
 
-function openHost(){ if(opened) return; opened=true; $('launcher').style.display='none'; $('nudge').classList.remove('show'); hoststage.classList.add('open'); ensureAC();
-  curName=null; curUrl=null; idleClip();
-  if(!greeted){ greeted=true; chat('', SR?'You can speak or type — ask anything about this car.':'Type your question below.','sys'); ask('Greet me warmly, give one exciting highlight of this car, then ask if I would like you to walk me through its features. Keep it to two short sentences.'); } }
-function closeHost(){ opened=false; hoststage.classList.remove('open'); $('launcher').style.display='flex'; stopStream(); gen++; busy=false; curName=null; curUrl=null; try{vidIdle.pause();vidClip.pause();}catch(e){} }
+function openHost(){ if(opened) return; opened=true; $('launcher').style.display='none'; $('nudge').classList.remove('show'); hoststage.classList.add('open');
+  if(!greeted){ greeted=true; chat('', "Connecting you with our specialist — she'll greet you in a moment.", 'sys'); }
+  connectHost(); }
+function closeHost(){ opened=false; hoststage.classList.remove('open'); $('launcher').style.display='flex'; disconnectHost(); try{ stageVideo.pause(); }catch(e){} }
 $('launcher').onclick=openHost; $('ctaTalk').onclick=openHost; $('minBtn').onclick=closeHost; $('nudge').onclick=openHost;
+document.body.addEventListener('click', ensureAudio);
 if(location.hash.includes('open')) setTimeout(openHost, 700);
 
-$('soldBtn').onclick=async()=>{ const r=await fetch('/sold_out',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({variant_id:VIN})}).then(r=>r.json());
-  if(r.ok){ setStatus(false); CAR.available=false; chat('',`${CAR.title} marked sold — now ask about it.`,'sys'); } };
+// Mark sold -> Moss upsert (available=false). Ask her again and she pivots: the live sold-out moment.
+$('soldBtn').onclick = async ()=>{ const r = await fetch('/sold_out',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({variant_id:VIN})}).then(r=>r.json()).catch(()=>({}));
+  if(r.ok){ setStatus(false); if(CAR) CAR.available=false; chat('', `${CAR?CAR.title:'This car'} marked sold — now ask her if it's still available.`, 'sys'); } };
+
 </script>
 </body>
 </html>
