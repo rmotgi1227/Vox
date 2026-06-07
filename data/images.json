@@ -6,26 +6,6 @@
     "role": "dashboard",
     "viewpoint": "close interior dashboard view from passenger side focused on infotainment screen and center vents",
     "caption": "Dashboard close-up showing the BMW infotainment navigation map, carbon-fiber dash trim, stitched upper dash, center air vents, hazard and lock buttons, climate controls, and radio preset row.",
-    "zoomTargets": {
-      "screen": [
-        0.1,
-        0.05,
-        0.65,
-        0.45
-      ],
-      "infotainment": [
-        0.1,
-        0.05,
-        0.65,
-        0.45
-      ],
-      "vents": [
-        0.3,
-        0.5,
-        0.4,
-        0.25
-      ]
-    },
     "visibleFeatures": [
       "wide infotainment display",
       "navigation map",
@@ -38,7 +18,8 @@
       "climate control stack",
       "radio preset buttons",
       "passenger-side dash",
-      "windshield view"
+      "windshield view",
+      "carbon-fiber detail visible"
     ],
     "conditionNotes": [
       "screen is powered on and readable",
@@ -62,7 +43,14 @@
       "dashboard",
       "climate controls",
       "driver display",
-      "cockpit"
+      "cockpit",
+      "navigation screen",
+      "technology controls",
+      "center stack",
+      "dash controls",
+      "carbon fiber",
+      "carbon weave",
+      "carbon-fiber trim"
     ],
     "likelyQuestions": [
       "Does it have navigation?",
@@ -70,10 +58,89 @@
       "What does the dashboard look like?",
       "Does it have carbon-fiber interior trim?",
       "Are the center vents and controls clean?",
-      "Can I see the radio and climate controls?"
+      "Can I see the radio and climate controls?",
+      "Can I see the dashboard?",
+      "Can I see the screen and controls?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Infotainment screen",
+        "box": [
+          0.1,
+          0.05,
+          0.65,
+          0.45
+        ]
+      },
+      {
+        "label": "Center vents and controls",
+        "box": [
+          0.3,
+          0.5,
+          0.42,
+          0.28
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "screen": [
+        0.1,
+        0.05,
+        0.65,
+        0.45
+      ],
+      "infotainment": [
+        0.1,
+        0.05,
+        0.65,
+        0.45
+      ],
+      "navigation": [
+        0.1,
+        0.05,
+        0.65,
+        0.45
+      ],
+      "nav": [
+        0.1,
+        0.05,
+        0.65,
+        0.45
+      ],
+      "display": [
+        0.1,
+        0.05,
+        0.65,
+        0.45
+      ],
+      "vents": [
+        0.3,
+        0.5,
+        0.42,
+        0.28
+      ],
+      "center vents": [
+        0.3,
+        0.5,
+        0.42,
+        0.28
+      ],
+      "climate controls": [
+        0.3,
+        0.5,
+        0.42,
+        0.28
+      ],
+      "radio controls": [
+        0.3,
+        0.5,
+        0.42,
+        0.28
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-1461017558474954336-1024x768",
@@ -82,7 +149,6 @@
     "role": "detail",
     "viewpoint": "overhead documentation and key-fob detail photo",
     "caption": "Desk photo of the vehicle paperwork and accessories showing a CARFAX-style report sheet, two BMW key fobs, a yellow dealer tag, and a handwritten listing tag.",
-    "zoomTargets": {},
     "visibleFeatures": [
       "vehicle history paperwork",
       "CARFAX report sheet",
@@ -115,17 +181,114 @@
       "specific feature",
       "trim",
       "condition detail",
-      "detail"
+      "detail",
+      "detail close-up",
+      "condition close-up",
+      "feature detail"
     ],
     "likelyQuestions": [
       "Does it come with two keys?",
       "Is there a CARFAX or history report?",
       "Can I see the paperwork?",
       "Does it include the key fobs?",
-      "Are there documents with the car?"
+      "Are there documents with the car?",
+      "Can I see that detail closer?",
+      "Can you zoom in on this part?"
     ],
     "confidence": 0.98,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Primary detail",
+        "box": [
+          0.2,
+          0.2,
+          0.6,
+          0.58
+        ]
+      },
+      {
+        "label": "Keys and paperwork",
+        "box": [
+          0.12,
+          0.12,
+          0.76,
+          0.72
+        ]
+      },
+      {
+        "label": "Control button",
+        "box": [
+          0.32,
+          0.32,
+          0.36,
+          0.28
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "detail": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close-up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "keys": [
+        0.12,
+        0.12,
+        0.76,
+        0.72
+      ],
+      "key fobs": [
+        0.12,
+        0.12,
+        0.76,
+        0.72
+      ],
+      "paperwork": [
+        0.12,
+        0.12,
+        0.76,
+        0.72
+      ],
+      "CARFAX": [
+        0.12,
+        0.12,
+        0.76,
+        0.72
+      ],
+      "button": [
+        0.32,
+        0.32,
+        0.36,
+        0.28
+      ],
+      "control": [
+        0.32,
+        0.32,
+        0.36,
+        0.28
+      ],
+      "switch": [
+        0.32,
+        0.32,
+        0.36,
+        0.28
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-1574830017944435581-1024x768",
@@ -134,38 +297,6 @@
     "role": "interior_front",
     "viewpoint": "driver-side door-open front seat and console view",
     "caption": "Driver-side interior view showing the black leather M sport front seat, illuminated M4 seat badge, sculpted bolsters, carbon-fiber center console trim, gear selector, iDrive controller, armrest, floor mat, and door sill.",
-    "zoomTargets": {
-      "badge": [
-        0.05,
-        0.3,
-        0.25,
-        0.2
-      ],
-      "gear selector": [
-        0.55,
-        0.45,
-        0.3,
-        0.3
-      ],
-      "shifter": [
-        0.55,
-        0.45,
-        0.3,
-        0.3
-      ],
-      "center console": [
-        0.5,
-        0.4,
-        0.4,
-        0.5
-      ],
-      "iDrive": [
-        0.6,
-        0.65,
-        0.25,
-        0.25
-      ]
-    },
     "visibleFeatures": [
       "black leather driver seat",
       "M sport bucket seat",
@@ -178,7 +309,8 @@
       "center armrest",
       "power seat controls",
       "door sill trim",
-      "all-weather floor mat"
+      "all-weather floor mat",
+      "carbon-fiber detail visible"
     ],
     "conditionNotes": [
       "driver seat surface appears clean",
@@ -209,7 +341,14 @@
       "interior",
       "dashboard",
       "upholstery",
-      "interior front"
+      "interior front",
+      "front cabin inspection",
+      "seat condition",
+      "console controls",
+      "interior trim",
+      "carbon fiber",
+      "carbon weave",
+      "carbon-fiber trim"
     ],
     "likelyQuestions": [
       "Can I see the driver's seat?",
@@ -218,10 +357,84 @@
       "Does the seat badge light up?",
       "Does the interior have carbon-fiber trim?",
       "Can I see the center console?",
-      "Can I see the stick or shifter?"
+      "Can I see the stick or shifter?",
+      "Can I see the front cabin?",
+      "Can I inspect the seats and console?",
+      "Does it have carbon-fiber interior trim?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Front sport seats",
+        "box": [
+          0.12,
+          0.2,
+          0.76,
+          0.62
+        ]
+      },
+      {
+        "label": "Center console controls",
+        "box": [
+          0.3,
+          0.34,
+          0.34,
+          0.46
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "front seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "sport seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "bucket seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "center console": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "gear selector": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "shifter": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "iDrive": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-1601741309887650709-1024x768",
@@ -230,26 +443,6 @@
     "role": "wheel",
     "viewpoint": "front driver-side wheel, tire, brake, and fender close-up",
     "caption": "Front driver-side wheel close-up showing the multi-spoke BMW alloy rim, Continental ExtremeContact tire, blue M brake caliper, drilled brake rotor, front fender vent, side marker, and parking sensor.",
-    "zoomTargets": {
-      "wheel": [
-        0.1,
-        0.1,
-        0.7,
-        0.8
-      ],
-      "caliper": [
-        0.25,
-        0.4,
-        0.3,
-        0.3
-      ],
-      "brake": [
-        0.2,
-        0.35,
-        0.4,
-        0.4
-      ]
-    },
     "visibleFeatures": [
       "front driver-side wheel",
       "multi-spoke alloy rim",
@@ -288,7 +481,15 @@
       "brake",
       "caliper",
       "rotor",
-      "Continental tire"
+      "Continental tire",
+      "wheel close-up",
+      "rim condition",
+      "tire sidewall",
+      "brake inspection",
+      "blue brake caliper",
+      "parking sensors",
+      "park distance control",
+      "Continental ExtremeContact tires"
     ],
     "likelyQuestions": [
       "Can I see the wheels?",
@@ -299,7 +500,105 @@
       "Are the rotors visible?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Wheel and tire",
+        "box": [
+          0.1,
+          0.08,
+          0.78,
+          0.84
+        ]
+      },
+      {
+        "label": "Blue M brake caliper",
+        "box": [
+          0.56,
+          0.25,
+          0.24,
+          0.35
+        ]
+      },
+      {
+        "label": "Drilled brake rotor",
+        "box": [
+          0.34,
+          0.26,
+          0.34,
+          0.42
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "wheel": [
+        0.1,
+        0.08,
+        0.78,
+        0.84
+      ],
+      "rim": [
+        0.1,
+        0.08,
+        0.78,
+        0.84
+      ],
+      "tire": [
+        0.1,
+        0.08,
+        0.78,
+        0.84
+      ],
+      "tyre": [
+        0.1,
+        0.08,
+        0.78,
+        0.84
+      ],
+      "brake caliper": [
+        0.56,
+        0.25,
+        0.24,
+        0.35
+      ],
+      "caliper": [
+        0.56,
+        0.25,
+        0.24,
+        0.35
+      ],
+      "blue caliper": [
+        0.56,
+        0.25,
+        0.24,
+        0.35
+      ],
+      "brakes": [
+        0.56,
+        0.25,
+        0.24,
+        0.35
+      ],
+      "rotor": [
+        0.34,
+        0.26,
+        0.34,
+        0.42
+      ],
+      "drilled rotor": [
+        0.34,
+        0.26,
+        0.34,
+        0.42
+      ],
+      "brake rotor": [
+        0.34,
+        0.26,
+        0.34,
+        0.42
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-1766761240484396677-1024x768",
@@ -308,7 +607,6 @@
     "role": "exterior_front",
     "viewpoint": "front driver-side corner detail from low exterior angle",
     "caption": "Front driver-side exterior close-up showing the black M4 kidney grille, LED headlight signature, white bumper, parking sensors, amber side marker, lower mesh intake, and carbon-fiber front lip/splitter.",
-    "zoomTargets": {},
     "visibleFeatures": [
       "black kidney grille",
       "M4 grille badge",
@@ -321,7 +619,8 @@
       "carbon-fiber front lip",
       "front splitter",
       "hood edge",
-      "front license plate bracket"
+      "front license plate bracket",
+      "carbon-fiber detail visible"
     ],
     "conditionNotes": [
       "front lighting and grille area are visible",
@@ -346,7 +645,13 @@
       "hood",
       "paint",
       "outside view",
-      "exterior front"
+      "exterior front",
+      "front-end condition",
+      "front parking sensors",
+      "carbon fiber",
+      "carbon weave",
+      "carbon-fiber trim",
+      "park distance control"
     ],
     "likelyQuestions": [
       "Can I see the front bumper?",
@@ -354,10 +659,125 @@
       "What do the headlights look like?",
       "Does it have front parking sensors?",
       "Does it have a carbon-fiber front lip?",
-      "Can I inspect the front splitter?"
+      "Can I inspect the front splitter?",
+      "Can I see the front?",
+      "Can I inspect the headlights and grille?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Front fascia",
+        "box": [
+          0.12,
+          0.25,
+          0.76,
+          0.48
+        ]
+      },
+      {
+        "label": "Black kidney grille",
+        "box": [
+          0.32,
+          0.36,
+          0.34,
+          0.24
+        ]
+      },
+      {
+        "label": "LED headlights",
+        "box": [
+          0.16,
+          0.32,
+          0.68,
+          0.2
+        ]
+      },
+      {
+        "label": "Carbon-fiber front lip",
+        "box": [
+          0.16,
+          0.66,
+          0.68,
+          0.18
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "front": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "front fascia": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "front bumper": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "kidney grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "black grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "headlights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "LED headlights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "lights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "front lip": [
+        0.16,
+        0.66,
+        0.68,
+        0.18
+      ],
+      "splitter": [
+        0.16,
+        0.66,
+        0.68,
+        0.18
+      ],
+      "carbon lip": [
+        0.16,
+        0.66,
+        0.68,
+        0.18
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-1837515697934941645-1024x768",
@@ -366,14 +786,6 @@
     "role": "detail",
     "viewpoint": "interior door tweeter and speaker grille close-up",
     "caption": "Close-up of the interior Harman Kardon speaker grille on the door sail area, with perforated metal mesh, Harman Kardon badge, leather door trim, and window glass edge.",
-    "zoomTargets": {
-      "badge": [
-        0.25,
-        0.55,
-        0.5,
-        0.3
-      ]
-    },
     "visibleFeatures": [
       "Harman Kardon speaker badge",
       "perforated speaker grille",
@@ -407,17 +819,110 @@
       "specific feature",
       "trim",
       "condition detail",
-      "detail"
+      "detail",
+      "detail close-up",
+      "condition close-up",
+      "feature detail",
+      "Harman Kardon audio",
+      "premium sound"
     ],
     "likelyQuestions": [
       "Does it have Harman Kardon audio?",
       "Can I see the speakers?",
       "What sound system does it have?",
       "Are the speaker grilles intact?",
-      "Does the door have premium audio?"
+      "Does the door have premium audio?",
+      "Can I see that detail closer?",
+      "Can you zoom in on this part?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Primary detail",
+        "box": [
+          0.2,
+          0.2,
+          0.6,
+          0.58
+        ]
+      },
+      {
+        "label": "Harman Kardon speaker",
+        "box": [
+          0.16,
+          0.16,
+          0.68,
+          0.58
+        ]
+      },
+      {
+        "label": "Badge",
+        "box": [
+          0.26,
+          0.24,
+          0.48,
+          0.32
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "detail": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close-up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "speaker": [
+        0.16,
+        0.16,
+        0.68,
+        0.58
+      ],
+      "Harman Kardon": [
+        0.16,
+        0.16,
+        0.68,
+        0.58
+      ],
+      "audio": [
+        0.16,
+        0.16,
+        0.68,
+        0.58
+      ],
+      "badge": [
+        0.26,
+        0.24,
+        0.48,
+        0.32
+      ],
+      "M4 badge": [
+        0.26,
+        0.24,
+        0.48,
+        0.32
+      ],
+      "BMW badge": [
+        0.26,
+        0.24,
+        0.48,
+        0.32
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-1898438960393315124-1024x768",
@@ -426,7 +931,6 @@
     "role": "detail",
     "viewpoint": "lower steering-column and knee-area detail from driver footwell",
     "caption": "Driver footwell detail showing the steering-column adjustment lever, heated steering wheel button, lower dash trim, pedals area, steering stalk, center console edge, and black floor mat.",
-    "zoomTargets": {},
     "visibleFeatures": [
       "steering column adjustment lever",
       "heated steering wheel button",
@@ -463,7 +967,10 @@
       "specific feature",
       "trim",
       "condition detail",
-      "detail"
+      "detail",
+      "detail close-up",
+      "condition close-up",
+      "feature detail"
     ],
     "likelyQuestions": [
       "Does it have a heated steering wheel?",
@@ -471,10 +978,71 @@
       "What does the driver footwell look like?",
       "Are the lower dash controls intact?",
       "Can the steering wheel adjust?",
-      "What is under the driver's steering wheel?"
+      "What is under the driver's steering wheel?",
+      "Can I see that detail closer?",
+      "Can you zoom in on this part?"
     ],
     "confidence": 0.96,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Primary detail",
+        "box": [
+          0.2,
+          0.2,
+          0.6,
+          0.58
+        ]
+      },
+      {
+        "label": "Control button",
+        "box": [
+          0.32,
+          0.32,
+          0.36,
+          0.28
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "detail": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close-up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "button": [
+        0.32,
+        0.32,
+        0.36,
+        0.28
+      ],
+      "control": [
+        0.32,
+        0.32,
+        0.36,
+        0.28
+      ],
+      "switch": [
+        0.32,
+        0.32,
+        0.36,
+        0.28
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-2086691802845276950-1024x768",
@@ -483,14 +1051,6 @@
     "role": "detail",
     "viewpoint": "close-up of front seat upper bolster and M4 badge",
     "caption": "Seat detail showing the M4 illuminated badge, perforated leather center insert, upper shoulder bolsters, stitching, and the sculpted sport-seat shell.",
-    "zoomTargets": {
-      "badge": [
-        0.3,
-        0.35,
-        0.4,
-        0.3
-      ]
-    },
     "visibleFeatures": [
       "M4 illuminated seat badge",
       "perforated leather insert",
@@ -521,17 +1081,83 @@
       "specific feature",
       "trim",
       "condition detail",
-      "detail"
+      "detail",
+      "detail close-up",
+      "condition close-up",
+      "feature detail",
+      "M4 badge",
+      "M branding"
     ],
     "likelyQuestions": [
       "Can I see the M4 seat badge?",
       "Are the front seats bolstered?",
       "What condition is the seat leather in?",
       "Does it have M sport seats?",
-      "Can I see a close-up of the seat?"
+      "Can I see a close-up of the seat?",
+      "Can I see that detail closer?",
+      "Can you zoom in on this part?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Primary detail",
+        "box": [
+          0.2,
+          0.2,
+          0.6,
+          0.58
+        ]
+      },
+      {
+        "label": "Badge",
+        "box": [
+          0.26,
+          0.24,
+          0.48,
+          0.32
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "detail": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close-up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "badge": [
+        0.26,
+        0.24,
+        0.48,
+        0.32
+      ],
+      "M4 badge": [
+        0.26,
+        0.24,
+        0.48,
+        0.32
+      ],
+      "BMW badge": [
+        0.26,
+        0.24,
+        0.48,
+        0.32
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-2276727283337289750-1024x768",
@@ -540,32 +1166,6 @@
     "role": "interior_front",
     "viewpoint": "passenger-side door-open view across front seats and center console",
     "caption": "Front cabin view showing both black leather sport seats, driver seat bolsters, center console, gear selector, iDrive controller, dashboard stack, door panel, all-weather floor mat, and M door sill.",
-    "zoomTargets": {
-      "center console": [
-        0.35,
-        0.4,
-        0.4,
-        0.45
-      ],
-      "gear selector": [
-        0.4,
-        0.45,
-        0.25,
-        0.3
-      ],
-      "shifter": [
-        0.4,
-        0.45,
-        0.25,
-        0.3
-      ],
-      "iDrive": [
-        0.55,
-        0.6,
-        0.25,
-        0.25
-      ]
-    },
     "visibleFeatures": [
       "both front sport seats",
       "black leather upholstery",
@@ -601,17 +1201,122 @@
       "cockpit",
       "interior",
       "upholstery",
-      "interior front"
+      "interior front",
+      "front cabin inspection",
+      "seat condition",
+      "console controls",
+      "interior trim"
     ],
     "likelyQuestions": [
       "Can I see the front interior?",
       "What do both front seats look like?",
       "Is the cabin clean?",
       "Does it have all-weather floor mats?",
-      "Can I see the driver seat and console together?"
+      "Can I see the driver seat and console together?",
+      "Can I see the front cabin?",
+      "Can I inspect the seats and console?",
+      "Does it have carbon-fiber interior trim?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Front sport seats",
+        "box": [
+          0.12,
+          0.2,
+          0.76,
+          0.62
+        ]
+      },
+      {
+        "label": "Center console controls",
+        "box": [
+          0.3,
+          0.34,
+          0.34,
+          0.46
+        ]
+      },
+      {
+        "label": "Door panel",
+        "box": [
+          0.02,
+          0.18,
+          0.3,
+          0.62
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "front seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "sport seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "bucket seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "center console": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "gear selector": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "shifter": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "iDrive": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "door panel": [
+        0.02,
+        0.18,
+        0.3,
+        0.62
+      ],
+      "door trim": [
+        0.02,
+        0.18,
+        0.3,
+        0.62
+      ],
+      "window switches": [
+        0.02,
+        0.18,
+        0.3,
+        0.62
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-2621075048170827325-1024x768",
@@ -620,26 +1325,6 @@
     "role": "exterior_front",
     "viewpoint": "wide front driver-side three-quarter exterior view at dealership",
     "caption": "Wide front three-quarter exterior view of the white BMW M4 coupe showing the black kidney grille, LED headlights, carbon-fiber roof, carbon mirror caps, black wheels, blue brake calipers, front splitter, side vent, and coupe body profile.",
-    "zoomTargets": {
-      "caliper": [
-        0.05,
-        0.55,
-        0.2,
-        0.25
-      ],
-      "wheel": [
-        0,
-        0.45,
-        0.3,
-        0.45
-      ],
-      "mirror": [
-        0.25,
-        0.15,
-        0.2,
-        0.2
-      ]
-    },
     "visibleFeatures": [
       "white exterior paint",
       "front three-quarter angle",
@@ -652,7 +1337,8 @@
       "front splitter",
       "side fender vent",
       "coupe roofline",
-      "dealership background"
+      "dealership background",
+      "carbon-fiber detail visible"
     ],
     "conditionNotes": [
       "full front-side stance is visible",
@@ -684,7 +1370,13 @@
       "hood",
       "paint",
       "outside view",
-      "exterior front"
+      "exterior front",
+      "front fascia",
+      "front-end condition",
+      "front parking sensors",
+      "carbon fiber",
+      "carbon weave",
+      "carbon-fiber trim"
     ],
     "likelyQuestions": [
       "Can I see the whole exterior?",
@@ -694,10 +1386,126 @@
       "Does it have a carbon-fiber roof?",
       "Does it have black wheels?",
       "What color are the brake calipers?",
-      "Does it have carbon mirror caps?"
+      "Does it have carbon mirror caps?",
+      "Can I see the front?",
+      "Can I inspect the headlights and grille?",
+      "Does it have front parking sensors?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Front fascia",
+        "box": [
+          0.12,
+          0.25,
+          0.76,
+          0.48
+        ]
+      },
+      {
+        "label": "Black kidney grille",
+        "box": [
+          0.32,
+          0.36,
+          0.34,
+          0.24
+        ]
+      },
+      {
+        "label": "LED headlights",
+        "box": [
+          0.16,
+          0.32,
+          0.68,
+          0.2
+        ]
+      },
+      {
+        "label": "Carbon-fiber front lip",
+        "box": [
+          0.16,
+          0.66,
+          0.68,
+          0.18
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "front": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "front fascia": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "front bumper": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "kidney grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "black grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "headlights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "LED headlights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "lights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "front lip": [
+        0.16,
+        0.66,
+        0.68,
+        0.18
+      ],
+      "splitter": [
+        0.16,
+        0.66,
+        0.68,
+        0.18
+      ],
+      "carbon lip": [
+        0.16,
+        0.66,
+        0.68,
+        0.18
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-2653171459232803209-1024x768",
@@ -706,7 +1514,6 @@
     "role": "detail",
     "viewpoint": "close-up of dashboard start/stop control",
     "caption": "Close-up of the BMW start/stop ignition button and automatic start-stop off indicator set into the lower dash trim next to the steering wheel.",
-    "zoomTargets": {},
     "visibleFeatures": [
       "start stop engine button",
       "ignition button",
@@ -734,17 +1541,108 @@
       "specific feature",
       "trim",
       "condition detail",
-      "detail"
+      "detail",
+      "detail close-up",
+      "condition close-up",
+      "feature detail"
     ],
     "likelyQuestions": [
       "Does it have push-button start?",
       "Can I see the start button?",
       "Where is the ignition button?",
       "Does it have auto start-stop?",
-      "Are the dash buttons intact?"
+      "Are the dash buttons intact?",
+      "Can I see that detail closer?",
+      "Can you zoom in on this part?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Primary detail",
+        "box": [
+          0.2,
+          0.2,
+          0.6,
+          0.58
+        ]
+      },
+      {
+        "label": "Engine bay",
+        "box": [
+          0.12,
+          0.16,
+          0.76,
+          0.66
+        ]
+      },
+      {
+        "label": "Control button",
+        "box": [
+          0.32,
+          0.32,
+          0.36,
+          0.28
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "detail": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close-up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "engine": [
+        0.12,
+        0.16,
+        0.76,
+        0.66
+      ],
+      "engine bay": [
+        0.12,
+        0.16,
+        0.76,
+        0.66
+      ],
+      "hood open": [
+        0.12,
+        0.16,
+        0.76,
+        0.66
+      ],
+      "button": [
+        0.32,
+        0.32,
+        0.36,
+        0.28
+      ],
+      "control": [
+        0.32,
+        0.32,
+        0.36,
+        0.28
+      ],
+      "switch": [
+        0.32,
+        0.32,
+        0.36,
+        0.28
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-2726043006252105822-1024x768",
@@ -753,7 +1651,6 @@
     "role": "exterior_front",
     "viewpoint": "straight front exterior view centered on hood, grille, headlights, and bumper",
     "caption": "Straight-on front exterior view of the white BMW M4 showing the hood, BMW roundel, black kidney grille, LED headlight signatures, front bumper intakes, parking sensors, carbon-fiber lower lip, and license plate frame.",
-    "zoomTargets": {},
     "visibleFeatures": [
       "white hood",
       "BMW roundel",
@@ -764,7 +1661,8 @@
       "carbon-fiber lower lip",
       "license plate frame",
       "front splitter",
-      "lower mesh grille"
+      "lower mesh grille",
+      "carbon-fiber detail visible"
     ],
     "conditionNotes": [
       "front face is centered for inspection",
@@ -786,17 +1684,140 @@
       "front exterior",
       "paint",
       "outside view",
-      "exterior front"
+      "exterior front",
+      "front fascia",
+      "front-end condition",
+      "front parking sensors",
+      "carbon fiber",
+      "carbon weave",
+      "carbon-fiber trim",
+      "park distance control"
     ],
     "likelyQuestions": [
       "Can I see it from the front?",
       "What does the grille look like?",
       "Are there front parking sensors?",
       "Can I inspect the hood and bumper?",
-      "Does it have LED headlights?"
+      "Does it have LED headlights?",
+      "Can I see the front?",
+      "Can I inspect the headlights and grille?",
+      "Does it have front parking sensors?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Front fascia",
+        "box": [
+          0.12,
+          0.25,
+          0.76,
+          0.48
+        ]
+      },
+      {
+        "label": "Black kidney grille",
+        "box": [
+          0.32,
+          0.36,
+          0.34,
+          0.24
+        ]
+      },
+      {
+        "label": "LED headlights",
+        "box": [
+          0.16,
+          0.32,
+          0.68,
+          0.2
+        ]
+      },
+      {
+        "label": "Carbon-fiber front lip",
+        "box": [
+          0.16,
+          0.66,
+          0.68,
+          0.18
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "front": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "front fascia": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "front bumper": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "kidney grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "black grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "headlights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "LED headlights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "lights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "front lip": [
+        0.16,
+        0.66,
+        0.68,
+        0.18
+      ],
+      "splitter": [
+        0.16,
+        0.66,
+        0.68,
+        0.18
+      ],
+      "carbon lip": [
+        0.16,
+        0.66,
+        0.68,
+        0.18
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-27355374517953209-1024x768",
@@ -977,26 +1998,6 @@
     "role": "detail",
     "viewpoint": "close-up of center-console performance and parking buttons",
     "caption": "Close-up of the center-console button bank showing M drive/performance settings, suspension and traction-related controls, camera view, parking sensor button, auto hold, and the gear selector surround.",
-    "zoomTargets": {
-      "button cluster": [
-        0.1,
-        0.3,
-        0.8,
-        0.45
-      ],
-      "gear selector": [
-        0.6,
-        0.05,
-        0.35,
-        0.3
-      ],
-      "center console": [
-        0.05,
-        0.05,
-        0.9,
-        0.9
-      ]
-    },
     "visibleFeatures": [
       "M drive button row",
       "performance setting buttons",
@@ -1032,7 +2033,11 @@
       "specific feature",
       "trim",
       "condition detail",
-      "detail"
+      "detail",
+      "detail close-up",
+      "condition close-up",
+      "feature detail",
+      "park distance control"
     ],
     "likelyQuestions": [
       "Can I see the drive-mode buttons?",
@@ -1040,10 +2045,71 @@
       "Are there performance controls?",
       "Does it have a camera button?",
       "Can I see the console buttons?",
-      "Can I see the center console controls?"
+      "Can I see the center console controls?",
+      "Can I see that detail closer?",
+      "Can you zoom in on this part?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Primary detail",
+        "box": [
+          0.2,
+          0.2,
+          0.6,
+          0.58
+        ]
+      },
+      {
+        "label": "Control button",
+        "box": [
+          0.32,
+          0.32,
+          0.36,
+          0.28
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "detail": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close-up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "button": [
+        0.32,
+        0.32,
+        0.36,
+        0.28
+      ],
+      "control": [
+        0.32,
+        0.32,
+        0.36,
+        0.28
+      ],
+      "switch": [
+        0.32,
+        0.32,
+        0.36,
+        0.28
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-2844409574140034023-1024x768",
@@ -1052,7 +2118,6 @@
     "role": "interior_front",
     "viewpoint": "open front door panel view from outside",
     "caption": "Front door panel view showing black leather door trim, contrast stitching, sculpted grab handle, metallic door handle, gloss dark trim, window and mirror switch area, lower storage pocket, and speaker area.",
-    "zoomTargets": {},
     "visibleFeatures": [
       "front door panel",
       "black leather trim",
@@ -1089,17 +2154,121 @@
       "center console",
       "dashboard",
       "upholstery",
-      "interior front"
+      "interior front",
+      "front cabin inspection",
+      "seat condition",
+      "console controls"
     ],
     "likelyQuestions": [
       "Can I see the door panel?",
       "What does the front door trim look like?",
       "Are the window and mirror controls visible?",
       "Does the door have leather trim?",
-      "Is there door storage?"
+      "Is there door storage?",
+      "Can I see the front cabin?",
+      "Can I inspect the seats and console?",
+      "Does it have carbon-fiber interior trim?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Front sport seats",
+        "box": [
+          0.12,
+          0.2,
+          0.76,
+          0.62
+        ]
+      },
+      {
+        "label": "Center console controls",
+        "box": [
+          0.3,
+          0.34,
+          0.34,
+          0.46
+        ]
+      },
+      {
+        "label": "Door panel",
+        "box": [
+          0.02,
+          0.18,
+          0.3,
+          0.62
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "front seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "sport seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "bucket seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "center console": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "gear selector": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "shifter": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "iDrive": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "door panel": [
+        0.02,
+        0.18,
+        0.3,
+        0.62
+      ],
+      "door trim": [
+        0.02,
+        0.18,
+        0.3,
+        0.62
+      ],
+      "window switches": [
+        0.02,
+        0.18,
+        0.3,
+        0.62
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-3808784972398941726-1024x768",
@@ -1108,26 +2277,6 @@
     "role": "exterior_front",
     "viewpoint": "driver-side exterior profile from front fender to rear quarter",
     "caption": "Driver-side profile view of the white M4 showing tinted side glass, hardtop coupe roofline, carbon-fiber mirror cap, M fender vent, black window trim, black wheels, blue brake calipers, and side character line.",
-    "zoomTargets": {
-      "mirror": [
-        0.15,
-        0.2,
-        0.2,
-        0.2
-      ],
-      "caliper": [
-        0.08,
-        0.55,
-        0.2,
-        0.25
-      ],
-      "wheel": [
-        0.03,
-        0.45,
-        0.28,
-        0.45
-      ]
-    },
     "visibleFeatures": [
       "driver-side profile",
       "white exterior paint",
@@ -1140,7 +2289,8 @@
       "black alloy wheels",
       "blue brake calipers",
       "door handle",
-      "side skirt"
+      "side skirt",
+      "carbon-fiber detail visible"
     ],
     "conditionNotes": [
       "side glass tint is visible",
@@ -1166,7 +2316,13 @@
       "hood",
       "paint",
       "outside view",
-      "exterior front"
+      "exterior front",
+      "front fascia",
+      "front-end condition",
+      "front parking sensors",
+      "carbon fiber",
+      "carbon weave",
+      "carbon-fiber trim"
     ],
     "likelyQuestions": [
       "Can I see the side profile?",
@@ -1174,10 +2330,99 @@
       "Does it have carbon-fiber mirrors?",
       "Is it a hardtop coupe roofline?",
       "Can I see the fender vent?",
-      "What does the driver's side look like?"
+      "What does the driver's side look like?",
+      "Can I see the front?",
+      "Can I inspect the headlights and grille?",
+      "Does it have front parking sensors?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Front fascia",
+        "box": [
+          0.12,
+          0.25,
+          0.76,
+          0.48
+        ]
+      },
+      {
+        "label": "Black kidney grille",
+        "box": [
+          0.32,
+          0.36,
+          0.34,
+          0.24
+        ]
+      },
+      {
+        "label": "LED headlights",
+        "box": [
+          0.16,
+          0.32,
+          0.68,
+          0.2
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "front": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "front fascia": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "front bumper": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "kidney grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "black grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "headlights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "LED headlights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "lights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-3945500231103837349-1024x768",
@@ -1186,7 +2431,6 @@
     "role": "detail",
     "viewpoint": "front bumper lower-intake and headlight detail",
     "caption": "Front bumper detail showing the driver-side LED headlight, parking sensor, tow-hook cover, lower intake mesh, white bumper surface, and carbon-fiber front intake/splitter trim.",
-    "zoomTargets": {},
     "visibleFeatures": [
       "driver-side LED headlight",
       "front parking sensor",
@@ -1196,7 +2440,8 @@
       "carbon-fiber intake trim",
       "carbon-fiber front splitter",
       "white bumper paint",
-      "headlight lens"
+      "headlight lens",
+      "carbon-fiber detail visible"
     ],
     "conditionNotes": [
       "headlight lens is visible",
@@ -1219,17 +2464,59 @@
       "specific feature",
       "trim",
       "condition detail",
-      "detail"
+      "detail",
+      "detail close-up",
+      "condition close-up",
+      "feature detail",
+      "carbon fiber",
+      "carbon weave",
+      "carbon-fiber trim",
+      "parking sensors",
+      "park distance control"
     ],
     "likelyQuestions": [
       "Can I inspect the front lip?",
       "Can I see the lower bumper intake?",
       "Are the parking sensors visible?",
       "What condition is the front bumper in?",
-      "Can I see the headlight up close?"
+      "Can I see the headlight up close?",
+      "Can I see that detail closer?",
+      "Can you zoom in on this part?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Primary detail",
+        "box": [
+          0.2,
+          0.2,
+          0.6,
+          0.58
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "detail": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close-up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-3986400956717864468-1024x768",
@@ -1238,14 +2525,6 @@
     "role": "detail",
     "viewpoint": "carbon-fiber side mirror close-up",
     "caption": "Close-up of the carbon-fiber side mirror cap with visible weave, glossy clear coat, aerodynamic M-style mirror shape, black mirror base, window trim, and white door edge.",
-    "zoomTargets": {
-      "mirror": [
-        0.1,
-        0.1,
-        0.8,
-        0.75
-      ]
-    },
     "visibleFeatures": [
       "carbon-fiber side mirror cap",
       "visible carbon weave",
@@ -1254,7 +2533,8 @@
       "black mirror base",
       "side window trim",
       "white door edge",
-      "mirror housing"
+      "mirror housing",
+      "carbon-fiber detail visible"
     ],
     "conditionNotes": [
       "carbon weave is clearly visible",
@@ -1275,17 +2555,83 @@
       "specific feature",
       "trim",
       "condition detail",
-      "detail"
+      "detail",
+      "detail close-up",
+      "condition close-up",
+      "feature detail",
+      "carbon fiber",
+      "carbon-fiber trim"
     ],
     "likelyQuestions": [
       "Are the mirrors carbon fiber?",
       "Can I see a close-up of the mirror cap?",
       "Is the carbon weave visible?",
       "What condition are the mirror caps in?",
-      "Does it have M-style mirrors?"
+      "Does it have M-style mirrors?",
+      "Can I see that detail closer?",
+      "Can you zoom in on this part?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Primary detail",
+        "box": [
+          0.2,
+          0.2,
+          0.6,
+          0.58
+        ]
+      },
+      {
+        "label": "Carbon-fiber mirror cap",
+        "box": [
+          0.16,
+          0.12,
+          0.68,
+          0.58
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "detail": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close-up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "mirror": [
+        0.16,
+        0.12,
+        0.68,
+        0.58
+      ],
+      "mirror cap": [
+        0.16,
+        0.12,
+        0.68,
+        0.58
+      ],
+      "carbon mirror": [
+        0.16,
+        0.12,
+        0.68,
+        0.58
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-4040769667739339279-1024x768",
@@ -1294,14 +2640,6 @@
     "role": "interior_rear",
     "viewpoint": "rear passenger cabin view from side door opening",
     "caption": "Rear cabin view showing two sculpted black leather rear seats, integrated headrests, center pass-through/armrest area, rear climate vents, seat belts, floor mat, and side panel speakers.",
-    "zoomTargets": {
-      "vents": [
-        0.3,
-        0.55,
-        0.4,
-        0.25
-      ]
-    },
     "visibleFeatures": [
       "two rear seats",
       "black leather rear bench",
@@ -1333,17 +2671,81 @@
       "rear upholstery",
       "rear passenger area",
       "interior",
-      "interior rear"
+      "interior rear",
+      "rear passenger space",
+      "back seat room"
     ],
     "likelyQuestions": [
       "Can I see the rear seats?",
       "Does it have rear climate vents?",
       "How does the back seat look?",
       "Are there seat belts in the rear?",
-      "Can passengers sit in the back?"
+      "Can passengers sit in the back?",
+      "Can I see the back seats?",
+      "How much rear-seat room is there?",
+      "Are the rear seats clean?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Rear seats",
+        "box": [
+          0.14,
+          0.18,
+          0.72,
+          0.58
+        ]
+      },
+      {
+        "label": "Rear climate vents",
+        "box": [
+          0.42,
+          0.58,
+          0.18,
+          0.18
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "rear seats": [
+        0.14,
+        0.18,
+        0.72,
+        0.58
+      ],
+      "back seats": [
+        0.14,
+        0.18,
+        0.72,
+        0.58
+      ],
+      "second row": [
+        0.14,
+        0.18,
+        0.72,
+        0.58
+      ],
+      "rear vents": [
+        0.42,
+        0.58,
+        0.18,
+        0.18
+      ],
+      "rear climate": [
+        0.42,
+        0.58,
+        0.18,
+        0.18
+      ],
+      "back vents": [
+        0.42,
+        0.58,
+        0.18,
+        0.18
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-4110894274945754678-1024x768",
@@ -1352,26 +2754,6 @@
     "role": "exterior_front",
     "viewpoint": "wide front driver-side three-quarter exterior view",
     "caption": "Front three-quarter exterior view showing the white M4 with black double-slat grille, LED headlights, carbon-fiber front splitter, carbon mirror caps, fixed carbon-fiber roof, black wheels, blue brake calipers, M4 fender badge, and front parking sensors.",
-    "zoomTargets": {
-      "caliper": [
-        0.05,
-        0.55,
-        0.2,
-        0.25
-      ],
-      "wheel": [
-        0,
-        0.45,
-        0.28,
-        0.45
-      ],
-      "mirror": [
-        0.3,
-        0.18,
-        0.2,
-        0.2
-      ]
-    },
     "visibleFeatures": [
       "white exterior paint",
       "black double-slat kidney grille",
@@ -1384,7 +2766,8 @@
       "M4 side badge",
       "front parking sensors",
       "side fender vent",
-      "dealership building"
+      "dealership building",
+      "carbon-fiber detail visible"
     ],
     "conditionNotes": [
       "full front stance is visible",
@@ -1410,7 +2793,16 @@
       "hood",
       "paint",
       "outside view",
-      "exterior front"
+      "exterior front",
+      "front fascia",
+      "front-end condition",
+      "front parking sensors",
+      "carbon fiber",
+      "carbon weave",
+      "carbon-fiber trim",
+      "parking sensors",
+      "park distance control",
+      "M branding"
     ],
     "likelyQuestions": [
       "Can I see the exterior stance?",
@@ -1418,10 +2810,126 @@
       "What do the wheels look like?",
       "What color are the calipers?",
       "Does it have a carbon roof?",
-      "Can I see the front and side together?"
+      "Can I see the front and side together?",
+      "Can I see the front?",
+      "Can I inspect the headlights and grille?",
+      "Does it have front parking sensors?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Front fascia",
+        "box": [
+          0.12,
+          0.25,
+          0.76,
+          0.48
+        ]
+      },
+      {
+        "label": "Black kidney grille",
+        "box": [
+          0.32,
+          0.36,
+          0.34,
+          0.24
+        ]
+      },
+      {
+        "label": "LED headlights",
+        "box": [
+          0.16,
+          0.32,
+          0.68,
+          0.2
+        ]
+      },
+      {
+        "label": "Carbon-fiber front lip",
+        "box": [
+          0.16,
+          0.66,
+          0.68,
+          0.18
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "front": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "front fascia": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "front bumper": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "kidney grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "black grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "headlights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "LED headlights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "lights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "front lip": [
+        0.16,
+        0.66,
+        0.68,
+        0.18
+      ],
+      "splitter": [
+        0.16,
+        0.66,
+        0.68,
+        0.18
+      ],
+      "carbon lip": [
+        0.16,
+        0.66,
+        0.68,
+        0.18
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-4214590209273371403-1024x768",
@@ -1430,26 +2938,6 @@
     "role": "exterior_front",
     "viewpoint": "wide front passenger-side three-quarter exterior view",
     "caption": "Front three-quarter exterior view from the opposite angle showing the white hood, black grille, LED headlights, carbon front lip, front intakes, black wheel, blue brake caliper, carbon mirror cap, tinted glass, and fixed carbon-fiber roof.",
-    "zoomTargets": {
-      "caliper": [
-        0.65,
-        0.55,
-        0.22,
-        0.25
-      ],
-      "wheel": [
-        0.6,
-        0.45,
-        0.3,
-        0.45
-      ],
-      "mirror": [
-        0.45,
-        0.18,
-        0.2,
-        0.2
-      ]
-    },
     "visibleFeatures": [
       "white hood",
       "black kidney grille",
@@ -1462,7 +2950,8 @@
       "tinted glass",
       "fixed carbon-fiber roof",
       "side fender vent",
-      "front parking sensors"
+      "front parking sensors",
+      "carbon-fiber detail visible"
     ],
     "conditionNotes": [
       "front passenger-side angle is visible",
@@ -1487,17 +2976,141 @@
       "hood",
       "paint",
       "outside view",
-      "exterior front"
+      "exterior front",
+      "front fascia",
+      "front-end condition",
+      "front parking sensors",
+      "carbon fiber",
+      "carbon weave",
+      "carbon-fiber trim",
+      "parking sensors",
+      "park distance control"
     ],
     "likelyQuestions": [
       "Can I see another front angle?",
       "Does it have a carbon-fiber roof?",
       "Are the windows tinted?",
       "Can I see the front wheel and brakes?",
-      "What does the passenger-side front look like?"
+      "What does the passenger-side front look like?",
+      "Can I see the front?",
+      "Can I inspect the headlights and grille?",
+      "Does it have front parking sensors?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Front fascia",
+        "box": [
+          0.12,
+          0.25,
+          0.76,
+          0.48
+        ]
+      },
+      {
+        "label": "Black kidney grille",
+        "box": [
+          0.32,
+          0.36,
+          0.34,
+          0.24
+        ]
+      },
+      {
+        "label": "LED headlights",
+        "box": [
+          0.16,
+          0.32,
+          0.68,
+          0.2
+        ]
+      },
+      {
+        "label": "Carbon-fiber front lip",
+        "box": [
+          0.16,
+          0.66,
+          0.68,
+          0.18
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "front": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "front fascia": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "front bumper": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "kidney grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "black grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "headlights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "LED headlights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "lights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "front lip": [
+        0.16,
+        0.66,
+        0.68,
+        0.18
+      ],
+      "splitter": [
+        0.16,
+        0.66,
+        0.68,
+        0.18
+      ],
+      "carbon lip": [
+        0.16,
+        0.66,
+        0.68,
+        0.18
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-4238769745495923074-1024x768",
@@ -1506,50 +3119,6 @@
     "role": "interior_front",
     "viewpoint": "driver cockpit view from open door",
     "caption": "Driver cockpit view showing the BMW M steering wheel, analog gauge cluster, infotainment screen, dashboard vents, carbon-fiber dash trim, center console, gear selector, iDrive controller, leather sport seats, and all-weather mat.",
-    "zoomTargets": {
-      "screen": [
-        0.4,
-        0.05,
-        0.35,
-        0.3
-      ],
-      "infotainment": [
-        0.4,
-        0.05,
-        0.35,
-        0.3
-      ],
-      "vents": [
-        0.35,
-        0.35,
-        0.4,
-        0.2
-      ],
-      "center console": [
-        0.5,
-        0.55,
-        0.4,
-        0.4
-      ],
-      "gear selector": [
-        0.52,
-        0.55,
-        0.25,
-        0.25
-      ],
-      "shifter": [
-        0.52,
-        0.55,
-        0.25,
-        0.25
-      ],
-      "iDrive": [
-        0.65,
-        0.68,
-        0.22,
-        0.22
-      ]
-    },
     "visibleFeatures": [
       "M steering wheel",
       "tri-color steering stitching",
@@ -1562,7 +3131,8 @@
       "iDrive controller",
       "black leather sport seats",
       "all-weather floor mat",
-      "door sill"
+      "door sill",
+      "carbon-fiber detail visible"
     ],
     "conditionNotes": [
       "cockpit layout is visible",
@@ -1589,7 +3159,14 @@
       "front seats",
       "interior",
       "upholstery",
-      "interior front"
+      "interior front",
+      "front cabin inspection",
+      "seat condition",
+      "console controls",
+      "interior trim",
+      "carbon fiber",
+      "carbon weave",
+      "carbon-fiber trim"
     ],
     "likelyQuestions": [
       "Can I see the cockpit?",
@@ -1597,10 +3174,110 @@
       "Can I see the gauges?",
       "Does it have carbon-fiber interior trim?",
       "What does the driver view look like?",
-      "Can I see the shifter from the driver's seat?"
+      "Can I see the shifter from the driver's seat?",
+      "Can I see the front cabin?",
+      "Can I inspect the seats and console?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Front sport seats",
+        "box": [
+          0.12,
+          0.2,
+          0.76,
+          0.62
+        ]
+      },
+      {
+        "label": "M steering wheel",
+        "box": [
+          0.08,
+          0.18,
+          0.28,
+          0.32
+        ]
+      },
+      {
+        "label": "Center console controls",
+        "box": [
+          0.3,
+          0.34,
+          0.34,
+          0.46
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "front seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "sport seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "bucket seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "steering wheel": [
+        0.08,
+        0.18,
+        0.28,
+        0.32
+      ],
+      "wheel controls": [
+        0.08,
+        0.18,
+        0.28,
+        0.32
+      ],
+      "M steering wheel": [
+        0.08,
+        0.18,
+        0.28,
+        0.32
+      ],
+      "center console": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "gear selector": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "shifter": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "iDrive": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-4486786565089773980-1024x768",
@@ -1609,7 +3286,6 @@
     "role": "detail",
     "viewpoint": "top-down close exterior view of roof panel and windshield edge",
     "caption": "",
-    "zoomTargets": {},
     "visibleFeatures": [
       "fixed carbon-fiber roof",
       "carbon roof weave",
@@ -1618,7 +3294,8 @@
       "black roof rails",
       "windshield edge",
       "rain sensor area",
-      "visible front seats through glass"
+      "visible front seats through glass",
+      "carbon-fiber detail visible"
     ],
     "conditionNotes": [
       "roof panel fills the frame",
@@ -1640,17 +3317,84 @@
       "specific feature",
       "trim",
       "condition detail",
-      "detail"
+      "detail",
+      "detail close-up",
+      "condition close-up",
+      "feature detail",
+      "carbon fiber",
+      "carbon weave",
+      "carbon-fiber trim"
     ],
     "likelyQuestions": [
       "Is the roof carbon fiber?",
       "Is it a hardtop?",
       "Can I see the roof?",
       "What does the top of the car look like?",
-      "Is there a panoramic roof?"
+      "Is there a panoramic roof?",
+      "Can I see that detail closer?",
+      "Can you zoom in on this part?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Primary detail",
+        "box": [
+          0.2,
+          0.2,
+          0.6,
+          0.58
+        ]
+      },
+      {
+        "label": "Carbon-fiber roof",
+        "box": [
+          0.12,
+          0.1,
+          0.76,
+          0.5
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "detail": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close-up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "roof": [
+        0.12,
+        0.1,
+        0.76,
+        0.5
+      ],
+      "carbon roof": [
+        0.12,
+        0.1,
+        0.76,
+        0.5
+      ],
+      "carbon-fiber roof": [
+        0.12,
+        0.1,
+        0.76,
+        0.5
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-4488936319955355889-1024x768",
@@ -1659,26 +3403,6 @@
     "role": "wheel",
     "viewpoint": "side wheel close-up centered on rim, tire, rotor, and brake caliper",
     "caption": "Wheel and brake close-up showing the multi-spoke BMW alloy rim, Continental ExtremeContact tire, blue M brake caliper, drilled rotor, BMW center cap, and white quarter-panel edge.",
-    "zoomTargets": {
-      "wheel": [
-        0.1,
-        0.05,
-        0.75,
-        0.85
-      ],
-      "caliper": [
-        0.25,
-        0.35,
-        0.35,
-        0.35
-      ],
-      "brake": [
-        0.2,
-        0.3,
-        0.45,
-        0.45
-      ]
-    },
     "visibleFeatures": [
       "multi-spoke BMW alloy wheel",
       "BMW center cap",
@@ -1710,17 +3434,124 @@
       "brake",
       "caliper",
       "rotor",
-      "Continental tire"
+      "Continental tire",
+      "wheel close-up",
+      "rim condition",
+      "tire sidewall",
+      "brake inspection",
+      "blue brake caliper",
+      "Continental ExtremeContact tires"
     ],
     "likelyQuestions": [
       "Can I inspect the wheels?",
       "What tires are installed?",
       "Can I see the brake calipers?",
       "Does it have drilled rotors?",
-      "What do the rims look like?"
+      "What do the rims look like?",
+      "Can I see the wheels?",
+      "What tires are on it?",
+      "What color are the brake calipers?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Wheel and tire",
+        "box": [
+          0.1,
+          0.08,
+          0.78,
+          0.84
+        ]
+      },
+      {
+        "label": "Blue M brake caliper",
+        "box": [
+          0.56,
+          0.25,
+          0.24,
+          0.35
+        ]
+      },
+      {
+        "label": "Drilled brake rotor",
+        "box": [
+          0.34,
+          0.26,
+          0.34,
+          0.42
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "wheel": [
+        0.1,
+        0.08,
+        0.78,
+        0.84
+      ],
+      "rim": [
+        0.1,
+        0.08,
+        0.78,
+        0.84
+      ],
+      "tire": [
+        0.1,
+        0.08,
+        0.78,
+        0.84
+      ],
+      "tyre": [
+        0.1,
+        0.08,
+        0.78,
+        0.84
+      ],
+      "brake caliper": [
+        0.56,
+        0.25,
+        0.24,
+        0.35
+      ],
+      "caliper": [
+        0.56,
+        0.25,
+        0.24,
+        0.35
+      ],
+      "blue caliper": [
+        0.56,
+        0.25,
+        0.24,
+        0.35
+      ],
+      "brakes": [
+        0.56,
+        0.25,
+        0.24,
+        0.35
+      ],
+      "rotor": [
+        0.34,
+        0.26,
+        0.34,
+        0.42
+      ],
+      "drilled rotor": [
+        0.34,
+        0.26,
+        0.34,
+        0.42
+      ],
+      "brake rotor": [
+        0.34,
+        0.26,
+        0.34,
+        0.42
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-451414797559271998-1024x768",
@@ -1729,26 +3560,6 @@
     "role": "exterior_front",
     "viewpoint": "wide front passenger-side three-quarter exterior view",
     "caption": "Wide front three-quarter view of the white BMW M4 coupe with black wheels, blue calipers, black grille, LED headlights, front bumper intakes, carbon mirror cap, tinted windows, and fixed carbon-fiber roof.",
-    "zoomTargets": {
-      "caliper": [
-        0.65,
-        0.55,
-        0.22,
-        0.25
-      ],
-      "wheel": [
-        0.6,
-        0.45,
-        0.32,
-        0.45
-      ],
-      "mirror": [
-        0.4,
-        0.18,
-        0.2,
-        0.2
-      ]
-    },
     "visibleFeatures": [
       "white exterior paint",
       "front three-quarter view",
@@ -1761,7 +3572,8 @@
       "carbon-fiber mirror cap",
       "tinted windows",
       "fixed carbon-fiber roof",
-      "coupe roofline"
+      "coupe roofline",
+      "carbon-fiber detail visible"
     ],
     "conditionNotes": [
       "passenger-side front stance is visible",
@@ -1785,17 +3597,139 @@
       "hood",
       "paint",
       "outside view",
-      "exterior front"
+      "exterior front",
+      "front fascia",
+      "front-end condition",
+      "front parking sensors",
+      "carbon fiber",
+      "carbon weave",
+      "carbon-fiber trim"
     ],
     "likelyQuestions": [
       "Can I see the front passenger side?",
       "Does it have a carbon roof?",
       "What do the black wheels look like?",
       "Are the windows tinted?",
-      "What does the exterior look like?"
+      "What does the exterior look like?",
+      "Can I see the front?",
+      "Can I inspect the headlights and grille?",
+      "Does it have front parking sensors?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Front fascia",
+        "box": [
+          0.12,
+          0.25,
+          0.76,
+          0.48
+        ]
+      },
+      {
+        "label": "Black kidney grille",
+        "box": [
+          0.32,
+          0.36,
+          0.34,
+          0.24
+        ]
+      },
+      {
+        "label": "LED headlights",
+        "box": [
+          0.16,
+          0.32,
+          0.68,
+          0.2
+        ]
+      },
+      {
+        "label": "Carbon-fiber front lip",
+        "box": [
+          0.16,
+          0.66,
+          0.68,
+          0.18
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "front": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "front fascia": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "front bumper": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "kidney grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "black grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "headlights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "LED headlights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "lights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "front lip": [
+        0.16,
+        0.66,
+        0.68,
+        0.18
+      ],
+      "splitter": [
+        0.16,
+        0.66,
+        0.68,
+        0.18
+      ],
+      "carbon lip": [
+        0.16,
+        0.66,
+        0.68,
+        0.18
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-4721686708242508219-1024x768",
@@ -1804,38 +3738,6 @@
     "role": "interior_front",
     "viewpoint": "wide cabin view from passenger side across dashboard and front seats",
     "caption": "Wide front cabin view showing both leather sport seats, M steering wheel, dashboard, infotainment screen, center console, gear selector, carbon-fiber trim, door panel, passenger footwell, and all-weather floor mats.",
-    "zoomTargets": {
-      "screen": [
-        0.35,
-        0.05,
-        0.35,
-        0.3
-      ],
-      "infotainment": [
-        0.35,
-        0.05,
-        0.35,
-        0.3
-      ],
-      "center console": [
-        0.45,
-        0.5,
-        0.4,
-        0.4
-      ],
-      "gear selector": [
-        0.5,
-        0.52,
-        0.22,
-        0.25
-      ],
-      "shifter": [
-        0.5,
-        0.52,
-        0.22,
-        0.25
-      ]
-    },
     "visibleFeatures": [
       "both front seats",
       "black leather upholstery",
@@ -1848,7 +3750,8 @@
       "passenger footwell",
       "all-weather floor mats",
       "door panel",
-      "climate controls"
+      "climate controls",
+      "carbon-fiber detail visible"
     ],
     "conditionNotes": [
       "wide cabin cleanliness is visible",
@@ -1871,17 +3774,152 @@
       "interior",
       "dashboard",
       "upholstery",
-      "interior front"
+      "interior front",
+      "front cabin inspection",
+      "seat condition",
+      "console controls",
+      "interior trim",
+      "carbon fiber",
+      "carbon weave",
+      "carbon-fiber trim"
     ],
     "likelyQuestions": [
       "Can I see the whole interior?",
       "What does the front cabin look like?",
       "Are the seats and dashboard clean?",
       "Does it have floor mats?",
-      "Can I see the passenger side interior?"
+      "Can I see the passenger side interior?",
+      "Can I see the front cabin?",
+      "Can I inspect the seats and console?",
+      "Does it have carbon-fiber interior trim?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Front sport seats",
+        "box": [
+          0.12,
+          0.2,
+          0.76,
+          0.62
+        ]
+      },
+      {
+        "label": "M steering wheel",
+        "box": [
+          0.08,
+          0.18,
+          0.28,
+          0.32
+        ]
+      },
+      {
+        "label": "Center console controls",
+        "box": [
+          0.3,
+          0.34,
+          0.34,
+          0.46
+        ]
+      },
+      {
+        "label": "Door panel",
+        "box": [
+          0.02,
+          0.18,
+          0.3,
+          0.62
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "front seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "sport seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "bucket seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "steering wheel": [
+        0.08,
+        0.18,
+        0.28,
+        0.32
+      ],
+      "wheel controls": [
+        0.08,
+        0.18,
+        0.28,
+        0.32
+      ],
+      "M steering wheel": [
+        0.08,
+        0.18,
+        0.28,
+        0.32
+      ],
+      "center console": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "gear selector": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "shifter": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "iDrive": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "door panel": [
+        0.02,
+        0.18,
+        0.3,
+        0.62
+      ],
+      "door trim": [
+        0.02,
+        0.18,
+        0.3,
+        0.62
+      ],
+      "window switches": [
+        0.02,
+        0.18,
+        0.3,
+        0.62
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-4794197077752663538-1024x768",
@@ -1890,7 +3928,6 @@
     "role": "interior_front",
     "viewpoint": "driver seat cushion and lower bolster close-up",
     "caption": "Driver-seat close-up showing the black leather seat cushion, lower bolsters, perforated center panels, seat adjustment controls, door sill plate, steering wheel edge, console edge, and floor mat.",
-    "zoomTargets": {},
     "visibleFeatures": [
       "driver seat cushion",
       "lower side bolsters",
@@ -1925,17 +3962,122 @@
       "center console",
       "dashboard",
       "upholstery",
-      "interior front"
+      "interior front",
+      "front cabin inspection",
+      "seat condition",
+      "console controls",
+      "interior trim"
     ],
     "likelyQuestions": [
       "Can I inspect the driver seat wear?",
       "How does the seat cushion look?",
       "Can I see the bolsters?",
       "Are the seat controls visible?",
-      "What condition is the leather in?"
+      "What condition is the leather in?",
+      "Can I see the front cabin?",
+      "Can I inspect the seats and console?",
+      "Does it have carbon-fiber interior trim?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Front sport seats",
+        "box": [
+          0.12,
+          0.2,
+          0.76,
+          0.62
+        ]
+      },
+      {
+        "label": "M steering wheel",
+        "box": [
+          0.08,
+          0.18,
+          0.28,
+          0.32
+        ]
+      },
+      {
+        "label": "Center console controls",
+        "box": [
+          0.3,
+          0.34,
+          0.34,
+          0.46
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "front seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "sport seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "bucket seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "steering wheel": [
+        0.08,
+        0.18,
+        0.28,
+        0.32
+      ],
+      "wheel controls": [
+        0.08,
+        0.18,
+        0.28,
+        0.32
+      ],
+      "M steering wheel": [
+        0.08,
+        0.18,
+        0.28,
+        0.32
+      ],
+      "center console": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "gear selector": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "shifter": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "iDrive": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-484760766590437126-1024x768",
@@ -1944,26 +4086,6 @@
     "role": "wheel",
     "viewpoint": "front wheel/tire/brake close-up from low side angle",
     "caption": "Close-up of the front wheel assembly showing a multi-spoke BMW alloy rim, BMW center cap, Continental ExtremeContact tire, blue M brake caliper, drilled brake rotor, white fender edge, and parking sensor.",
-    "zoomTargets": {
-      "wheel": [
-        0.05,
-        0.05,
-        0.8,
-        0.85
-      ],
-      "caliper": [
-        0.22,
-        0.38,
-        0.35,
-        0.32
-      ],
-      "brake": [
-        0.18,
-        0.32,
-        0.45,
-        0.42
-      ]
-    },
     "visibleFeatures": [
       "front wheel",
       "multi-spoke alloy rim",
@@ -1997,17 +4119,125 @@
       "tyre",
       "brake",
       "caliper",
-      "rotor"
+      "rotor",
+      "wheel close-up",
+      "rim condition",
+      "tire sidewall",
+      "brake inspection",
+      "blue brake caliper",
+      "parking sensors",
+      "park distance control",
+      "Continental ExtremeContact tires"
     ],
     "likelyQuestions": [
       "What wheels are on it?",
       "Can I see the front tire?",
       "What color are the brake calipers?",
       "Does it have performance brakes?",
-      "Can I inspect the rim condition?"
+      "Can I inspect the rim condition?",
+      "Can I see the wheels?",
+      "What tires are on it?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Wheel and tire",
+        "box": [
+          0.1,
+          0.08,
+          0.78,
+          0.84
+        ]
+      },
+      {
+        "label": "Blue M brake caliper",
+        "box": [
+          0.56,
+          0.25,
+          0.24,
+          0.35
+        ]
+      },
+      {
+        "label": "Drilled brake rotor",
+        "box": [
+          0.34,
+          0.26,
+          0.34,
+          0.42
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "wheel": [
+        0.1,
+        0.08,
+        0.78,
+        0.84
+      ],
+      "rim": [
+        0.1,
+        0.08,
+        0.78,
+        0.84
+      ],
+      "tire": [
+        0.1,
+        0.08,
+        0.78,
+        0.84
+      ],
+      "tyre": [
+        0.1,
+        0.08,
+        0.78,
+        0.84
+      ],
+      "brake caliper": [
+        0.56,
+        0.25,
+        0.24,
+        0.35
+      ],
+      "caliper": [
+        0.56,
+        0.25,
+        0.24,
+        0.35
+      ],
+      "blue caliper": [
+        0.56,
+        0.25,
+        0.24,
+        0.35
+      ],
+      "brakes": [
+        0.56,
+        0.25,
+        0.24,
+        0.35
+      ],
+      "rotor": [
+        0.34,
+        0.26,
+        0.34,
+        0.42
+      ],
+      "drilled rotor": [
+        0.34,
+        0.26,
+        0.34,
+        0.42
+      ],
+      "brake rotor": [
+        0.34,
+        0.26,
+        0.34,
+        0.42
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-5049083477197904547-1024x768",
@@ -2016,38 +4246,6 @@
     "role": "interior_front",
     "viewpoint": "driver-side open-door front cabin overview",
     "caption": "Driver-side cabin view showing the M steering wheel, black leather M sport driver seat with M4 badge, center console, gear selector, dashboard vents, door panel, floor mat, and seat bolsters.",
-    "zoomTargets": {
-      "badge": [
-        0.1,
-        0.3,
-        0.25,
-        0.2
-      ],
-      "center console": [
-        0.52,
-        0.45,
-        0.4,
-        0.45
-      ],
-      "gear selector": [
-        0.55,
-        0.48,
-        0.25,
-        0.28
-      ],
-      "shifter": [
-        0.55,
-        0.48,
-        0.25,
-        0.28
-      ],
-      "vents": [
-        0.3,
-        0.25,
-        0.4,
-        0.2
-      ]
-    },
     "visibleFeatures": [
       "M steering wheel",
       "driver M sport seat",
@@ -2082,17 +4280,150 @@
       "interior",
       "dashboard",
       "upholstery",
-      "interior front"
+      "interior front",
+      "front cabin inspection",
+      "seat condition",
+      "console controls",
+      "interior trim",
+      "M branding"
     ],
     "likelyQuestions": [
       "Can I see the driver-side interior?",
       "Does it have an M steering wheel?",
       "Can I see the M4 seat badge?",
       "What does the driver's area look like?",
-      "Are the floor mats included?"
+      "Are the floor mats included?",
+      "Can I see the front cabin?",
+      "Can I inspect the seats and console?",
+      "Does it have carbon-fiber interior trim?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Front sport seats",
+        "box": [
+          0.12,
+          0.2,
+          0.76,
+          0.62
+        ]
+      },
+      {
+        "label": "M steering wheel",
+        "box": [
+          0.08,
+          0.18,
+          0.28,
+          0.32
+        ]
+      },
+      {
+        "label": "Center console controls",
+        "box": [
+          0.3,
+          0.34,
+          0.34,
+          0.46
+        ]
+      },
+      {
+        "label": "Door panel",
+        "box": [
+          0.02,
+          0.18,
+          0.3,
+          0.62
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "front seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "sport seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "bucket seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "steering wheel": [
+        0.08,
+        0.18,
+        0.28,
+        0.32
+      ],
+      "wheel controls": [
+        0.08,
+        0.18,
+        0.28,
+        0.32
+      ],
+      "M steering wheel": [
+        0.08,
+        0.18,
+        0.28,
+        0.32
+      ],
+      "center console": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "gear selector": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "shifter": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "iDrive": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "door panel": [
+        0.02,
+        0.18,
+        0.3,
+        0.62
+      ],
+      "door trim": [
+        0.02,
+        0.18,
+        0.3,
+        0.62
+      ],
+      "window switches": [
+        0.02,
+        0.18,
+        0.3,
+        0.62
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-5525810426135904896-1024x768",
@@ -2101,38 +4432,6 @@
     "role": "interior_front",
     "viewpoint": "front cabin from driver side focused on steering wheel and seats",
     "caption": "Driver-side interior view showing the M steering wheel, gauge cluster, black leather front seat with M4 badge, center console, shifter, iDrive controller, door panel, door sill, and all-weather floor mat.",
-    "zoomTargets": {
-      "badge": [
-        0.08,
-        0.28,
-        0.25,
-        0.22
-      ],
-      "center console": [
-        0.52,
-        0.5,
-        0.4,
-        0.42
-      ],
-      "gear selector": [
-        0.54,
-        0.52,
-        0.24,
-        0.25
-      ],
-      "shifter": [
-        0.54,
-        0.52,
-        0.24,
-        0.25
-      ],
-      "iDrive": [
-        0.65,
-        0.65,
-        0.22,
-        0.22
-      ]
-    },
     "visibleFeatures": [
       "M steering wheel",
       "gauge cluster",
@@ -2170,17 +4469,151 @@
       "center console",
       "dashboard",
       "upholstery",
-      "interior front"
+      "interior front",
+      "front cabin inspection",
+      "seat condition",
+      "console controls",
+      "interior trim",
+      "M4 badge",
+      "M branding"
     ],
     "likelyQuestions": [
       "Can I see the driver's area?",
       "What does the steering wheel look like?",
       "Can I see the gauge cluster?",
       "How do the front seats look?",
-      "Does it have all-weather mats?"
+      "Does it have all-weather mats?",
+      "Can I see the front cabin?",
+      "Can I inspect the seats and console?",
+      "Does it have carbon-fiber interior trim?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Front sport seats",
+        "box": [
+          0.12,
+          0.2,
+          0.76,
+          0.62
+        ]
+      },
+      {
+        "label": "M steering wheel",
+        "box": [
+          0.08,
+          0.18,
+          0.28,
+          0.32
+        ]
+      },
+      {
+        "label": "Center console controls",
+        "box": [
+          0.3,
+          0.34,
+          0.34,
+          0.46
+        ]
+      },
+      {
+        "label": "Door panel",
+        "box": [
+          0.02,
+          0.18,
+          0.3,
+          0.62
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "front seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "sport seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "bucket seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "steering wheel": [
+        0.08,
+        0.18,
+        0.28,
+        0.32
+      ],
+      "wheel controls": [
+        0.08,
+        0.18,
+        0.28,
+        0.32
+      ],
+      "M steering wheel": [
+        0.08,
+        0.18,
+        0.28,
+        0.32
+      ],
+      "center console": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "gear selector": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "shifter": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "iDrive": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "door panel": [
+        0.02,
+        0.18,
+        0.3,
+        0.62
+      ],
+      "door trim": [
+        0.02,
+        0.18,
+        0.3,
+        0.62
+      ],
+      "window switches": [
+        0.02,
+        0.18,
+        0.3,
+        0.62
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-5623678729793805385-1024x768",
@@ -2189,7 +4622,6 @@
     "role": "detail",
     "viewpoint": "driver door switch panel close-up",
     "caption": "Close-up of the driver door switch panel showing dual window switches, mirror adjustment knob, mirror selector buttons, lock/window control trim, chrome accent strip, and textured black door material.",
-    "zoomTargets": {},
     "visibleFeatures": [
       "driver window switches",
       "power mirror adjustment knob",
@@ -2219,17 +4651,108 @@
       "specific feature",
       "trim",
       "condition detail",
-      "detail"
+      "detail",
+      "detail close-up",
+      "condition close-up",
+      "feature detail"
     ],
     "likelyQuestions": [
       "Can I see the window switches?",
       "Does it have power mirrors?",
       "Where are the mirror controls?",
       "Are the door controls intact?",
-      "Can I see the driver door buttons?"
+      "Can I see the driver door buttons?",
+      "Can I see that detail closer?",
+      "Can you zoom in on this part?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Primary detail",
+        "box": [
+          0.2,
+          0.2,
+          0.6,
+          0.58
+        ]
+      },
+      {
+        "label": "Carbon-fiber mirror cap",
+        "box": [
+          0.16,
+          0.12,
+          0.68,
+          0.58
+        ]
+      },
+      {
+        "label": "Control button",
+        "box": [
+          0.32,
+          0.32,
+          0.36,
+          0.28
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "detail": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close-up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "mirror": [
+        0.16,
+        0.12,
+        0.68,
+        0.58
+      ],
+      "mirror cap": [
+        0.16,
+        0.12,
+        0.68,
+        0.58
+      ],
+      "carbon mirror": [
+        0.16,
+        0.12,
+        0.68,
+        0.58
+      ],
+      "button": [
+        0.32,
+        0.32,
+        0.36,
+        0.28
+      ],
+      "control": [
+        0.32,
+        0.32,
+        0.36,
+        0.28
+      ],
+      "switch": [
+        0.32,
+        0.32,
+        0.36,
+        0.28
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-5941831823260090686-1024x768",
@@ -2238,14 +4761,6 @@
     "role": "detail",
     "viewpoint": "rear decklid and spoiler close-up from driver-side rear corner",
     "caption": "Rear decklid detail showing the carbon-fiber trunk spoiler, M4 badge, BMW roundel edge, white trunk lid, taillight corner, license plate frame edge, and rear body panel gaps.",
-    "zoomTargets": {
-      "badge": [
-        0.3,
-        0.25,
-        0.4,
-        0.3
-      ]
-    },
     "visibleFeatures": [
       "carbon-fiber rear spoiler",
       "trunk lid",
@@ -2255,7 +4770,8 @@
       "taillight corner",
       "license plate frame edge",
       "rear quarter panel",
-      "spoiler weave"
+      "spoiler weave",
+      "carbon-fiber detail visible"
     ],
     "conditionNotes": [
       "carbon spoiler is shown close-up",
@@ -2278,17 +4794,85 @@
       "specific feature",
       "trim",
       "condition detail",
-      "detail"
+      "detail",
+      "detail close-up",
+      "condition close-up",
+      "feature detail",
+      "carbon fiber",
+      "carbon weave",
+      "carbon-fiber trim",
+      "M branding"
     ],
     "likelyQuestions": [
       "Does it have a rear spoiler?",
       "Is the spoiler carbon fiber?",
       "Can I see the M4 badge?",
       "Can I inspect the trunk lid?",
-      "What does the rear spoiler look like?"
+      "What does the rear spoiler look like?",
+      "Can I see that detail closer?",
+      "Can you zoom in on this part?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Primary detail",
+        "box": [
+          0.2,
+          0.2,
+          0.6,
+          0.58
+        ]
+      },
+      {
+        "label": "Badge",
+        "box": [
+          0.26,
+          0.24,
+          0.48,
+          0.32
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "detail": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close-up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "badge": [
+        0.26,
+        0.24,
+        0.48,
+        0.32
+      ],
+      "M4 badge": [
+        0.26,
+        0.24,
+        0.48,
+        0.32
+      ],
+      "BMW badge": [
+        0.26,
+        0.24,
+        0.48,
+        0.32
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-6067196514796051126-1024x768",
@@ -2297,7 +4881,6 @@
     "role": "exterior_front",
     "viewpoint": "straight front exterior view from slightly above",
     "caption": "Straight front view of the white BMW M4 showing the hood, BMW roundel, black kidney grille, LED headlights, front parking sensors, lower intakes, carbon-fiber front lip, and dealer plate frame.",
-    "zoomTargets": {},
     "visibleFeatures": [
       "white hood",
       "BMW roundel",
@@ -2308,7 +4891,8 @@
       "carbon-fiber front lip",
       "dealer plate frame",
       "front bumper",
-      "front splitter"
+      "front splitter",
+      "carbon-fiber detail visible"
     ],
     "conditionNotes": [
       "front fascia is centered",
@@ -2331,17 +4915,139 @@
       "front bumper",
       "paint",
       "outside view",
-      "exterior front"
+      "exterior front",
+      "front-end condition",
+      "front parking sensors",
+      "carbon fiber",
+      "carbon weave",
+      "carbon-fiber trim",
+      "parking sensors",
+      "park distance control"
     ],
     "likelyQuestions": [
       "Can I see the front straight on?",
       "Does it have front parking sensors?",
       "Can I inspect the hood?",
       "What does the grille look like?",
-      "Does it have a carbon-fiber lip?"
+      "Does it have a carbon-fiber lip?",
+      "Can I see the front?",
+      "Can I inspect the headlights and grille?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Front fascia",
+        "box": [
+          0.12,
+          0.25,
+          0.76,
+          0.48
+        ]
+      },
+      {
+        "label": "Black kidney grille",
+        "box": [
+          0.32,
+          0.36,
+          0.34,
+          0.24
+        ]
+      },
+      {
+        "label": "LED headlights",
+        "box": [
+          0.16,
+          0.32,
+          0.68,
+          0.2
+        ]
+      },
+      {
+        "label": "Carbon-fiber front lip",
+        "box": [
+          0.16,
+          0.66,
+          0.68,
+          0.18
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "front": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "front fascia": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "front bumper": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "kidney grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "black grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "headlights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "LED headlights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "lights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "front lip": [
+        0.16,
+        0.66,
+        0.68,
+        0.18
+      ],
+      "splitter": [
+        0.16,
+        0.66,
+        0.68,
+        0.18
+      ],
+      "carbon lip": [
+        0.16,
+        0.66,
+        0.68,
+        0.18
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-6106354617978587640-1024x768",
@@ -2350,14 +5056,6 @@
     "role": "exterior_rear",
     "viewpoint": "straight rear exterior view",
     "caption": "Straight rear view of the white BMW M4 showing the trunk lid, carbon-fiber rear spoiler, M4 badge, BMW roundel, LED taillights, rear bumper, parking sensors, quad exhaust area, and dealer plate frame.",
-    "zoomTargets": {
-      "badge": [
-        0.35,
-        0.28,
-        0.3,
-        0.2
-      ]
-    },
     "visibleFeatures": [
       "rear trunk lid",
       "carbon-fiber rear spoiler",
@@ -2368,7 +5066,8 @@
       "rear parking sensors",
       "quad exhaust area",
       "dealer plate frame",
-      "white rear paint"
+      "white rear paint",
+      "carbon-fiber detail visible"
     ],
     "conditionNotes": [
       "rear face is centered for inspection",
@@ -2390,17 +5089,140 @@
       "exhaust",
       "spoiler",
       "outside view",
-      "exterior rear"
+      "exterior rear",
+      "rear fascia",
+      "rear-end condition",
+      "carbon fiber",
+      "carbon weave",
+      "carbon-fiber trim",
+      "parking sensors",
+      "park distance control",
+      "M branding"
     ],
     "likelyQuestions": [
       "Can I see the rear?",
       "Does it have rear parking sensors?",
       "How many exhaust tips does it have?",
       "Can I see the taillights?",
-      "Does it have the M4 badge?"
+      "Does it have the M4 badge?",
+      "Can I inspect the spoiler and taillights?",
+      "Can I see the exhaust area?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Rear fascia",
+        "box": [
+          0.12,
+          0.28,
+          0.76,
+          0.5
+        ]
+      },
+      {
+        "label": "Carbon-fiber rear spoiler",
+        "box": [
+          0.28,
+          0.24,
+          0.44,
+          0.16
+        ]
+      },
+      {
+        "label": "LED taillights",
+        "box": [
+          0.15,
+          0.36,
+          0.7,
+          0.18
+        ]
+      },
+      {
+        "label": "Quad exhaust area",
+        "box": [
+          0.25,
+          0.7,
+          0.5,
+          0.18
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "rear": [
+        0.12,
+        0.28,
+        0.76,
+        0.5
+      ],
+      "back": [
+        0.12,
+        0.28,
+        0.76,
+        0.5
+      ],
+      "rear bumper": [
+        0.12,
+        0.28,
+        0.76,
+        0.5
+      ],
+      "rear spoiler": [
+        0.28,
+        0.24,
+        0.44,
+        0.16
+      ],
+      "spoiler": [
+        0.28,
+        0.24,
+        0.44,
+        0.16
+      ],
+      "carbon spoiler": [
+        0.28,
+        0.24,
+        0.44,
+        0.16
+      ],
+      "taillights": [
+        0.15,
+        0.36,
+        0.7,
+        0.18
+      ],
+      "tail lights": [
+        0.15,
+        0.36,
+        0.7,
+        0.18
+      ],
+      "rear lights": [
+        0.15,
+        0.36,
+        0.7,
+        0.18
+      ],
+      "exhaust": [
+        0.25,
+        0.7,
+        0.5,
+        0.18
+      ],
+      "quad exhaust": [
+        0.25,
+        0.7,
+        0.5,
+        0.18
+      ],
+      "tailpipes": [
+        0.25,
+        0.7,
+        0.5,
+        0.18
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-6552539966441152689-1024x768",
@@ -2409,26 +5231,6 @@
     "role": "exterior_front",
     "viewpoint": "wide front driver-side three-quarter exterior view at dealership",
     "caption": "Wide dealership exterior view of the white BMW M4 showing the front bumper, black grille, LED headlights, carbon front lip, fixed carbon-fiber roof, carbon mirror cap, black wheels, blue brakes, side vent, and coupe body.",
-    "zoomTargets": {
-      "caliper": [
-        0.05,
-        0.55,
-        0.2,
-        0.25
-      ],
-      "wheel": [
-        0,
-        0.45,
-        0.28,
-        0.45
-      ],
-      "mirror": [
-        0.28,
-        0.18,
-        0.2,
-        0.2
-      ]
-    },
     "visibleFeatures": [
       "white exterior paint",
       "front bumper",
@@ -2441,7 +5243,8 @@
       "blue brake calipers",
       "side fender vent",
       "coupe body",
-      "dealership building"
+      "dealership building",
+      "carbon-fiber detail visible"
     ],
     "conditionNotes": [
       "full exterior stance is visible",
@@ -2470,7 +5273,13 @@
       "hood",
       "paint",
       "outside view",
-      "exterior front"
+      "exterior front",
+      "front fascia",
+      "front-end condition",
+      "front parking sensors",
+      "carbon fiber",
+      "carbon weave",
+      "carbon-fiber trim"
     ],
     "likelyQuestions": [
       "Can I see the full exterior?",
@@ -2479,10 +5288,126 @@
       "Does it have carbon-fiber exterior parts?",
       "What does it look like at the dealership?",
       "Can I see the side vent?",
-      "Does it have blue calipers?"
+      "Does it have blue calipers?",
+      "Can I see the front?",
+      "Can I inspect the headlights and grille?",
+      "Does it have front parking sensors?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Front fascia",
+        "box": [
+          0.12,
+          0.25,
+          0.76,
+          0.48
+        ]
+      },
+      {
+        "label": "Black kidney grille",
+        "box": [
+          0.32,
+          0.36,
+          0.34,
+          0.24
+        ]
+      },
+      {
+        "label": "LED headlights",
+        "box": [
+          0.16,
+          0.32,
+          0.68,
+          0.2
+        ]
+      },
+      {
+        "label": "Carbon-fiber front lip",
+        "box": [
+          0.16,
+          0.66,
+          0.68,
+          0.18
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "front": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "front fascia": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "front bumper": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "kidney grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "black grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "headlights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "LED headlights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "lights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "front lip": [
+        0.16,
+        0.66,
+        0.68,
+        0.18
+      ],
+      "splitter": [
+        0.16,
+        0.66,
+        0.68,
+        0.18
+      ],
+      "carbon lip": [
+        0.16,
+        0.66,
+        0.68,
+        0.18
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-7110463340821385256-1024x768",
@@ -2491,7 +5416,6 @@
     "role": "interior_front",
     "viewpoint": "front door panel wide detail with window open",
     "caption": "Front door panel view showing black leather door trim, contrast stitching, gloss dark accent strip, metallic door handle, sculpted grab handle, lower pocket, speaker area, and white exterior door edge.",
-    "zoomTargets": {},
     "visibleFeatures": [
       "front door panel",
       "black leather door trim",
@@ -2526,17 +5450,122 @@
       "center console",
       "dashboard",
       "upholstery",
-      "interior front"
+      "interior front",
+      "front cabin inspection",
+      "seat condition",
+      "console controls",
+      "interior trim"
     ],
     "likelyQuestions": [
       "Can I see the door panel?",
       "What does the door trim look like?",
       "Does it have leather door trim?",
       "Is there door storage?",
-      "Can I see the door handle and stitching?"
+      "Can I see the door handle and stitching?",
+      "Can I see the front cabin?",
+      "Can I inspect the seats and console?",
+      "Does it have carbon-fiber interior trim?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Front sport seats",
+        "box": [
+          0.12,
+          0.2,
+          0.76,
+          0.62
+        ]
+      },
+      {
+        "label": "Center console controls",
+        "box": [
+          0.3,
+          0.34,
+          0.34,
+          0.46
+        ]
+      },
+      {
+        "label": "Door panel",
+        "box": [
+          0.02,
+          0.18,
+          0.3,
+          0.62
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "front seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "sport seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "bucket seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "center console": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "gear selector": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "shifter": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "iDrive": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "door panel": [
+        0.02,
+        0.18,
+        0.3,
+        0.62
+      ],
+      "door trim": [
+        0.02,
+        0.18,
+        0.3,
+        0.62
+      ],
+      "window switches": [
+        0.02,
+        0.18,
+        0.3,
+        0.62
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-7153278583895275358-1024x768",
@@ -2545,14 +5574,6 @@
     "role": "detail",
     "viewpoint": "windshield-through dashboard reflection focused on head-up display panel",
     "caption": "Windshield/dash detail showing the head-up display projection area on top of the dashboard, stitched dash surface, windshield glass, wiper edge, and reflected sky.",
-    "zoomTargets": {
-      "screen": [
-        0.15,
-        0.4,
-        0.7,
-        0.4
-      ]
-    },
     "visibleFeatures": [
       "head-up display area",
       "HUD projection window",
@@ -2582,17 +5603,54 @@
       "specific feature",
       "trim",
       "condition detail",
-      "detail"
+      "detail",
+      "detail close-up",
+      "condition close-up",
+      "feature detail"
     ],
     "likelyQuestions": [
       "Does it have a head-up display?",
       "Can I see the HUD?",
       "What is on top of the dashboard?",
       "Can I see the windshield/dash area?",
-      "Is the dash stitched?"
+      "Is the dash stitched?",
+      "Can I see that detail closer?",
+      "Can you zoom in on this part?"
     ],
     "confidence": 0.94,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Primary detail",
+        "box": [
+          0.2,
+          0.2,
+          0.6,
+          0.58
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "detail": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close-up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-7187071185038959370-1024x768",
@@ -2601,26 +5659,6 @@
     "role": "exterior_rear",
     "viewpoint": "rear passenger-side three-quarter exterior view",
     "caption": "Rear three-quarter exterior view showing the white coupe side profile, rear quarter panel, taillights, carbon rear spoiler, trunk lid, shark-fin antenna, tinted windows, black wheels, blue brakes, and fuel door.",
-    "zoomTargets": {
-      "mirror": [
-        0.08,
-        0.25,
-        0.18,
-        0.2
-      ],
-      "caliper": [
-        0.68,
-        0.55,
-        0.22,
-        0.25
-      ],
-      "wheel": [
-        0.62,
-        0.45,
-        0.3,
-        0.45
-      ]
-    },
     "visibleFeatures": [
       "rear three-quarter view",
       "white rear quarter panel",
@@ -2633,7 +5671,8 @@
       "blue brake calipers",
       "fuel door",
       "side mirror",
-      "coupe roofline"
+      "coupe roofline",
+      "carbon-fiber detail visible"
     ],
     "conditionNotes": [
       "rear-side body lines are visible",
@@ -2658,17 +5697,139 @@
       "decklid",
       "spoiler",
       "outside view",
-      "exterior rear"
+      "exterior rear",
+      "rear fascia",
+      "rear-end condition",
+      "rear parking sensors",
+      "carbon fiber",
+      "carbon weave",
+      "carbon-fiber trim"
     ],
     "likelyQuestions": [
       "Can I see the rear three-quarter view?",
       "What does it look like from the back side?",
       "Are the windows tinted?",
       "Does it have a rear spoiler?",
-      "Can I see the rear wheel and taillights?"
+      "Can I see the rear wheel and taillights?",
+      "Can I see the rear?",
+      "Can I inspect the spoiler and taillights?",
+      "Can I see the exhaust area?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Rear fascia",
+        "box": [
+          0.12,
+          0.28,
+          0.76,
+          0.5
+        ]
+      },
+      {
+        "label": "Carbon-fiber rear spoiler",
+        "box": [
+          0.28,
+          0.24,
+          0.44,
+          0.16
+        ]
+      },
+      {
+        "label": "LED taillights",
+        "box": [
+          0.15,
+          0.36,
+          0.7,
+          0.18
+        ]
+      },
+      {
+        "label": "Quad exhaust area",
+        "box": [
+          0.25,
+          0.7,
+          0.5,
+          0.18
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "rear": [
+        0.12,
+        0.28,
+        0.76,
+        0.5
+      ],
+      "back": [
+        0.12,
+        0.28,
+        0.76,
+        0.5
+      ],
+      "rear bumper": [
+        0.12,
+        0.28,
+        0.76,
+        0.5
+      ],
+      "rear spoiler": [
+        0.28,
+        0.24,
+        0.44,
+        0.16
+      ],
+      "spoiler": [
+        0.28,
+        0.24,
+        0.44,
+        0.16
+      ],
+      "carbon spoiler": [
+        0.28,
+        0.24,
+        0.44,
+        0.16
+      ],
+      "taillights": [
+        0.15,
+        0.36,
+        0.7,
+        0.18
+      ],
+      "tail lights": [
+        0.15,
+        0.36,
+        0.7,
+        0.18
+      ],
+      "rear lights": [
+        0.15,
+        0.36,
+        0.7,
+        0.18
+      ],
+      "exhaust": [
+        0.25,
+        0.7,
+        0.5,
+        0.18
+      ],
+      "quad exhaust": [
+        0.25,
+        0.7,
+        0.5,
+        0.18
+      ],
+      "tailpipes": [
+        0.25,
+        0.7,
+        0.5,
+        0.18
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-7400799656167128024-1024x768",
@@ -2677,7 +5838,6 @@
     "role": "detail",
     "viewpoint": "open hood engine-bay view",
     "caption": "Engine bay view with the hood open showing the BMW M Power engine cover, carbon-fiber strut brace, intake components, fluid reservoirs, hood hinges, front radiator support, and BMW roundel on the nose.",
-    "zoomTargets": {},
     "visibleFeatures": [
       "open hood",
       "BMW M Power engine cover",
@@ -2688,7 +5848,8 @@
       "hood hinges",
       "front radiator support",
       "BMW roundel",
-      "white fenders"
+      "white fenders",
+      "carbon-fiber detail visible"
     ],
     "conditionNotes": [
       "engine bay appears clean from above",
@@ -2712,17 +5873,84 @@
       "specific feature",
       "trim",
       "condition detail",
-      "detail"
+      "detail",
+      "detail close-up",
+      "condition close-up",
+      "feature detail",
+      "carbon fiber",
+      "carbon weave",
+      "carbon-fiber trim"
     ],
     "likelyQuestions": [
       "Can I see the engine?",
       "What does the engine bay look like?",
       "Does it have the carbon strut brace?",
       "Is the engine bay clean?",
-      "Can I see under the hood?"
+      "Can I see under the hood?",
+      "Can I see that detail closer?",
+      "Can you zoom in on this part?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Primary detail",
+        "box": [
+          0.2,
+          0.2,
+          0.6,
+          0.58
+        ]
+      },
+      {
+        "label": "Engine bay",
+        "box": [
+          0.12,
+          0.16,
+          0.76,
+          0.66
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "detail": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close-up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "engine": [
+        0.12,
+        0.16,
+        0.76,
+        0.66
+      ],
+      "engine bay": [
+        0.12,
+        0.16,
+        0.76,
+        0.66
+      ],
+      "hood open": [
+        0.12,
+        0.16,
+        0.76,
+        0.66
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-7410222045381061820-1024x768",
@@ -2731,26 +5959,6 @@
     "role": "exterior_front",
     "viewpoint": "driver-side exterior profile cropped from front wheel to roofline",
     "caption": "Driver-side exterior view showing the white coupe profile, fixed carbon-fiber roof, tinted side glass, carbon-fiber mirror cap, M fender vent, side skirt, black wheel, and blue brake caliper.",
-    "zoomTargets": {
-      "mirror": [
-        0.18,
-        0.15,
-        0.22,
-        0.22
-      ],
-      "caliper": [
-        0.1,
-        0.55,
-        0.22,
-        0.25
-      ],
-      "wheel": [
-        0.05,
-        0.45,
-        0.3,
-        0.45
-      ]
-    },
     "visibleFeatures": [
       "driver-side profile",
       "white coupe body",
@@ -2762,7 +5970,8 @@
       "black front wheel",
       "blue brake caliper",
       "door handle",
-      "black window trim"
+      "black window trim",
+      "carbon-fiber detail visible"
     ],
     "conditionNotes": [
       "carbon roof and mirror are visible",
@@ -2788,17 +5997,112 @@
       "hood",
       "paint",
       "outside view",
-      "exterior front"
+      "exterior front",
+      "front fascia",
+      "front-end condition",
+      "front parking sensors",
+      "carbon fiber",
+      "carbon weave",
+      "carbon-fiber trim"
     ],
     "likelyQuestions": [
       "Can I see the driver's side?",
       "Is the roof carbon fiber?",
       "Are the windows tinted?",
       "Does it have carbon-fiber mirror caps?",
-      "Can I see the side vent and wheel?"
+      "Can I see the side vent and wheel?",
+      "Can I see the front?",
+      "Can I inspect the headlights and grille?",
+      "Does it have front parking sensors?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Front fascia",
+        "box": [
+          0.12,
+          0.25,
+          0.76,
+          0.48
+        ]
+      },
+      {
+        "label": "Black kidney grille",
+        "box": [
+          0.32,
+          0.36,
+          0.34,
+          0.24
+        ]
+      },
+      {
+        "label": "LED headlights",
+        "box": [
+          0.16,
+          0.32,
+          0.68,
+          0.2
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "front": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "front fascia": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "front bumper": [
+        0.12,
+        0.25,
+        0.76,
+        0.48
+      ],
+      "grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "kidney grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "black grille": [
+        0.32,
+        0.36,
+        0.34,
+        0.24
+      ],
+      "headlights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "LED headlights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ],
+      "lights": [
+        0.16,
+        0.32,
+        0.68,
+        0.2
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-7412672979869378728-1024x768",
@@ -3006,26 +6310,6 @@
     "role": "wheel",
     "viewpoint": "wheel, tire, rotor, and brake caliper close-up",
     "caption": "Wheel close-up showing the BMW multi-spoke alloy rim, Continental ExtremeContact tire, blue M brake caliper, drilled brake rotor, BMW center cap, and white quarter-panel edge.",
-    "zoomTargets": {
-      "wheel": [
-        0.08,
-        0.05,
-        0.78,
-        0.85
-      ],
-      "caliper": [
-        0.22,
-        0.35,
-        0.35,
-        0.35
-      ],
-      "brake": [
-        0.18,
-        0.3,
-        0.45,
-        0.45
-      ]
-    },
     "visibleFeatures": [
       "BMW multi-spoke alloy rim",
       "Continental ExtremeContact tire",
@@ -3056,17 +6340,123 @@
       "brake",
       "caliper",
       "rotor",
-      "Continental tire"
+      "Continental tire",
+      "wheel close-up",
+      "rim condition",
+      "tire sidewall",
+      "brake inspection",
+      "blue brake caliper",
+      "Continental ExtremeContact tires"
     ],
     "likelyQuestions": [
       "Can I see another wheel photo?",
       "What tires does it have?",
       "What color are the brake calipers?",
       "Are the rotors drilled?",
-      "Can I inspect the tire and rim?"
+      "Can I inspect the tire and rim?",
+      "Can I see the wheels?",
+      "What tires are on it?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Wheel and tire",
+        "box": [
+          0.1,
+          0.08,
+          0.78,
+          0.84
+        ]
+      },
+      {
+        "label": "Blue M brake caliper",
+        "box": [
+          0.56,
+          0.25,
+          0.24,
+          0.35
+        ]
+      },
+      {
+        "label": "Drilled brake rotor",
+        "box": [
+          0.34,
+          0.26,
+          0.34,
+          0.42
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "wheel": [
+        0.1,
+        0.08,
+        0.78,
+        0.84
+      ],
+      "rim": [
+        0.1,
+        0.08,
+        0.78,
+        0.84
+      ],
+      "tire": [
+        0.1,
+        0.08,
+        0.78,
+        0.84
+      ],
+      "tyre": [
+        0.1,
+        0.08,
+        0.78,
+        0.84
+      ],
+      "brake caliper": [
+        0.56,
+        0.25,
+        0.24,
+        0.35
+      ],
+      "caliper": [
+        0.56,
+        0.25,
+        0.24,
+        0.35
+      ],
+      "blue caliper": [
+        0.56,
+        0.25,
+        0.24,
+        0.35
+      ],
+      "brakes": [
+        0.56,
+        0.25,
+        0.24,
+        0.35
+      ],
+      "rotor": [
+        0.34,
+        0.26,
+        0.34,
+        0.42
+      ],
+      "drilled rotor": [
+        0.34,
+        0.26,
+        0.34,
+        0.42
+      ],
+      "brake rotor": [
+        0.34,
+        0.26,
+        0.34,
+        0.42
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-8290056972928963492-1024x768",
@@ -3075,26 +6465,6 @@
     "role": "exterior_rear",
     "viewpoint": "rear driver-side three-quarter exterior view",
     "caption": "Rear driver-side three-quarter view showing the white coupe side profile, rear bumper, taillights, carbon rear spoiler, black wheels, tinted side glass, shark-fin antenna, side vent, and sloping coupe roofline.",
-    "zoomTargets": {
-      "mirror": [
-        0.62,
-        0.22,
-        0.18,
-        0.2
-      ],
-      "caliper": [
-        0.05,
-        0.55,
-        0.22,
-        0.25
-      ],
-      "wheel": [
-        0,
-        0.45,
-        0.3,
-        0.45
-      ]
-    },
     "visibleFeatures": [
       "rear driver-side angle",
       "white coupe side profile",
@@ -3106,7 +6476,8 @@
       "shark-fin antenna",
       "side fender vent",
       "sloping coupe roofline",
-      "rear quarter panel"
+      "rear quarter panel",
+      "carbon-fiber detail visible"
     ],
     "conditionNotes": [
       "rear-side stance is visible",
@@ -3131,17 +6502,139 @@
       "decklid",
       "spoiler",
       "outside view",
-      "exterior rear"
+      "exterior rear",
+      "rear fascia",
+      "rear-end condition",
+      "rear parking sensors",
+      "carbon fiber",
+      "carbon weave",
+      "carbon-fiber trim"
     ],
     "likelyQuestions": [
       "Can I see the rear side profile?",
       "What does the rear angle look like?",
       "Does it have a rear spoiler?",
       "Are the taillights visible?",
-      "Can I see the coupe roofline?"
+      "Can I see the coupe roofline?",
+      "Can I see the rear?",
+      "Can I inspect the spoiler and taillights?",
+      "Can I see the exhaust area?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Rear fascia",
+        "box": [
+          0.12,
+          0.28,
+          0.76,
+          0.5
+        ]
+      },
+      {
+        "label": "Carbon-fiber rear spoiler",
+        "box": [
+          0.28,
+          0.24,
+          0.44,
+          0.16
+        ]
+      },
+      {
+        "label": "LED taillights",
+        "box": [
+          0.15,
+          0.36,
+          0.7,
+          0.18
+        ]
+      },
+      {
+        "label": "Quad exhaust area",
+        "box": [
+          0.25,
+          0.7,
+          0.5,
+          0.18
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "rear": [
+        0.12,
+        0.28,
+        0.76,
+        0.5
+      ],
+      "back": [
+        0.12,
+        0.28,
+        0.76,
+        0.5
+      ],
+      "rear bumper": [
+        0.12,
+        0.28,
+        0.76,
+        0.5
+      ],
+      "rear spoiler": [
+        0.28,
+        0.24,
+        0.44,
+        0.16
+      ],
+      "spoiler": [
+        0.28,
+        0.24,
+        0.44,
+        0.16
+      ],
+      "carbon spoiler": [
+        0.28,
+        0.24,
+        0.44,
+        0.16
+      ],
+      "taillights": [
+        0.15,
+        0.36,
+        0.7,
+        0.18
+      ],
+      "tail lights": [
+        0.15,
+        0.36,
+        0.7,
+        0.18
+      ],
+      "rear lights": [
+        0.15,
+        0.36,
+        0.7,
+        0.18
+      ],
+      "exhaust": [
+        0.25,
+        0.7,
+        0.5,
+        0.18
+      ],
+      "quad exhaust": [
+        0.25,
+        0.7,
+        0.5,
+        0.18
+      ],
+      "tailpipes": [
+        0.25,
+        0.7,
+        0.5,
+        0.18
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-8353526881053628670-1024x768",
@@ -3150,7 +6643,6 @@
     "role": "detail",
     "viewpoint": "lower dashboard button near driver footwell",
     "caption": "Lower driver-side dash detail showing a rectangular control button with illuminated green indicator near the pedals, surrounding lower trim, carpeted footwell, pedal edge, and floor mat.",
-    "zoomTargets": {},
     "visibleFeatures": [
       "lower dashboard button",
       "green indicator light",
@@ -3180,17 +6672,81 @@
       "specific feature",
       "trim",
       "condition detail",
-      "detail"
+      "detail",
+      "detail close-up",
+      "condition close-up",
+      "feature detail"
     ],
     "likelyQuestions": [
       "Can I see the lower dash controls?",
       "What buttons are near the driver's knee area?",
       "Can I see the footwell?",
       "Are the lower controls intact?",
-      "Is there a floor mat in the driver footwell?"
+      "Is there a floor mat in the driver footwell?",
+      "Can I see that detail closer?",
+      "Can you zoom in on this part?"
     ],
     "confidence": 0.9,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Primary detail",
+        "box": [
+          0.2,
+          0.2,
+          0.6,
+          0.58
+        ]
+      },
+      {
+        "label": "Control button",
+        "box": [
+          0.32,
+          0.32,
+          0.36,
+          0.28
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "detail": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close-up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "button": [
+        0.32,
+        0.32,
+        0.36,
+        0.28
+      ],
+      "control": [
+        0.32,
+        0.32,
+        0.36,
+        0.28
+      ],
+      "switch": [
+        0.32,
+        0.32,
+        0.36,
+        0.28
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-8359900914109193764-1024x768",
@@ -3199,14 +6755,6 @@
     "role": "detail",
     "viewpoint": "hood, grille, and BMW roundel close-up",
     "caption": "Front detail view showing the white hood edge, BMW roundel, black kidney grille, grille slats, hood shut line, front bumper top edge, and a small glimpse of the front lip below.",
-    "zoomTargets": {
-      "badge": [
-        0.35,
-        0.05,
-        0.3,
-        0.35
-      ]
-    },
     "visibleFeatures": [
       "BMW roundel",
       "white hood edge",
@@ -3237,17 +6785,81 @@
       "specific feature",
       "trim",
       "condition detail",
-      "detail"
+      "detail",
+      "detail close-up",
+      "condition close-up",
+      "feature detail"
     ],
     "likelyQuestions": [
       "Can I see the BMW badge?",
       "Can I inspect the hood and grille?",
       "What does the front emblem look like?",
       "Is the grille black?",
-      "Can I see the hood edge up close?"
+      "Can I see the hood edge up close?",
+      "Can I see that detail closer?",
+      "Can you zoom in on this part?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Primary detail",
+        "box": [
+          0.2,
+          0.2,
+          0.6,
+          0.58
+        ]
+      },
+      {
+        "label": "Badge",
+        "box": [
+          0.26,
+          0.24,
+          0.48,
+          0.32
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "detail": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close-up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "close up": [
+        0.2,
+        0.2,
+        0.6,
+        0.58
+      ],
+      "badge": [
+        0.26,
+        0.24,
+        0.48,
+        0.32
+      ],
+      "M4 badge": [
+        0.26,
+        0.24,
+        0.48,
+        0.32
+      ],
+      "BMW badge": [
+        0.26,
+        0.24,
+        0.48,
+        0.32
+      ]
+    },
+    "pairs": []
   },
   {
     "id": "bmw-m4-2018-bmw-m4-pic-8814846783763534499-1024x768",
@@ -3256,20 +6868,6 @@
     "role": "interior_front",
     "viewpoint": "close front-cabin view centered on armrest, console, and passenger seat",
     "caption": "Front cabin close-up showing the center armrest, manual parking brake, carbon-fiber console trim, iDrive controller, front passenger sport seat, black leather upholstery, contrast stitching, door panel, and rear-seat edge.",
-    "zoomTargets": {
-      "center console": [
-        0.05,
-        0.3,
-        0.55,
-        0.6
-      ],
-      "iDrive": [
-        0.1,
-        0.45,
-        0.3,
-        0.35
-      ]
-    },
     "visibleFeatures": [
       "center armrest",
       "manual parking brake",
@@ -3281,7 +6879,8 @@
       "door panel",
       "rear seat edge",
       "seat bolsters",
-      "console side trim"
+      "console side trim",
+      "carbon-fiber detail visible"
     ],
     "conditionNotes": [
       "armrest and console are clear",
@@ -3306,16 +6905,149 @@
       "center console",
       "dashboard",
       "upholstery",
-      "interior front"
+      "interior front",
+      "front cabin inspection",
+      "seat condition",
+      "console controls",
+      "carbon fiber",
+      "carbon weave",
+      "carbon-fiber trim"
     ],
     "likelyQuestions": [
       "Can I see the armrest and console?",
       "Does it have a manual parking brake?",
       "Can I see the passenger seat?",
       "Does the cabin have carbon-fiber trim?",
-      "What does the center area look like?"
+      "What does the center area look like?",
+      "Can I see the front cabin?",
+      "Can I inspect the seats and console?",
+      "Does it have carbon-fiber interior trim?"
     ],
     "confidence": 1,
-    "status": "processed"
+    "status": "processed",
+    "boxes": [
+      {
+        "label": "Front sport seats",
+        "box": [
+          0.12,
+          0.2,
+          0.76,
+          0.62
+        ]
+      },
+      {
+        "label": "Center console controls",
+        "box": [
+          0.3,
+          0.34,
+          0.34,
+          0.46
+        ]
+      },
+      {
+        "label": "Door panel",
+        "box": [
+          0.02,
+          0.18,
+          0.3,
+          0.62
+        ]
+      }
+    ],
+    "zoomTargets": {
+      "front seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "sport seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "bucket seats": [
+        0.12,
+        0.2,
+        0.76,
+        0.62
+      ],
+      "center console": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "gear selector": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "shifter": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "iDrive": [
+        0.3,
+        0.34,
+        0.34,
+        0.46
+      ],
+      "door panel": [
+        0.02,
+        0.18,
+        0.3,
+        0.62
+      ],
+      "door trim": [
+        0.02,
+        0.18,
+        0.3,
+        0.62
+      ],
+      "window switches": [
+        0.02,
+        0.18,
+        0.3,
+        0.62
+      ]
+    },
+    "pairs": []
+  },
+  {
+    "id": "img_2fb1fe46db66",
+    "vin": "BMW-M5",
+    "url": "/uploads/cars/BMW-M5/img_2fb1fe46db66.png",
+    "role": "dashboard",
+    "viewpoint": "uploaded image pending review",
+    "caption": "Uploaded image Screenshot_2024-01-25_at_5.png. Classified as dashboard from filename and upload context.",
+    "visibleFeatures": [
+      "driver display",
+      "infotainment",
+      "controls"
+    ],
+    "conditionNotes": [],
+    "searchTags": [
+      "dashboard",
+      "driver display",
+      "infotainment",
+      "controls"
+    ],
+    "likelyQuestions": [],
+    "confidence": 0.72,
+    "status": "processed",
+    "boxes": [],
+    "zoomTargets": {},
+    "pairs": []
   }
 ]

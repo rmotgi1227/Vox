@@ -156,7 +156,10 @@ export const SpecialistTurnSchema = z.object({
   intent: SpecialistIntentSchema.optional(),
   askedClarifyingQuestion: z.boolean().optional(),
   action: SpecialistActionSchema,
-  sources: z.array(SpecialistSourceSchema)
+  sources: z.array(SpecialistSourceSchema),
+  smsSid: z.string().optional(),
+  smsStatus: z.string().optional(),
+  bookingSlot: z.string().optional()
 });
 
 export const SpecialistStateSchema = z.object({

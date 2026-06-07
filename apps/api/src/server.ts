@@ -15,11 +15,15 @@ import {
   SpecialistMessageRequestSchema
 } from "@vox/core";
 import {
+  bookTestDriveAndNotify,
+  bookingFollowupPrompt,
   chooseMiniMaxSpecialistImage,
   planSpecialistTurn,
   getCar,
   ingestImageObject,
   listImages,
+  looksLikeBookingRequest,
+  parseBookingDetails,
   readCatalog,
   saveUploadedImage,
   searchMoss as searchMossProvider,
@@ -42,6 +46,7 @@ function findRootEnv(start: string): string {
 
 const app = new Hono();
 const port = Number(process.env.PORT ?? process.env.API_PORT ?? 8787);
+const liveKitAgentName = process.env.VOX_AGENT_NAME ?? process.env.LIVEKIT_AGENT_NAME ?? "vox-specialist";
 
 app.use("*", cors({
   origin: process.env.WEB_ORIGIN ?? "http://localhost:3000",
@@ -70,6 +75,54 @@ app.post("/api/specialist/message", async (c) => {
   const car = await getCar(parsed.data.vin);
   if (!car) return c.json({ error: "car not found" }, 404);
   const images = await listImages(parsed.data.vin);
+  const normalized = parsed.data.message.toLowerCase().replace(/\s+/g, " ").trim();
+
+  const historyLooksLikeBooking = parsed.data.history.slice(-4).some((turn) => looksLikeBookingRequest(turn.text.toLowerCase()));
+  const looksLikeBookingFollowup = historyLooksLikeBooking && /\b(\d{1,2}(?::\d{2})?\s*(?:am|pm)|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|today|tomorrow|next|sunday|monday|tuesday|wednesday|thursday|friday|saturday|my number)\b/i.test(parsed.data.message);
+
+  if (looksLikeBookingRequest(normalized) || looksLikeBookingFollowup) {
+    const bookingContext = looksLikeBookingRequest(normalized)
+      ? parsed.data.message
+      : [...parsed.data.history.slice(-4).map((turn) => turn.text), parsed.data.message].join(" ");
+    const details = parseBookingDetails(bookingContext);
+    const parsedBooking = details.parsedBooking;
+    const phone = details.phone;
+    let reply: string;
+    let smsSid: string | undefined;
+    let smsStatus: string | undefined;
+    let bookingSlot: string | undefined;
+
+    if (!parsedBooking || parsedBooking.hour24 < 11 || parsedBooking.hour24 > 15 || !phone) {
+      reply = bookingFollowupPrompt(details);
+    } else {
+      const result = await bookTestDriveAndNotify({ car, phone, parsedBooking }).catch((error: unknown) => {
+        console.warn(`Linq booking text failed: ${error instanceof Error ? error.message : String(error)}`);
+        return {
+          slot: parsedBooking.normalizedLabel,
+          reply: `Perfect — I have you down for ${parsedBooking.normalizedLabel}, but I couldn't send the confirmation text just now.`,
+          sms: undefined
+        };
+      });
+      reply = result.reply;
+      bookingSlot = result.slot;
+      smsSid = result.sms?.sid;
+      smsStatus = result.sms?.status;
+    }
+
+    const audio = parsed.data.includeAudio ? await synthesizeSpeech(reply).catch(() => ({})) : {};
+    return c.json({
+      reply,
+      selectedImageId: parsed.data.currentImageId,
+      intent: !parsedBooking ? "clarify" : undefined,
+      askedClarifyingQuestion: !parsedBooking,
+      action: { type: "keep_current_image" },
+      sources: [{ type: "catalog", id: car.vin, label: `${car.year} ${car.make} ${car.model}` }],
+      smsSid,
+      smsStatus,
+      bookingSlot,
+      ...audio
+    });
+  }
 
   // The keyword heuristic ONLY narrows which images the planner gets to choose
   // from — it never forces the final selection. The planner's needsImage /
@@ -225,7 +278,7 @@ app.post("/api/livekit/token", async (c) => {
         // Must match the worker's agentName (apps/agent/src/agent.ts). Set
         // VOX_AGENT_NAME (in .env, same value both sides) + restart to isolate
         // from a stale/rogue "vox-specialist" worker.
-        agentName: process.env.VOX_AGENT_NAME ?? "vox-specialist",
+        agentName: liveKitAgentName,
         metadata: JSON.stringify({ vin: DEFAULT_VIN, profileId: parsed.data.profileId, returning: parsed.data.returning ?? false, brainMode: parsed.data.brainMode })
       })
 
