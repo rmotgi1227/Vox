@@ -13,28 +13,36 @@ const MossDocSchema = z.object({
 describe("BMW M4 processed image data", () => {
   it("contains a complete processed source batch", () => {
     const images = CarImageSchema.array().parse(JSON.parse(readFileSync("data/images.json", "utf8")));
-    expect(images).toHaveLength(46);
-    expect(images.filter((image) => image.status !== "processed")).toHaveLength(0);
-    expect(images.filter((image) => image.role === "unknown")).toHaveLength(0);
-    expect(new Set(images.map((image) => image.url)).size).toBe(46);
-    expect(images.filter((image) => !image.viewpoint)).toHaveLength(0);
-    expect(images.filter((image) => image.visibleFeatures.length < 6)).toHaveLength(0);
-    expect(images.filter((image) => image.searchTags.length < 8)).toHaveLength(0);
-    expect(images.filter((image) => image.likelyQuestions.length < 4)).toHaveLength(0);
+    const m4Images = images.filter((image) => image.vin === "BMW-M4");
+    expect(m4Images).toHaveLength(46);
+    expect(m4Images.filter((image) => image.status !== "processed")).toHaveLength(0);
+    expect(m4Images.filter((image) => image.role === "unknown")).toHaveLength(0);
+    expect(new Set(m4Images.map((image) => image.url)).size).toBe(46);
+    expect(m4Images.filter((image) => !image.viewpoint)).toHaveLength(0);
+    expect(m4Images.filter((image) => image.visibleFeatures.length < 6)).toHaveLength(0);
+    expect(m4Images.filter((image) => image.searchTags.length < 8)).toHaveLength(0);
+    expect(m4Images.filter((image) => image.likelyQuestions.length < 4)).toHaveLength(0);
+    expect(m4Images.filter((image) => image.boxes.length === 0)).toHaveLength(0);
+    expect(m4Images.filter((image) => Object.keys(image.zoomTargets).length === 0)).toHaveLength(0);
   });
 
   it("exports Moss image documents with linked metadata", () => {
     const docs = MossDocSchema.array().parse(JSON.parse(readFileSync("data/moss-image-documents.json", "utf8")));
-    expect(docs).toHaveLength(46);
-    for (const doc of docs) {
+    const m4Docs = docs.filter((doc) => doc.metadata.car_id === "BMW-M4");
+    expect(m4Docs).toHaveLength(46);
+    for (const doc of m4Docs) {
       expect(doc.metadata.car_id).toBe("BMW-M4");
       expect(doc.metadata.image_id).toBeTruthy();
       expect(doc.metadata.doc_type).toBe("image");
+      expect(doc.metadata.box_labels).toBeTruthy();
+      expect(doc.metadata.zoom_targets).toBeTruthy();
     }
   });
 
   it("selects specific M4 photos from natural-language shopper questions", () => {
-    const images = CarImageSchema.array().parse(JSON.parse(readFileSync("data/images.json", "utf8")));
+    const images = CarImageSchema.array()
+      .parse(JSON.parse(readFileSync("data/images.json", "utf8")))
+      .filter((image) => image.vin === "BMW-M4");
     const cases: Record<string, string> = {
       "does it have a sunroof": "4486786565089773980",
       "show me the trunk": "7412672979869378728",
