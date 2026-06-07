@@ -28,21 +28,23 @@ IMAGE_MODEL = os.getenv("MINIMAX_IMAGE_MODEL", "image-01")
 # frame so both fit. Override per-run, e.g. MINIMAX_IMAGE_ASPECT=4:3 python portrait.py "..."
 IMAGE_ASPECT = os.getenv("MINIMAX_IMAGE_ASPECT", "9:16")
 
-# Brand-fit host for Taylor Stitch (rugged American heritage menswear): warm,
-# stylish, trustworthy. Framed like a real TikTok livestreamer (9:16 medium shot,
-# cozy lifestyle background, hands visible for gestures) — NOT a corporate headshot.
-# Lessons from Zo's seed portrait: vertical, medium shot, lived-in warm setting.
+# Brand-fit host for Vox (live car-sales stream): a warm, sharp, trustworthy female
+# specialist in a premium auto showroom. Framed like a real livestreamer (9:16 medium
+# shot, hands visible for gestures) — NOT a corporate headshot. Lessons from Zo's seed
+# portrait + avatar-plan.md: vertical, medium shot, the CAR only softly blurred BEHIND
+# her (never a big hard object in frame — it morphs under image-to-video).
 DEFAULT_BRIEF = (
-    "Vertical 9:16 photo of a warm, charismatic live-shopping host: a man in his "
-    "late twenties with short dark hair and light stubble, wearing a light chambray "
-    "button-up shirt, friendly genuine smile, looking directly at the camera. "
-    "MEDIUM SHOT framing from the top of the head to the waist, centered, "
-    "front-facing, relaxed upright posture with hands resting comfortably and "
-    "visible at the bottom of the frame (ready to gesture). Cozy lifestyle studio "
-    "background: warm wood shelves with neatly folded clothing, soft greenery and "
-    "string fairy lights gently blurred behind him, warm inviting light. Soft even "
-    "key light on the face, natural skin texture, sharp focus. Photorealistic, high "
-    "detail, calm neutral expression ready to start talking, like a live shopping stream."
+    "Vertical 9:16 photo of a warm, charismatic, attractive live car-sales host: a "
+    "young white woman about 22 years old with a fresh youthful face, shoulder-length "
+    "wavy brown hair and bright blue eyes, polished and stylish, wearing a sharp but approachable "
+    "cream blazer over a white top, friendly genuine smile, looking directly at the "
+    "camera. MEDIUM SHOT framing from the top of the head to the waist, centered, "
+    "front-facing, relaxed upright posture with hands resting comfortably and visible "
+    "at the bottom of the frame (ready to gesture). Background: a modern premium auto "
+    "showroom — floor-to-ceiling glass, polished concrete, a single car very softly "
+    "blurred far behind her (small, out of focus, not the subject). Soft even key "
+    "light on the face, natural skin texture, sharp focus on her. Photorealistic, high "
+    "detail, calm neutral expression ready to start talking, like a live sales stream."
 )
 
 
@@ -74,9 +76,10 @@ def generate(brief: str, n: int = 1) -> list[str]:
     if not images:
         raise SystemExit(f"No images returned: {data}")
 
+    prefix = os.getenv("VOX_PORTRAIT_PREFIX", "host_portrait")
     paths = []
     for i, b64 in enumerate(images, 1):
-        path = f"host_portrait_{i}.png"
+        path = f"{prefix}_{i}.png"
         with open(path, "wb") as f:
             f.write(base64.b64decode(b64))
         paths.append(path)

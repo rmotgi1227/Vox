@@ -49,16 +49,19 @@ VIDEO_DURATION = os.getenv("MINIMAX_VIDEO_DURATION", "6")
 CLIPS_DIR = os.getenv("VOX_CLIPS_DIR", "clips")
 
 # The shared look every prompt inherits — keeps the host + framing identical so
-# any two clips crossfade cleanly. Tuned for the 9:16 lifestyle host (host.png):
-# a chambray-shirted live-shopping host, hands visible, cozy shelf background.
+# any two clips crossfade cleanly. Tuned for the 9:16 car-sales host (host_new_3.png):
+# a young woman in a cream blazer, seated in a premium auto showroom, hands clasped
+# at the bottom of the frame as the neutral anchor pose.
 ANCHOR = (
-    "The same man in the light chambray button-up shirt, same cozy lifestyle "
-    "studio with warm wood shelves and softly blurred fairy lights behind him. "
-    "Vertical 9:16 medium shot, same framing and lighting throughout, eyes to "
-    "camera. He starts and ends in the same relaxed upright neutral pose with "
-    "hands resting at the bottom of the frame, so the clip can blend with any "
-    "other. Natural, subtle motion only — no scene cuts, no camera moves, no "
-    "text, photorealistic, like a real TikTok live-shopping stream."
+    "The same young woman, about 22 years old, with shoulder-length wavy brown "
+    "hair and bright blue eyes, wearing a cream blazer over a white top, seated in "
+    "a modern premium auto showroom with floor-to-ceiling glass and a car softly "
+    "blurred far behind her. Vertical 9:16 medium shot, same framing and lighting "
+    "throughout, eyes to camera. She starts and ends in the same relaxed upright "
+    "seated neutral pose with hands resting clasped together at the bottom of the "
+    "frame, so the clip can blend with any other. Natural, subtle motion only — no "
+    "scene cuts, no camera moves, no text, photorealistic, like a friendly car "
+    "saleswoman talking to a shopper on a video call."
 )
 
 # loop=True clips get a boomerang pass so they repeat forever with no seam.
@@ -68,54 +71,54 @@ CLIPS = [
         "name": "idle_loop",
         "category": "tier0_idle",
         "loop": True,
-        "prompt": "He listens calmly and warmly to the camera between questions, "
+        "prompt": "She listens calmly and warmly to the camera between questions, "
         "gentle natural breathing, a soft blink, a tiny friendly head tilt and "
-        "the faintest smile — relaxed and alive, waiting for the next comment. " + ANCHOR,
+        "the faintest smile — relaxed and alive, waiting for the next question. " + ANCHOR,
     },
     {
         "name": "speaking_a",
         "category": "tier1_speaking",
         "loop": False,
-        "prompt": "He talks warmly and naturally to the camera, clear mouth "
-        "movement, light open-handed gestures near his chest, engaged and "
+        "prompt": "She talks warmly and naturally to the camera, clear mouth "
+        "movement, light open-handed gestures near her chest, engaged and "
         "upbeat as if answering a shopper. " + ANCHOR,
     },
     {
         "name": "speaking_b",
         "category": "tier1_speaking",
         "loop": False,
-        "prompt": "He explains enthusiastically to the camera, expressive but "
+        "prompt": "She explains enthusiastically to the camera, expressive but "
         "controlled hand gestures, confident reassuring smile, clearly mid-"
-        "sentence describing a product. " + ANCHOR,
+        "sentence describing a car. " + ANCHOR,
     },
     {
         "name": "gesture_nod",
         "category": "tier1_reactive",
         "loop": False,
-        "prompt": "He nods warmly in agreement at a comment, a reassuring smile "
+        "prompt": "She nods warmly in agreement at a question, a reassuring smile "
         "and a brief affirming hand gesture, then settles back to neutral. " + ANCHOR,
     },
     {
         "name": "gesture_point",
         "category": "tier1_reactive",
         "loop": False,
-        "prompt": "He gestures with an open hand toward a product off to the "
-        "side, a welcoming 'check this out' presenting motion, inviting look "
+        "prompt": "She gestures with an open hand toward the screen off to the "
+        "side, a welcoming 'take a look at this' presenting motion, inviting look "
         "back to camera, then settles. " + ANCHOR,
     },
     {
         "name": "gesture_holdup",
         "category": "tier1_reactive",
         "loop": False,
-        "prompt": "He raises a folded garment up toward the camera to show it "
-        "off, turning it slightly with a proud happy expression, then lowers "
-        "it back to neutral. " + ANCHOR,
+        "prompt": "She turns an open palm up toward the screen to highlight a "
+        "detail being shown, a proud happy expression as if presenting a feature, "
+        "then returns her hand to neutral. " + ANCHOR,
     },
     {
         "name": "gesture_laugh",
         "category": "tier1_reactive",
         "loop": False,
-        "prompt": "He laughs lightly and genuinely at a funny comment, a warm "
+        "prompt": "She laughs lightly and genuinely at a funny question, a warm "
         "natural reaction with a relaxed shoulder shrug, then recovers to a "
         "calm smile. " + ANCHOR,
     },
@@ -123,7 +126,7 @@ CLIPS = [
         "name": "bridge_thinking",
         "category": "bridge",
         "loop": True,
-        "prompt": "He pauses thoughtfully on a 'let me check that for you' beat, "
+        "prompt": "She pauses thoughtfully on a 'let me pull that up for you' beat, "
         "a slight attentive lean in, keeps warm eye contact and a small "
         "patient smile to fill the moment while looking something up. " + ANCHOR,
     },
@@ -131,40 +134,36 @@ CLIPS = [
         "name": "buy_beat",
         "category": "buy",
         "loop": False,
-        "prompt": "He points down toward a buy button with excited friendly "
-        "energy, a 'tap to grab it' urgency and a big encouraging smile, then "
-        "settles back to neutral. " + ANCHOR,
+        "prompt": "She leans in with excited friendly energy on a 'let's get you "
+        "behind the wheel' beat, a warm encouraging smile and an inviting open-"
+        "hand gesture, then settles back to neutral. " + ANCHOR,
     },
-    # Ambient "live-seller" behaviors — the idle is a RANDOM ROTATION of these so the
-    # host is always doing something real (showing merch, gesturing at stock), never
-    # the same head-turn on loop. Each starts and ends at the neutral anchor pose so
-    # they hard-cut cleanly at a matched frame (masked by the blur-pulse).
+    # Presenter behaviors — she stays seated and gestures toward the screen where the
+    # car photos appear (the right-side gallery is rendered separately). Each starts
+    # and ends at the neutral anchor pose so any two clips cut/blend at a matched frame.
     {
         "name": "present_holdup",
         "category": "ambient",
         "loop": False,
-        "prompt": "He calmly picks up a neatly folded light-blue chambray shirt "
-        "from beside him, holds it up toward the camera to show it off, turns it "
-        "slightly with a warm proud smile as if presenting it on a live sale, "
-        "then sets it down and returns to the neutral pose. " + ANCHOR,
+        "prompt": "She gestures warmly with an open hand toward the car shown on "
+        "the screen beside her, a proud 'take a look at this one' presenting "
+        "motion, glances at it then back to camera, then settles to neutral. " + ANCHOR,
     },
     {
         "name": "show_shelf",
         "category": "ambient",
         "loop": False,
-        "prompt": "He gestures warmly with an open hand toward the shelves of "
-        "neatly folded clothing behind him, glances at the stock then back to "
-        "camera with an inviting 'we've got it all' smile, then settles back to "
-        "the neutral pose. " + ANCHOR,
+        "prompt": "She gestures warmly with an open hand to introduce the "
+        "selection, an inviting 'we've got a great lineup' smile toward the "
+        "camera, then settles back to the neutral pose. " + ANCHOR,
     },
     {
         "name": "lean_listen",
         "category": "ambient",
         "loop": False,
-        "prompt": "He leans in slightly and reads the live comments with warm "
-        "attention, a couple of small friendly nods and an easy smile as if "
-        "taking in what shoppers are saying, then settles back upright to the "
-        "neutral pose. " + ANCHOR,
+        "prompt": "She leans in slightly and listens with warm attention, a "
+        "couple of small friendly nods and an easy smile as if taking in what the "
+        "shopper is asking, then settles back upright to the neutral pose. " + ANCHOR,
     },
 ]
 
