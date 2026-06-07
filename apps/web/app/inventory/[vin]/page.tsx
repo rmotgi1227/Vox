@@ -44,12 +44,12 @@ export default function CarDetailPage() {
     <main className="mx-auto max-w-6xl px-6 py-8">
       <Link href="/" className="mb-6 inline-flex items-center gap-1 text-sm text-neutral-500 hover:text-neutral-900"><ArrowLeft size={15} /> Back to inventory</Link>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.4fr_1fr]">
-        <div>
-          <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl bg-neutral-100">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.4fr_1fr]" style={{ minWidth: 0 }}>
+        <div style={{ minWidth: 0 }}>
+          <div className="rounded-2xl bg-neutral-100" style={{ aspectRatio: "4 / 3", width: "100%", overflow: "hidden", borderRadius: 16 }}>
             {hero ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={hero} alt={`${car.year} ${car.make} ${car.model}`} className="h-full w-full object-cover" />
+              <img src={hero} alt={`${car.year} ${car.make} ${car.model}`} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-neutral-300"><ImageIcon size={56} /></div>
             )}
@@ -57,9 +57,9 @@ export default function CarDetailPage() {
           {photos.length > 1 ? (
             <div className="mt-3 flex gap-2 overflow-x-auto">
               {photos.map((p, i) => (
-                <button key={p} type="button" onClick={() => setActive(i)} className={`h-16 w-24 shrink-0 overflow-hidden rounded-lg border ${i === active ? "border-black" : "border-black/10"}`}>
+                <button key={p} type="button" onClick={() => setActive(i)} className={`shrink-0 overflow-hidden rounded-lg border ${i === active ? "border-black" : "border-black/10"}`} style={{ width: 96, height: 64 }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={p} alt="" className="h-full w-full object-cover" />
+                  <img src={p} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                 </button>
               ))}
             </div>

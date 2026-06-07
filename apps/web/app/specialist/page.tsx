@@ -16,6 +16,7 @@ import {
   ViewUpdateEventSchema,
   resolveModelProfile,
 } from "@vox/core";
+import Link from "next/link";
 import { Canvas } from "./Canvas";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -908,6 +909,21 @@ export default function SpecialistPage() {
         <section className="image-stage">
           <div className="stage-topline">
             <div className="stage-title">
+              <Link
+                href="/inventory"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "var(--muted-2, #737373)",
+                  textDecoration: "none",
+                  marginBottom: 8,
+                }}
+              >
+                ← Back to inventory
+              </Link>
               <div className="stage-heading">
                 <img
                   className="brand-logo"
