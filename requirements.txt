@@ -3,3 +3,8 @@ requests
 python-dotenv
 fastapi
 uvicorn[standard]
+
+# Live avatar: LiveKit Agents + MiniMax TTS + OpenAI-compat LLM + Simli + Silero VAD
+livekit-agents[minimax,simli,silero]~=1.5
+livekit-plugins-openai      # drives MiniMax's OpenAI-compatible LLM endpoint
+livekit-plugins-deepgram    # streaming STT for voice input (mic)

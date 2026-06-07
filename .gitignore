@@ -10,4 +10,11 @@ __pycache__/
 answer.mp3
 out.mp3
 
+# Local agent/tooling config
+.claude/
+
+# Scratch / build artifacts (not source)
+voice_sample_*.mp3
+review_reel.mp4
+
 # NOTE: PNGs and avatar clips (clips/, clips_old_3x4/ *.mp4) are intentionally tracked
